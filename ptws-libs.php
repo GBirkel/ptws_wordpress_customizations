@@ -12,7 +12,7 @@ function ptws_create_afgFlickr_obj() {
 }
 
 
-function ptws_error($error_msg) {
+function ptws_error($error_msg = 'Unknown') {
     return "<h3>PTWS Error - $error_msg</h3>";
 }
 

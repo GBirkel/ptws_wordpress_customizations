@@ -3,7 +3,7 @@
 Plugin Name: Poking Things With Sticks Extensions
 Plugin URI:  http://www.pokingthingswithsticks.com
 Description: This plugin supports all the non-standard WP stuff I do on PTWS.  Among other things, it finds recent posted pictures on my Flickr feed and integrates them with recent WP posts in a fancypants way
-Version:     1.5
+Version:     1.6
 Author:      Pokingthingswithsticks
 Author URI:  http://www.pokingthingswithsticks.com
 License:     MIT
@@ -19,7 +19,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
 global $ptws_db_version;
-$ptws_db_version = '1.5';
+$ptws_db_version = '1.6';
 
 include_once('ptws-libs.php');
 require_once('afgFlickr/afgFlickr.php');
@@ -50,7 +50,12 @@ function ptws_install() {
             width int UNSIGNED,
             height int UNSIGNED,
             link_url text,
-            thumbnail_url text,
+            large_thumbnail_width int UNSIGNED,
+            large_thumbnail_height int UNSIGNED,
+            large_thumbnail_url text,
+            square_thumbnail_width int UNSIGNED,
+            square_thumbnail_height int UNSIGNED,
+            square_thumbnail_url text,
             comments int UNSIGNED DEFAULT 0 NOT NULL,
             description text,
             taken_time datetime DEFAULT 0 NOT NULL,
@@ -116,35 +121,27 @@ if (!function_exists("ptws_add_settings_link")) {
 function ptws_append_image_and_comments($p, $picContainer, $commentFlag) {
 
     $objA = $picContainer->addChild('a');
-    $objA->addAttribute('href', (string)$p['url']);
+    $objA->addAttribute('href', (string)$p['link_url']);
     $objA->addAttribute('title', (string)$p['title']);
 
     $objImg = $objA->addChild('img');
     $objImg->addAttribute('style', 'max-width:800px;');
-    $objImg->addAttribute('src', (string)$p['thumbnail']);
+    $objImg->addAttribute('src', (string)$p['large_thumbnail_url']);
 
     if (!$commentFlag) { return; }
-    if ($p->count() < 1) { return; }
-    $descriptionElement = null;
-    // Only respect one description element - the last one in the structure
-    foreach ($p->children() as $child) {
-        if ($child->getName() == 'description') {
-            // Note the adding of the blank 'value' parameter, to force '<div></div>' instead of '<div/>'
-            $descriptionElement = $child;
-        }
-    }
-    if ($descriptionElement == null) { return; }
+
+    $descriptionElement = $p['description'];    // TODO is string needs to be XML frag
 
     $commentSubContainer = $picContainer->addChild('div', '');
     $commentSubContainer->addAttribute('class', 'imgComment');
     // http://stackoverflow.com/questions/3418019/simplexml-append-one-tree-to-another
-    $domComContainer = dom_import_simplexml($commentSubContainer);
+//    $domComContainer = dom_import_simplexml($commentSubContainer);
 
-    $domDesc = dom_import_simplexml($descriptionElement);
-    $domDesc = $domComContainer->ownerDocument->importNode($domDesc, TRUE);
+//    $domDesc = dom_import_simplexml($descriptionElement);
+//    $domDesc = $domComContainer->ownerDocument->importNode($domDesc, TRUE);
 
     // Append the <cat> to <c> in the dictionary
-    $domComContainer->appendChild($domDesc);
+//    $domComContainer->appendChild($domDesc);
 }
 
 
@@ -259,23 +256,19 @@ function ptwsgallery_shortcode( $atts, $content = null ) {
             if ($photos[$pid]['cached_time'] > 0) {
                 $p = $photos[$pid];
                 $emit .= "  <div class='rsContent'>\n";
-                $emit .= '<a href="' . (string)$p['url'] . '" title="' . (string)$p['title'] . '">';
-                $wraw = floatval((int)$p['width']);
-                $hraw = floatval((int)$p['height']);
+                $emit .= '<a href="' . (string)$p['link_url'] . '" title="' . (string)$p['title'] . '">';
+                $wraw = floatval((int)$p['large_thumbnail_width']);
+                $hraw = floatval((int)$p['large_thumbnail_height']);
                 $w = $wraw / ($hraw / 500.0); // Not using this since we're embedding proper thumbnail-sized dimensions
-                $emit .= '<img src="' . (string)$p['thumbnail'] . '" data-rsw="' . intval($wraw) . '" data-rsh="' . intval($hraw) . '" class="rsImg" />';
+                $emit .= '<img src="' . (string)$p['large_thumbnail_url'] . '" data-rsw="' . intval($wraw) . '" data-rsh="' . intval($hraw) . '" class="rsImg" />';
                 $emit .= '</a>';
 
-                $description = '';
-                if ($p->count() > 0) {
-                    foreach ($p->children() as $child) {
-                        if ($child->getName() == 'description') {
-                            $description = $child->asXML();
+                if ($p['description']) {
+                    if ($p['description'] != null) {
+                        if ($p['description'] != '') {
+                            $emit .= '<div class="rsCaption">' . $description . '</div>';
                         }
                     }
-                }
-                if ($description != '') {
-                    $emit .= '<div class="rsCaption">' . $description . '</div>';
                 }
                 $emit .= "  </div>\n";
             }
@@ -292,21 +285,21 @@ function ptwsgallery_shortcode( $atts, $content = null ) {
             if ($photos[$pid]['cached_time'] > 0) {
                 $p = $photos[$pid];
 
-                $wraw = floatval((int)$p['width']);
-                $hraw = floatval((int)$p['height']);
+                $wraw = floatval((int)$p['large_thumbnail_width']);
+                $hraw = floatval((int)$p['large_thumbnail_height']);
 
                 if ($hraw > 0) {
                     if ($wraw/$hraw < 0.8) {
-                        array_push($itemsInPortrait, (string)$p['id']);
+                        array_push($itemsInPortrait, $pid);
                     } else {
-                        array_push($itemsNotInPortrait, (string)$p['id']);
+                        array_push($itemsNotInPortrait, $pid);
                     }
                 } else {
-                    array_push($itemsNotInPortrait, (string)$p['id']);
+                    array_push($itemsNotInPortrait, $pid);
                 }
-                if ($p->count() > 0) {
-                    foreach ($p->children() as $child) {
-                        if ($child->getName() == 'description') {
+                if ($p['description']) {
+                    if ($p['description'] != null) {
+                        if ($p['description'] != '') {
                             $commentFlag = TRUE;
                         }
                     }
@@ -515,13 +508,10 @@ function ptws_admin_html_page() {
                 <br />
                 <input type="submit" name="submit" id="ptws_save_changes" class="button-primary" value="Save Changes" />
                 <br />
+                <br />
 				<input type="button" class="button-secondary"
-					value="Test"
+					value="Test Flickr Credentials"
 					onClick="document.location.href='<?php echo get_admin_url() .  'admin-ajax.php?action=ptws_test'; ?>';" />
-			</div>
-		</div>
-    </form>
-
 <?php
 
     global $wpdb;
@@ -536,6 +526,29 @@ function ptws_admin_html_page() {
         )
     );
     echo "<p>Flickr cache contains {$cache_count} entries, with {$cache_unresolved_count} unresolved.</p>";
+
+    if ($cache_count > 0) {
+?>
+                <input type="button" class="button-secondary"
+                    value="Clear All Cache"
+                    onClick="document.location.href='<?php echo get_admin_url() .  'admin-ajax.php?action=ptws_clear'; ?>';" />
+<?php
+    }
+
+    if ($cache_unresolved_count > 0) {
+?>
+                <input type="button" class="button-secondary"
+                    value="Resolve Entries"
+                    onClick="document.location.href='<?php echo get_admin_url() .  'admin-ajax.php?action=ptws_resolve'; ?>';" />
+<?php
+    }
+?>
+
+			</div>
+		</div>
+    </form>
+
+<?php
 
     //$result = $wpdb->get_results('SELECT * FROM ' . $table_name . ' LIMIT 10');
 
@@ -601,7 +614,7 @@ function ptws_flickr_connect_test() {
     	$rsp_obj = $pf->people_getPublicPhotos(get_option('ptws_user_id'), NULL, NULL, 5, 1);
     }
     if (!$rsp_obj) {
-    	echo ptws_error();
+    	echo ptws_error('Flickr connectivity error');
     } else {
 ?>
         <table style='border-spacing:0;border:1px solid #e5e5e5;box-shadow: 0 1px 1px rgba(0, 0, 0, .04)'>
@@ -634,6 +647,134 @@ function ptws_flickr_connect_test() {
 }
 
 
+function ptws_admin_cache_resolve() {
+    session_start();
+    global $pf;
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'ptwsflickrcache';
+    $wpdb->show_errors();
+
+    echo '<h3>Manually resolve cache entries</h3>';
+
+    $uncached_recs = $wpdb->get_results(
+        $wpdb->prepare( 
+            "SELECT * FROM $table_name WHERE cached_time = %d LIMIT 3", 
+            0
+        ),
+        'ARRAY_A'
+    );
+
+    $uid = get_option('ptws_user_id');
+
+    if ($uncached_recs) {
+        foreach ($uncached_recs as $uncached_rec) {
+            $rid = $uncached_rec['id'];
+            $fid = $uncached_rec['flickr_id'];
+
+            $f_info_obj = $pf->photos_getInfo($fid);
+            $f_sizes_obj = $pf->photos_getSizes($fid);
+
+            if (!$f_info_obj || !$f_sizes_obj) {
+                echo ptws_error('Flickr connectivity error getting photo ' . $fid);
+            } else {
+                $f_sizes = array();
+                foreach ($f_sizes_obj as $a=>$b) {
+                    $f_sizes[$b['label']] = $b;
+                }
+
+                $p = $f_info_obj['photo'];
+                echo '<ul><li>id ' . $rid . '</li>';
+                echo '<li>flicker_id ' . $fid . '</li>';
+                echo '<li>title ' . $p['title']['_content'] . '</li>';
+                echo '<li>width ' . $f_sizes['Original']['width'] . '</li>';                
+                echo '<li>height ' . $f_sizes['Original']['height'] . '</li>';                
+                $url = 'https://www.flickr.com/photos/' . $uid . '/' . $fid . '/';
+                echo '<li>link_url ' . $url . '</li>';
+
+                echo '<li>large_thumbnail_width ' . $f_sizes['Large']['width'] . '</li>';
+                echo '<li>large_thumbnail_height ' . $f_sizes['Large']['height'] . '</li>';
+                echo '<li>large_thumbnail_url ' . $f_sizes['Large']['source'] . '</li>';
+
+                echo '<li>square_thumbnail_width ' . $f_sizes['Square']['width'] . '</li>';
+                echo '<li>square_thumbnail_height ' . $f_sizes['Square']['height'] . '</li>';
+                echo '<li>square_thumbnail_url ' . $f_sizes['Square']['source'] . '</li>';
+
+                echo '<li>comments ' . $p['comments']['_content'] . '</li>';
+                echo '<li>description ' . $p['description']['_content'] . '</li>';
+                echo '<li>taken_time ' . $p['dates']['taken'] . '</li>';
+                echo '<li>uploaded_time ' . $p['dateuploaded'] . '</li>';
+                echo '<li>updated_time ' . $p['dates']['lastupdate'] . '</li></ul>';
+
+                $wpdb->replace(
+                    $table_name,
+                    array(
+                        'flickr_id'     => $fid,
+                        'title'         => $p['title']['_content'],
+                        'width'     => intval($f_sizes['Original']['width']),
+                        'height'     => intval($f_sizes['Original']['height']),
+                        'link_url'     => $url,
+                        'large_thumbnail_width'     => intval($f_sizes['Large']['width']),
+                        'large_thumbnail_height'     => intval($f_sizes['Large']['height']),
+                        'large_thumbnail_url'     => $f_sizes['Large']['source'],
+                        'square_thumbnail_width'     => intval($f_sizes['Square']['width']),
+                        'square_thumbnail_height'     => intval($f_sizes['Square']['height']),
+                        'square_thumbnail_url'     => $f_sizes['Square']['source'],
+                        'comments'     => intval($p['comments']['_content']),
+                        'description'     => $p['description']['_content'],
+                        'taken_time'     => $p['dates']['taken'],
+                        'uploaded_time'     => intval($p['dateuploaded']),
+                        'updated_time'    => intval($p['dates']['lastupdate']),
+                        'cached_time'   => intval($p['dates']['lastupdate'])
+                    ),
+                    array( 
+                        '%s', 
+                        '%s', 
+                        '%d',
+                        '%d',
+                        '%s', 
+                        '%d',
+                        '%d',
+                        '%s', 
+                        '%d',
+                        '%d',
+                        '%s', 
+                        '%d', 
+                        '%s', 
+                        '%s', 
+                        '%d', 
+                        '%d', 
+                        '%d'
+                    ) 
+                );
+            }
+        }
+    }
+    $wpdb->hide_errors();
+    exit;
+}
+
+
+function ptws_admin_cache_clear() {
+    session_start();
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'ptwsflickrcache';
+    $wpdb->show_errors();
+
+    echo '<h3>Clear cache</h3>';
+
+    $wpdb->query(
+        $wpdb->prepare(
+            "DELETE FROM $table_name"
+        )
+    );
+
+    echo '<p>Done.</p>';
+
+    $wpdb->hide_errors();
+    exit;
+}
+
+
 if (!is_admin()) {
     add_action('wp_print_scripts', 'ptws_enqueue_scripts');
     add_action('wp_print_styles', 'ptws_enqueue_styles');
@@ -650,6 +791,8 @@ if (!is_admin()) {
 	add_action('admin_menu', 'ptws_admin_menu');
 	add_action('wp_ajax_ptws_gallery_auth', 'ptws_auth_init');
 	add_action('wp_ajax_ptws_test', 'ptws_flickr_connect_test');
+    add_action('wp_ajax_ptws_resolve', 'ptws_admin_cache_resolve');
+    add_action('wp_ajax_ptws_clear', 'ptws_admin_cache_clear');
 }
 
 ?>
