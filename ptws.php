@@ -3,7 +3,7 @@
 Plugin Name: Poking Things With Sticks Extensions
 Plugin URI:  http://www.pokingthingswithsticks.com
 Description: This plugin supports all the non-standard WP stuff I do on PTWS.  Among other things, it finds recent posted pictures on my Flickr feed and integrates them with recent WP posts in a fancypants way
-Version:     0.1
+Version:     1.0
 Author:      Pokingthingswithsticks
 Author URI:  http://www.pokingthingswithsticks.com
 License:     MIT
@@ -47,11 +47,11 @@ function ptws_install() {
             link_url TEXT,
             thumbnail_url TEXT,
             comments INT UNSIGNED DEFAULT 0 NOT NULL,
-            description TEXT DEFAULT '' NOT NULL,
-            taken_time DATETIME DEFAULT '0000-00-00 00:00:00' NOT NULL,
-            uploaded_time DATETIME DEFAULT '0000-00-00 00:00:00' NOT NULL,
-            updated_time DATETIME DEFAULT '0000-00-00 00:00:00' NOT NULL,
-            cached_time DATETIME DEFAULT '0000-00-00 00:00:00' NOT NULL,
+            description TEXT,
+            taken_time DATETIME DEFAULT 0 NOT NULL,
+            uploaded_time DATETIME DEFAULT 0 NOT NULL,
+            updated_time DATETIME DEFAULT 0 NOT NULL,
+            cached_time DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL,
             UNIQUE (flickr_id),
             PRIMARY KEY (id)
         ) $charset_collate;";
@@ -68,7 +68,7 @@ function ptws_install() {
 
 function ptws_update_db_check() {
     global $ptws_db_version;
-    if ( get_site_option( 'ptws_db_version' ) != $ptws_db_version ) {
+    if (version_compare( get_site_option( 'ptws_db_version' ), $ptws_db_version ) < 0) {
         ptws_install();
     }
 }
@@ -504,8 +504,9 @@ function ptws_admin_html_page() {
     global $wpdb;
     $table_name = $wpdb->prefix . 'ptwsflickrcache';
 
+    $wpdb->show_errors();
     $photo_cache_count = $wpdb->get_var( "SELECT COUNT(*) FROM $table_name" );
-    echo "<p>Flickr cache contains {$user_count} entries.</p>";
+    echo "<p>Flickr cache contains {$photo_cache_count} entries.</p>";
 
     //$result = $wpdb->get_results('SELECT * FROM ' . $table_name . ' LIMIT 10');
 
@@ -554,6 +555,7 @@ function ptws_admin_html_page() {
         )
     );
 */
+    $wpdb->hide_errors();
 }
 
 
