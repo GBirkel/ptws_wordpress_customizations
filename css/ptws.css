@@ -1,0 +1,526 @@
+
+/******** Images and "image strips" (grids of image thumbnails) *******/
+
+.content .entry a > img {
+	border: none;
+	padding:0px;
+	margin:4px 10px 4px 10px;
+	box-shadow: 1px 1px 9px -1px rgba(81, 81, 81, 0.51);
+}
+
+.content .entry div.images {
+	display: flex;
+	justify-content: center;
+	padding:0 15px 0 15px;
+}
+.content .entry div.images img {
+	width:95%;
+}
+.content .entry div.images a:nth-child(1n+2) img {
+    	margin-top:16px; /* All children but the first */
+}
+.content .entry div.images > div {
+	text-align:center;
+	max-width:800px;
+	flex:1;
+}
+
+.content .entry div.imgComment {
+	text-align:left;
+	text-indent:10px;
+	margin:0 10px 0 10px;
+	padding:0px 15px 0 15px;
+}
+.content .entry div.imgComment p {
+	margin:5px 0 5px 0;
+	color: gray;
+	font-weight: normal;
+}
+
+.content .entry div.imageStrip {
+	border: none;
+	display:table;
+	padding:2px;
+	margin-left: auto;
+	margin-right: auto;
+	margin-bottom: 15px;
+	box-shadow: 1px 1px 13px -1px rgba(81, 81, 81, 0.51);
+}
+
+.content .entry div.imageStrip > div {
+	display:table-row;
+}
+
+.content .entry div.imageStrip > div > div {
+	padding:2px;
+	display:table-cell;
+}
+
+.content .entry div.imageStrip > div:first-child > div > a > img {
+	margin-top: 4px;
+}
+
+.content .entry div.imageStrip > div > div:first-child > a > img {
+	margin-left: 6px;
+}
+
+.content .entry div.imageStrip > div > div > a > img {
+	border: none;
+	padding: 0px;
+	margin: 0px 6px 4px 0px;
+	-webkit-box-shadow: none;
+	-moz-box-shadow: none;
+	box-shadow: none;
+}
+
+
+/**** Image/map galleries (image on left, description on right) ****/
+
+.content .entry div.leftHandGallery {
+	border: none;
+	margin-top: 0.6em;
+	margin-bottom: 0.6em;
+	display:table;
+}
+
+.content .entry div.leftHandGallery > div {
+	display:table-row;
+}
+
+.content .entry div.leftHandGallery > div > div {
+	display:table-cell;
+	vertical-align:top;
+}
+
+.content .entry div.leftHandGallery > div > div:first-child {
+	margin-left: auto;
+	margin-right: auto;
+}
+
+.content .entry div.leftHandGallery > div > div:first-child p {
+	margin:0px;
+	padding:0px;
+}
+
+.content .entry div.leftHandGallery > div > div:last-child {
+	margin:0px;
+	padding:15px 0px 15px 0px;
+}
+
+.content .entry div.leftHandGallery > div > div:last-child div {
+	margin:0px 0px 4px 0px;
+	padding:8px 4px 8px 19px;
+	background: -moz-linear-gradient(-60deg,  rgba(182, 172, 151, 0.2) 0%, rgba(255,255,255,0) 100%);
+	background: -ms-linear-gradient(-60deg,  rgba(182, 172, 151, 0.2) 0%,rgba(255,255,255,0) 100%);
+	background: linear-gradient(150deg,  rgba(182, 172, 151, 0.2) 0%,rgba(255,255,255,0) 100%);
+	border-radius: 0px 7px 7px 0px;
+	-moz-border-radius: 0px 7px 7px 0px;
+	-khtml-border-radius: 0px 7px 7px 0px;
+}
+
+.content .entry div.leftHandGallery > div > div:last-child div:first-child h4 {
+	margin:2px 0px 2px 0px;
+}
+
+.content .entry div.leftHandGallery > div > div:last-child > p {
+	margin:2px 0px 2px 19px;
+}
+
+.content .entry div.leftHandGallery > div > div:last-child div:first-child p {
+	margin:2px 0px 2px 10px;
+}
+
+.content .entry div.leftHandGallery > div > div:first-child img {
+	border: none;
+	padding:0px;
+	margin:4px 0px 15px 5px;
+	-webkit-box-shadow: 2px 2px 6px 0px rgba(100,100,100.4);
+	-moz-box-shadow: 2px 2px 6px 0px rgba(100,100,100.4);
+	box-shadow: 2px 2px 6px 0px rgba(100,100,100.4);
+}
+
+.content .entry div.leftHandGallery table {
+	border:none;
+	margin:0;
+}
+
+.content .entry div.leftHandGallery table td {
+	border:none;
+	vertical-align:top;
+}
+
+
+/* Dialogue sequences - names on the left, dialogue on the right */
+
+.content .entry div.dialogue {
+	border: none;
+	display:table;
+	padding:2px;
+	margin-top: 1em;
+	margin-bottom: 1em;
+}
+
+.content .entry div.dialogue > div {
+	display:table-row;
+}
+
+.content .entry div.dialogue > div > div {
+	padding:3px 2px 3px 2px;
+	display:table-cell;
+}
+
+.content .entry div.dialogue > div > div:first-child {
+	color: #666;
+	text-align: right;
+	font-size: 13px;
+	white-space: nowrap;
+	font-weight: bold;
+	padding-right:8px;
+}
+@media screen and (max-device-width: 1024px) {
+	.content .entry div.dialogue > div > div:first-child {
+		font-size: 18px;
+	}
+}
+
+
+/* Question-And-Answer sequences */
+
+.content blockquote {
+	background: #F5F5F5;
+	margin: 7px 25px 7px 25px;
+	padding: 0px 20px 0 15px;
+	-moz-border-radius: 3px;
+	-khtml-border-radius: 3px;
+	-webkit-border-radius: 3px;
+	border: 1px solid #E6E6E6;
+}
+
+.content blockquote.q {
+	background: #F5E9E1;
+	margin: 0 25px 0px 25px;
+	padding: 8px 20px 0 15px;
+	border-top: 1px solid #E6DDD3;
+	border-right: 1px solid #E6DDD3;
+	border-bottom: 0px solid #E6DDD3;
+	border-left: 1px solid #E6DDD3;
+	border-top-left-radius: 4px;
+	border-top-right-radius: 4px;
+	border-bottom-right-radius: 0px;
+	border-bottom-left-radius: 0px;
+	-webkit-border-top-left-radius: 4px;
+	-webkit-border-top-right-radius: 4px;
+	-webkit-border-bottom-right-radius: 0px;
+	-webkit-border-bottom-left-radius: 0px;
+	-moz-border-radius-topleft: 4px;
+	-moz-border-radius-topright: 4px;
+	-moz-border-radius-bottomright: 0px;
+	-moz-border-radius-bottomleft: 0px;
+	-khtml-border-radius-topleft: 4px;
+	-khtml-border-radius-topright: 4px;
+	-khtml-border-radius-bottomright: 0px;
+	-khtml-border-radius-bottomleft: 0px;
+}
+
+.content blockquote.q p {
+	padding-bottom: 8px;
+	font-weight: normal;
+	text-shadow: 1px 1px 1px rgba(150,126,126,0.6);
+	font-size: 13px;
+}
+
+.content blockquote.a {
+	background: #FFF5F0;
+	margin: 0 25px 15px 25px;
+	padding: 0px 20px 8px 15px;
+	border-top: 0px solid #E6DDD3;
+	border-right: 1px solid #E6DDD3;
+	border-bottom: 1px solid #E6DDD3;
+	border-left: 1px solid #E6DDD3;
+	border-top-left-radius: 0px;
+	border-top-right-radius: 0px;
+	border-bottom-right-radius: 4px;
+	border-bottom-left-radius: 4px;
+	-webkit-border-top-left-radius: 0px;
+	-webkit-border-top-right-radius: 0px;
+	-webkit-border-bottom-right-radius: 4px;
+	-webkit-border-bottom-left-radius: 4px;
+	-moz-border-radius-topleft: 0px;
+	-moz-border-radius-topright: 0px;
+	-moz-border-radius-bottomright: 4px;
+	-moz-border-radius-bottomleft: 4px;
+	-khtml-border-radius-topleft: 0px;
+	-khtml-border-radius-topright: 0px;
+	-khtml-border-radius-bottomright: 4px;
+	-khtml-border-radius-bottomleft: 4px;
+}
+
+.content blockquote.a p {
+	padding-top: 6px;
+	padding-bottom: 2px;
+	font-weight: normal;
+	font-size: 13px;
+}
+
+
+.content table.pictable {
+	border: 0px solid;
+}
+
+.content table.pictable tr td {
+	padding: 0px;
+	border: 0px solid;
+}
+
+.content blockquote.pictitle {
+	background: #FCF4EC;
+	margin: 0 5px 0px 5px;
+	padding: 6px 15px 0 15px;
+	border:0px solid black;
+	border-radius: 6px;
+	clear:left;
+	-webkit-border-radius: 6px;
+	-moz-border-radius: 6px;
+	-khtml-border-radius: 6px;
+}
+
+.content blockquote.pictitle p {
+	padding-bottom: 8px;
+	font-weight: normal;
+	text-shadow: 1px 1px 1px rgba(150,126,126,0.6);
+	font-size: 14px;
+}
+
+.content blockquote.picdesc {
+	background: #FFFFFF;
+	margin: 0 5px 5px 5px;
+	padding: 1px 20px 8px 15px;
+	border: 0px solid black;
+}
+
+.content blockquote.picdesc p {
+	padding-top: 6px;
+	padding-bottom: 2px;
+	font-weight: normal;
+	font-size: 13px;
+}
+
+
+/* For the gear page */
+
+.content div.gearFilterButtons {
+	text-align:left;
+	border: 0px solid;
+	padding: 0px;
+	margin:0.5em 0.5em 1.1em 0.4em;
+}
+
+.content div.gearFilterButtons > span {
+	vertical-align: baseline;
+	color: #555;
+	border-color: rgb(200, 186, 103);
+	background: rgb(255, 248, 226);
+	box-shadow: inset 0 1px 0 #fff, 0 1px 0 rgba(0, 0, 0, .08);
+	display: inline-block;
+	font-size: 13px;
+	margin: 5px 5px;
+	padding: 2px 7px 2px 7px;
+	cursor: pointer;
+	border-width: 1px;
+	border-style: solid;
+	border-radius: 3px;
+	white-space: nowrap;
+	box-sizing: border-box;
+	transition-property: border, background, color;
+	transition-duration: .2s;
+	transition-timing-function: ease-in-out;
+}
+@media screen and (max-device-width: 1024px) {
+	.content div.gearFilterButtons > span {
+		font-size:26px;
+		padding: 8px 12px 8px 12px;
+		margin: 8px 8px;
+	}
+}
+
+.content div.gearFilterButtons > span:hover {
+	background: rgb(255, 243, 208);
+	border-color: rgb(182, 168, 4);
+	color: #222;
+}
+
+.content div.gearFilterButtons > span.active {
+	background: rgb(244, 229, 182);
+	border-color: rgb(171, 152, 20);
+	color: #333;
+	box-shadow: inset 0 2px 5px -3px rgba(0, 0, 0, .5)
+}
+
+.content div.gear {
+	clear:left;
+	padding: 0px 0px 6px 0px;
+	margin: 0px 0px 6px 0px;
+}
+
+.content div.gear div.gearbar {
+	display: block;
+	margin: 0px 0px 6px 0px;
+	padding: 6px 0px 6px 0px;
+	border:none;
+	border-radius: 6px;
+	-webkit-border-radius: 6px;
+	-moz-border-radius: 6px;
+	-khtml-border-radius: 6px;
+}
+
+.content div.gear span.gearname {
+	padding: 0px 15px 0px 5px;
+	font-size: 17px;
+}
+@media screen and (max-device-width: 1024px) {
+	.content div.gear span.gearname {
+		font-size: 23px;
+	}
+}
+
+.content div.gear span.gearpurchase {
+	float: right;
+	color: #999;
+	padding: 0px 15px 0px 15px;
+	text-align: right;
+}
+
+.content div.gear img {
+	padding: 0;
+	margin: 0px 15px 10px 6px;
+	float:left;
+}
+
+.content div.gear p {
+	margin: 0px 0px 5px 0px;
+	padding: 0px 0px 3px 0px;
+}
+
+
+/* Project presentation customizations, e.g. USB charger */
+
+.divtoc {
+	float:right;
+	padding:0.7em 1em;
+	border:1px solid #666;
+	margin:0.0em 0em 0.7em 1.6em;
+	border-radius: 9px;
+	-moz-border-radius: 9px;
+	-khtml-border-radius: 9px;
+	-webkit-border-radius: 9px;
+}
+
+.maintoc {
+	margin: 0em 0em 0.1em 0em;
+	padding: 0em 0em 0em 1.1em;
+}
+
+.subtoc {
+	font-size: 0.95em;
+	margin:0em 0em 0em 0em;
+	padding:0em 0em 0.05em 1.4em;
+}
+
+.qaq {
+/*	font-size:0.9em;	*/
+}
+div.qaq, span.qaq {
+	color:rgb(3, 138, 170);
+}
+
+div.qaq {
+	margin:0em 1em 0.8em 1em;
+	padding:0em 0em 0em 0em;
+}
+
+ul.qa {
+	margin-left: 0;
+	padding-left: 1.2em;
+}
+
+ul.qa > li.qaq {
+   	list-style: none;
+	text-indent: -1.2em;
+}
+
+li.qaq::before, div.qaq::before, h4.qaq::before { 
+	display: block;
+	float: left;
+	padding-top:0.25em;
+	font-size:0.8em;
+	width: 1.2em;
+}
+li.qaq:not(.disclosed)::before, div.qaq:not(.disclosed)::before, h4.qaq:not(.disclosed)::before { 
+	content: "►";
+}
+li.qaq.disclosed::before, div.qaq.disclosed::before, h4.qaq.disclosed::before {
+	content: "▼";
+}
+
+/* Without the span.qaq to isolate the hover, it underlines the whole branch */
+ul.qa > li.qaq span.qaq:first-child:hover, div.qaq:hover, h4.qaq:hover {
+    text-decoration:underline;
+    cursor:pointer;
+}
+
+.qaa {
+	display:none;
+	font-size:0.9em;
+	margin:0em 1em 1em 1em;
+	padding:0em 1em 0em 1.3em;
+}
+.qaq.disclosed .qaa {
+    display: block;	/* For when the intended qaa is inside a qaq, like in a li.qaq */
+}
+
+.qaa p {
+	margin:0em;
+	padding:0.5em 1em 0.5em 0em;
+}
+
+/* End of project presentation customizations, e.g. USB charger */
+
+
+.content pre {
+	background: #F5F5F5;
+	margin: 1em 0 1em 0;
+	padding: 0.5em 1em 0.5em 1em;
+	-moz-border-radius: 3px;
+	-khtml-border-radius: 3px;
+	-webkit-border-radius: 3px;
+	border: 1px solid #E6E6E6;
+	width: 593px; /* Keeping max width for PRE to avoid hellacious windows */
+	overflow: auto;
+}
+
+.content pre > div.code {
+	font-family: monospace;
+	font-size: 0.8em;
+	white-space: pre-wrap;
+	background: #F5F5F5;
+	margin: 0;
+	border-radius: 3px;
+	text-indent:0;
+}
+
+
+	
+.entry ul:not(.qa) {
+	list-style-type: square;
+	margin: 0.8em 0 0.8em 0;
+	padding: 0;
+}
+
+.entry ul li:not(.qaq) {
+	list-style-type: square;
+	margin: 0 0 0 20px;
+	text-indent: initial;
+	padding: 0;
+}
+	
+
