@@ -18,9 +18,25 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-define('PTWS_PLUGIN_URL', plugins_url() . '/' . basename(dirname(__FILE__)));
-
 require_once('afgFlickr/afgFlickr.php');
+
+function add_query_vars_filter( $vars ){
+   $vars[] = "ptwsdo";
+   return $vars;
+}
+add_filter( 'query_vars', 'add_query_vars_filter' );
+
+$do_var = (get_query_var('ptwsdo')) ? get_query_var('ptwsdo') : false;
+if ($do_var) {
+	if ($do_var == 'test') {
+		echo '<div style="font-family:\'Open Sans\',sans-serif;font-size: 15px;">';
+		echo 'Yup, this is a test alright.';
+	    echo '</div>';
+	    die();
+	}
+} else {
+	define('PTWS_PLUGIN_URL', plugins_url() . '/' . basename(dirname(__FILE__)));
+}
 
 function ptws_enqueue_scripts() {
     wp_enqueue_script('jquery');
@@ -34,13 +50,6 @@ function ptws_enqueue_styles() {
 if (!is_admin()) {
     add_action('wp_print_scripts', 'ptws_enqueue_scripts');
     add_action('wp_print_styles', 'ptws_enqueue_styles');
-}
-
-if (isset($_GET['page']) && $_GET['page']=='ptws.php' && isset($_GET['do']) && $_GET['do']=='test') { 
-	echo '<div style="font-family:\'Open Sans\',sans-serif;font-size: 15px;">';
-	echo 'Yup, this is a test alright.';
-    echo '</div>';
-    die();
 }
 
 ?>
