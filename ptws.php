@@ -25,6 +25,19 @@ include_once('ptws-libs.php');
 require_once('afgFlickr/afgFlickr.php');
 
 
+function ptws_activate() {
+    add_option( 'ptws_plugin_activation', 'just-activated' );
+}
+
+
+function my_plugin_initialize() {
+    if( is_admin() && get_option( 'my_plugin_activation' ) == 'just-activated' ) {
+    delete_option( 'my_plugin_activation' );
+        flush_rewrite_rules();
+    }
+}
+
+
 function ptws_install() {
     global $wpdb;
     global $ptws_db_version;
@@ -39,20 +52,20 @@ function ptws_install() {
         $table_name = $wpdb->prefix . 'ptwsflickrcache';
 
         $sql = "CREATE TABLE $table_name (
-            id MEDIUMINT(9) NOT NULL AUTO_INCREMENT,
-            flickr_id TEXT NOT NULL,
-            title TEXT,
-            width INT UNSIGNED,
-            height INT UNSIGNED,
-            link_url TEXT,
-            thumbnail_url TEXT,
-            comments INT UNSIGNED DEFAULT 0 NOT NULL,
-            description TEXT,
-            taken_time DATETIME DEFAULT 0 NOT NULL,
-            uploaded_time DATETIME DEFAULT 0 NOT NULL,
-            updated_time DATETIME DEFAULT 0 NOT NULL,
-            cached_time DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL,
-            UNIQUE (flickr_id),
+            id mediumint(9) NOT NULL AUTO_INCREMENT,
+            flickr_id text NOT NULL,
+            title text,
+            width int UNSIGNED,
+            height int UNSIGNED,
+            link_url text,
+            thumbnail_url text,
+            comments int UNSIGNED DEFAULT 0 NOT NULL,
+            description text,
+            taken_time datetime DEFAULT 0 NOT NULL,
+            uploaded_time datetime DEFAULT 0 NOT NULL,
+            updated_time datetime DEFAULT 0 NOT NULL,
+            cached_time datetime DEFAULT CURRENT_TIMESTAMP NOT NULL,
+            CONSTRAINT unique_flickr_id UNIQUE (flickr_id),
             PRIMARY KEY (id)
         ) $charset_collate;";
 
@@ -323,6 +336,12 @@ function ptws_enqueue_styles() {
 
 
 function ptws_admin_init() {
+
+    if (is_admin() && get_option( 'ptws_plugin_activation' ) == 'just-activated' ) {
+    delete_option( 'ptws_plugin_activation' );
+        ptws_install();
+    }
+
     ptws_create_afgFlickr_obj();
     register_setting('ptws_settings_group', 'ptws_api_key');
     register_setting('ptws_settings_group', 'ptws_api_secret');
@@ -510,6 +529,7 @@ function ptws_admin_html_page() {
 
     //$result = $wpdb->get_results('SELECT * FROM ' . $table_name . ' LIMIT 10');
 
+    // https://codex.wordpress.org/Database_Description#Table:_wp_posts
     //$ten_posts = $wpdb->get_results('SELECT * FROM ' . $wpdb->posts . ' LIMIT 10');
     // post_modified, post_modified_gmt DATETIME
 /*
@@ -579,18 +599,19 @@ function ptws_test() {
     exit;
 }
 
-// http://wordpress.stackexchange.com/questions/46894/why-is-wordpress-changing-my-html-code
-// https://wordpress.org/plugins/wpautop-control/
+
+register_activation_hook( __FILE__, 'ptws_activate' );
 
 if (!is_admin()) {
     add_action('wp_print_scripts', 'ptws_enqueue_scripts');
     add_action('wp_print_styles', 'ptws_enqueue_styles');
     // To prevent corruption of entries by the auto-processor
+    // http://wordpress.stackexchange.com/questions/46894/why-is-wordpress-changing-my-html-code
+    // https://wordpress.org/plugins/wpautop-control/
     remove_filter('the_content', 'wpautop');
     remove_filter('the_excerpt', 'wpautop');
 } else {
 /*    add_filter('plugin_action_links','ptws_add_settings_link', 10, 2 );*/
-    register_activation_hook( __FILE__, 'ptws_install' );
     add_action('plugins_loaded', 'ptws_update_db_check' );
 	add_action('admin_init', 'ptws_admin_init');
 	add_action('admin_menu', 'ptws_admin_menu');
