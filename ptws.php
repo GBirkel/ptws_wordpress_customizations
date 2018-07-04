@@ -36,5 +36,11 @@ if (!is_admin()) {
     add_action('wp_print_styles', 'ptws_enqueue_styles');
 }
 
+if (isset($_GET['page']) && $_GET['page']=='ptws.php' && isset($_GET['do']) && $_GET['do']=='test') { 
+	echo '<div style="font-family:\'Open Sans\',sans-serif;font-size: 15px;">';
+	echo 'Yup, this is a test alright.';
+    echo '</div>';
+    die();
+}
 
 ?>
