@@ -78,21 +78,68 @@ function ptwsgallery_shortcode( $atts, $content = null ) {
 	if ($content == null) {
 		return '';
 	}
-	return 'FART' . $content . 'FART';
-	$emit = '';
 	try {
     	$sxe = simplexml_load_string($content, 'SimpleXMLIterator');
-    	for ($sxe->rewind(); $sxe->valid(); $sxe->next()) {
-    	    if ($sxe->hasChildren()) {
-    	        foreach ($sxe->getChildren() as $element=>$value) {
-    	            $emit .= $value->species . '<br />';
-    	        }
-    	    }
-    	}
 	}
 	catch(Exception $e) {
-    	$emit .= $e->getMessage();
+    	return $e->getMessage();
 	}
+    $sxe->rewind();
+    $encloser = $sxe->getName();
+    if ($encloser != 'ptwsgallery') {
+        return '<p>ptwsgallery shortcode must contain a single ptwsgallery element</p>';
+    }
+    $emit = '';
+    $photos = array();
+    $fixedgalleryIDs = array();
+    $swipegalleryIDs = array();
+    for (; $sxe->valid(); $sxe->next()) {
+        $majorSection = $sxe->key();
+        if ($majorSection == 'photos') {
+            if ($sxe->hasChildren()) {
+                foreach ($sxe->getChildren() as $element=>$value) {
+                    if ($element == 'photo') {
+                        if (isset($value['id'])) {
+                            $photos[(string)$value['id']] = $value;
+                        }
+                    }
+                }
+            }
+        } elseif ($majorSection == 'swipegallery') {
+            if ($sxe->hasChildren()) {
+                foreach ($sxe->getChildren() as $element=>$value) {
+                    if ($element == 'galleryitem') {
+                        if (isset($value['id'])) {
+                            array_push($swipegalleryIDs, (string)$value['id']);
+                        }
+                    }
+                }
+            }
+        } else {
+            $emit .= '<p>Unrecognized major section ' . $majorSection . '. Must be photos or swipegallery.</p>';
+        }
+    }
+    if ($swipegalleryIDs) {
+        $emit .= "\n<div class='royalSlider heroSlider fullWidth rsMinW'>\n";
+        foreach($swipegalleryIDs as $pid) {
+            if (isset($photos[$pid])) {
+                $p = $photos[$pid];
+                $emit .= "  <div class='rsContent'>\n";
+                $emit .= '<a href="' . (string)$p['url'] . '" title="' . (string)$p['title'] . '">';
+                $wraw = floatval((int)$p['width']);
+                $hraw = floatval((int)$p['height']);
+                $w = $wraw / ($hraw / 500.0); // Not using this since we're embedding proper thumbnail-sized dimensions
+                $emit .= '<img src="' . (string)$p['thumbnail'] . '" data-rsw="' . intval($wraw) . '" data-rsh="' . intval($hraw) . '" class="rsImg" />';
+                $emit .= '</a>';
+
+                $emit .= '<div class="rsCaption"><p>Marking how much I need to saw off.</p></div>';
+
+                $emit .= "  </div>\n";
+            }
+        }
+        $emit .= '</div>';
+
+    }
 	return $emit;
 }
 

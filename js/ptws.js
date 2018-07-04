@@ -57,3 +57,41 @@ function showGear(e) {
 	jQuery("div.gearFilterButtons").children().removeClass('active');
 	b.addClass('active');	
 }
+
+
+jQuery(document).ready(function($) {
+  $('div.royalSlider').royalSlider({
+  	addActiveClass: true,
+    arrowsNav: true,
+    arrowsNavAutoHide: false,
+    autoPlay: false,
+    autoScaleSlider: false, 
+    controlNavigation: 'bullets',
+    controlsInside: false,
+    globalCaption: true,
+    imageScaleMode: 'fit',
+	imageScalePadding: 4,
+    keyboardNavEnabled: false,
+    loop: false,
+    minSlideOffset: 14,
+    navigateByClick: false,
+    startSlideId: 0,
+    sliderDrag: true,
+    thumbsFitInViewport: false,
+    transitionType:'move',
+    visibleNearby: {
+        enabled: true,
+        centerArea: 0.6,
+        center: false,
+        breakpoint: 980,
+        breakpointCenterArea: 0.8
+    },
+    deeplinking: {
+      enabled: false,
+      change: false
+    }
+    /* size of all images http://help.dimsemenov.com/kb/royalslider-jquery-plugin-faq/adding-width-and-height-properties-to-images */
+    /* imgWidth: 1400, */
+    /* imgHeight: 680 */
+  });
+});
