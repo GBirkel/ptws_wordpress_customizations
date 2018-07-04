@@ -55,24 +55,45 @@ if (!function_exists("ptws_add_settings_link")) {
 */
 
 
+// https://gist.github.com/Narno/4677722
+// http://stackoverflow.com/questions/15830575/php-string-could-not-be-parsed-as-xml-when-using-simplexmlelement
+// https://codex.wordpress.org/Shortcode_API
+/*
+  Problem:
+		Content inside shortcodes in entries is still processed in the editor
+		as though it was freehand text needing paragraph breaks.  Also, it's processed badly.
+	So this perfectly valid XML inside a shortcode:
+		[ptwsgallery]
+			<description><p>Marking how much I need to saw off.</p></description>
+		[/ptwsgallery]
+	Gets turned into this when the entry is saved:
+		[ptwsgallery]
+			<description></p><p>Marking how much I need to saw off.</p><p></description>
+		[/ptwsgallery]
+	Which is clearly badly formed f*&%ing XML and ruins this plugin's content.
+	Thanks, Wordpress.
+*/
+
 function ptwsgallery_shortcode( $atts, $content = null ) {
 	if ($content == null) {
 		return '';
 	}
+	return 'FART' . $content . 'FART';
 	$emit = '';
-    $sxi = new SimpleXmlIterator($content);
-
-    for ($sxi->rewind(); $sxi->valid(); $sxi->next() ) {
-
-        if ($sxi->key() == 'photo') {
-			$emit .= ' found photo';
-        }
-        if ($sxi->hasChildren()) {
-			$emit .= ' found children';
-        }
-    }
-
-	return '<span>' . $emit . '</span>';
+	try {
+    	$sxe = simplexml_load_string($content, 'SimpleXMLIterator');
+    	for ($sxe->rewind(); $sxe->valid(); $sxe->next()) {
+    	    if ($sxe->hasChildren()) {
+    	        foreach ($sxe->getChildren() as $element=>$value) {
+    	            $emit .= $value->species . '<br />';
+    	        }
+    	    }
+    	}
+	}
+	catch(Exception $e) {
+    	$emit .= $e->getMessage();
+	}
+	return $emit;
 }
 
 add_shortcode( 'ptwsgallery', 'ptwsgallery_shortcode' );
@@ -288,10 +309,14 @@ function ptws_test() {
     exit;
 }
 
+// http://wordpress.stackexchange.com/questions/46894/why-is-wordpress-changing-my-html-code
+// https://wordpress.org/plugins/wpautop-control/
 
 if (!is_admin()) {
     add_action('wp_print_scripts', 'ptws_enqueue_scripts');
     add_action('wp_print_styles', 'ptws_enqueue_styles');
+    remove_filter('the_content', 'wpautop');
+    remove_filter('the_excerpt', 'wpautop');
 } else {
 /*    add_filter('plugin_action_links','ptws_add_settings_link', 10, 2 );*/
 	add_action('admin_init', 'ptws_admin_init');
