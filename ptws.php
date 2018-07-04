@@ -72,6 +72,7 @@ function ptws_append_image_and_comments($p, $picContainer, $commentFlag) {
         if ($p->count() > 0) {
             foreach ($p->children() as $child) {
                 if ($child->getName() == 'description') {
+                    // http://stackoverflow.com/questions/3418019/simplexml-append-one-tree-to-another
                     $domDesc = dom_import_simplexml($child);
                     $domDesc = $domComContainer->ownerDocument->importNode($domDesc, TRUE);
                     // Append the <cat> to <c> in the dictionary
@@ -243,9 +244,6 @@ function ptwsgallery_shortcode( $atts, $content = null ) {
                     ptws_append_image_and_comments($p, $picContainer, $commentFlag);
                 }
             }
-        }
-        if ($commentFlag == TRUE) {
-            $emit .= "coommments";            
         }
         $emit .= $fixedGalXML->asXML() . "\n";
     }

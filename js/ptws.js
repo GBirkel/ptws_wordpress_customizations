@@ -83,8 +83,8 @@ jQuery(document).ready(function($) {
         enabled: true,
         centerArea: 0.6,
         center: false,
-        breakpoint: 980,
-        breakpointCenterArea: 0.8
+        breakpoint: 1100,
+        breakpointCenterArea: 0.7
     },
     deeplinking: {
       enabled: false,
