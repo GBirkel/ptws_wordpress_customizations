@@ -3,7 +3,7 @@
 Plugin Name: Poking Things With Sticks Extensions
 Plugin URI:  http://www.pokingthingswithsticks.com
 Description: This plugin supports all the non-standard WP stuff I do on PTWS.  Among other things, it finds recent posted pictures on my Flickr feed and integrates them with recent WP posts in a fancypants way
-Version:     1.0
+Version:     1.4
 Author:      Pokingthingswithsticks
 Author URI:  http://www.pokingthingswithsticks.com
 License:     MIT
@@ -19,7 +19,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
 global $ptws_db_version;
-$ptws_db_version = '1.0';
+$ptws_db_version = '1.4';
 
 include_once('ptws-libs.php');
 require_once('afgFlickr/afgFlickr.php');
@@ -30,30 +30,27 @@ function ptws_activate() {
 }
 
 
-function my_plugin_initialize() {
-    if( is_admin() && get_option( 'my_plugin_activation' ) == 'just-activated' ) {
-    delete_option( 'my_plugin_activation' );
-        flush_rewrite_rules();
-    }
-}
-
-
 function ptws_install() {
     global $wpdb;
     global $ptws_db_version;
 
     $charset_collate = $wpdb->get_charset_collate();
+    echo 'Heres the debug. ';
+    echo get_option( "ptws_db_version" ) . ' ';
+    echo $ptws_db_version . ' ';
 
-    $installed_ver = get_option( "ptws_db_version" );
+    $wpdb->show_errors();
 
     // http://php.net/manual/en/function.version-compare.php
-    if (version_compare( $installed_ver, $ptws_db_version ) < 0) {
+    if (version_compare( get_option( "ptws_db_version" ), $ptws_db_version, '<' )) {
+        echo 'Making a table. ';
 
         $table_name = $wpdb->prefix . 'ptwsflickrcache';
+        echo $table_name . ' ';
 
         $sql = "CREATE TABLE $table_name (
             id mediumint(9) NOT NULL AUTO_INCREMENT,
-            flickr_id text NOT NULL,
+            flickr_id varchar(32) NOT NULL,
             title text,
             width int UNSIGNED,
             height int UNSIGNED,
@@ -73,19 +70,19 @@ function ptws_install() {
         dbDelta( $sql );
 
         update_option( "ptws_db_version", $ptws_db_version );
-    } else {
-        add_option( 'ptws_db_version', $ptws_db_version );
     }
+
+    $wpdb->hide_errors();
 }
 
-
+/*
 function ptws_update_db_check() {
     global $ptws_db_version;
-    if (version_compare( get_site_option( 'ptws_db_version' ), $ptws_db_version ) < 0) {
+    if (version_compare( get_site_option( 'ptws_db_version' ), $ptws_db_version, '<' )) {
         ptws_install();
     }
 }
-
+*/
 
 /*
 function add_query_vars_filter( $vars ){
@@ -338,7 +335,7 @@ function ptws_enqueue_styles() {
 function ptws_admin_init() {
 
     if (is_admin() && get_option( 'ptws_plugin_activation' ) == 'just-activated' ) {
-    delete_option( 'ptws_plugin_activation' );
+        delete_option( 'ptws_plugin_activation' );
         ptws_install();
     }
 
@@ -600,8 +597,6 @@ function ptws_test() {
 }
 
 
-register_activation_hook( __FILE__, 'ptws_activate' );
-
 if (!is_admin()) {
     add_action('wp_print_scripts', 'ptws_enqueue_scripts');
     add_action('wp_print_styles', 'ptws_enqueue_styles');
@@ -611,8 +606,9 @@ if (!is_admin()) {
     remove_filter('the_content', 'wpautop');
     remove_filter('the_excerpt', 'wpautop');
 } else {
+    register_activation_hook( __FILE__, 'ptws_activate' );
 /*    add_filter('plugin_action_links','ptws_add_settings_link', 10, 2 );*/
-    add_action('plugins_loaded', 'ptws_update_db_check' );
+//    add_action('plugins_loaded', 'ptws_update_db_check' );
 	add_action('admin_init', 'ptws_admin_init');
 	add_action('admin_menu', 'ptws_admin_menu');
 	add_action('wp_ajax_ptws_gallery_auth', 'ptws_auth_init');
