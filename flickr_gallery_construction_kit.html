@@ -81,7 +81,7 @@ function keyHandler(e) {
         key = e.which - 32;
     }
     if (key == 27) {		// 'ESC'
-    	if (e.shiftKey) {
+    	if (!e.shiftKey) {
 			markUsed();
 		}
 		clearTemplate();
@@ -625,8 +625,8 @@ function clearTemplate() {
 
 </textarea>
 
-<input type=button value="Clear Template (ESC)" name="clearTemplate" id="clearButton" />
-<input type=button value="Mark As Used, Then Clear (Shift-ESC)" name="markUsed" id="useButton" />
+<input type=button value="Mark As Used, Then Clear (ESC)" name="markUsed" id="useButton" />
+<input type=button value="Clear (Shift-ESC)" name="clearTemplate" id="clearButton" />
 
 <form>
 

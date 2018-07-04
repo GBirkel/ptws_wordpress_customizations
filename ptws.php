@@ -65,22 +65,26 @@ function ptws_append_image_and_comments($p, $picContainer, $commentFlag) {
     $objImg->addAttribute('style', 'max-width:800px;');
     $objImg->addAttribute('src', (string)$p['thumbnail']);
 
-    if ($commentFlag) {
-        $commentSubContainer = $picContainer->addChild('div');
-        $commentSubContainer->addAttribute('class', 'imgComment');
-        $domComContainer = dom_import_simplexml($commentSubContainer);
-        if ($p->count() > 0) {
-            foreach ($p->children() as $child) {
-                if ($child->getName() == 'description') {
-                    // http://stackoverflow.com/questions/3418019/simplexml-append-one-tree-to-another
-                    $domDesc = dom_import_simplexml($child);
-                    $domDesc = $domComContainer->ownerDocument->importNode($domDesc, TRUE);
-                    // Append the <cat> to <c> in the dictionary
-                    $domComContainer->appendChild($domDesc);
-                }
-            }
+    if (!$commentFlag) { return; }
+    if ($p->count() < 1) { return; }
+    $descriptionElement = null;
+    // Only respect one description element - the last one in the structure
+    foreach ($p->children() as $child) {
+        if ($child->getName() == 'description') {
+            // Note the adding of the blank 'value' parameter, to force '<div></div>' instead of '<div/>'
+            $descriptionElement = $child;
         }
     }
+    if ($descriptionElement == null) { return; }
+
+    $commentSubContainer = $picContainer->addChild('div', '');
+    $commentSubContainer->addAttribute('class', 'imgComment');
+    // http://stackoverflow.com/questions/3418019/simplexml-append-one-tree-to-another
+    $domComContainer = dom_import_simplexml($commentSubContainer);
+    $domDesc = dom_import_simplexml($descriptionElement);
+    $domDesc = $domComContainer->ownerDocument->importNode($domDesc, TRUE);
+    // Append the <cat> to <c> in the dictionary
+    $domComContainer->appendChild($domDesc);
 }
 
 
@@ -221,7 +225,7 @@ function ptwsgallery_shortcode( $atts, $content = null ) {
             }
         }
 
-        $fixedGalXML = simplexml_load_string('<div class="images" />');
+        $fixedGalXML = new SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><div class="images"></div>', null, false);
 
         if ((count($fixedgalleryIDs) == 3) && (count($itemsInPortrait) == 1)) {
             // Append both items that are not in portrait mode to the same first div
