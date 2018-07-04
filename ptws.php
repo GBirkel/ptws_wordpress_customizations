@@ -55,6 +55,29 @@ if (!function_exists("ptws_add_settings_link")) {
 */
 
 
+function ptwsgallery_shortcode( $atts, $content = null ) {
+	if ($content == null) {
+		return '';
+	}
+	$emit = '';
+    $sxi = new SimpleXmlIterator($content);
+
+    for ($sxi->rewind(); $sxi->valid(); $sxi->next() ) {
+
+        if ($sxi->key() == 'photo') {
+			$emit .= ' found photo';
+        }
+        if ($sxi->hasChildren()) {
+			$emit .= ' found children';
+        }
+    }
+
+	return '<span>' . $emit . '</span>';
+}
+
+add_shortcode( 'ptwsgallery', 'ptwsgallery_shortcode' );
+
+
 function ptws_enqueue_scripts() {
     wp_enqueue_script('jquery');
     wp_enqueue_script('ptws_script', PTWS_PLUGIN_URL . "/js/ptws.js" , array('jquery'));
