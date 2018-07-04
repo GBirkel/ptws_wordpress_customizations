@@ -164,9 +164,8 @@ function ptws_append_image_and_comments($p, $picContainer, $commentFlag) {
 		[ptwsgallery]
 			<description></p><p>Marking how much I need to saw off.</p><p></description>
 		[/ptwsgallery]
-	Which is clearly badly formed XML and ruins this plugin's content.  Thnanks, Wordpress.
+	Which is clearly badly formed XML and ruins this plugin's content.  Thanks, Wordpress.
     The only available workaround is to turn off automatic paragraph insertion in all entries, sitewide.
-	Thanks, Wordpress.
 */
 
 

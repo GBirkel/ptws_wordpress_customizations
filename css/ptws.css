@@ -1,3 +1,9 @@
+/******** General customization *******/
+
+div.comment-respond {
+	margin-left: 1em;margin-right: 1em;
+}
+
 /******** Images and "image strips" (grids of image thumbnails) *******/
 
 .content .entry a > img {
@@ -12,7 +18,7 @@
 	clear:left;
 	justify-content: center;
 	padding:0;
-	margin: 0.7em 0 0.7em 0;
+	margin: 0.7em 1em 0.7em 1em;
 }
 .content .entry div.images img {
 	width:95%;
@@ -491,7 +497,7 @@ ul.qa > li.qaq span.qaq:first-child:hover, div.qaq:hover, h4.qaq:hover {
 
 .content pre {
 	background: #F5F5F5;
-	margin: 1em 0 1em 0;
+	margin: 1em 1em 1em 1em;
 	padding: 0.5em 1em 0.5em 1em;
 	-moz-border-radius: 3px;
 	-khtml-border-radius: 3px;
@@ -615,7 +621,7 @@ ul.qa > li.qaq span.qaq:first-child:hover, div.qaq:hover, h4.qaq:hover {
 	width: auto !important;
 	margin: 0 !important;
 	padding: 0 !important;
-	z-index: 2147483647 !important;
+	z-index: 2147483646 !important;
 	top: 0 !important;
 	left: 0 !important;
 	bottom: 0 !important;
@@ -637,9 +643,7 @@ ul.qa > li.qaq span.qaq:first-child:hover, div.qaq:hover, h4.qaq:hover {
 	top: 0;
 	display: block;
 	overflow: hidden;
-	
 	height: 100%;
-	width: 100%;
 }
 
 .royalSlider.rsAutoHeight,
@@ -648,7 +652,6 @@ ul.qa > li.qaq span.qaq:first-child:hover, div.qaq:hover, h4.qaq:hover {
 }
 
 .rsContent {
-	width: 100%;
 	height: 100%;
 	position: relative;
 }
@@ -778,8 +781,8 @@ img.rsImg {
 
 
 .rsMinW .rsArrow {
-	height: 32px;
-	width: 32px;
+	height: 29px;
+	width: 29px;
 	position: absolute;
 	display: block;
 	cursor: pointer;
@@ -787,78 +790,58 @@ img.rsImg {
 }
 
 .rsMinW .rsArrowLeft {
-	right: 38px; top: 7px;
-	border-style:solid;
-	border-color: rgba(0, 0, 0, 0.30);
-	border-width: 1px;
-	border-radius: 8px 0px 0px 8px; 
+	left: 1em; top: 0px;
 }
 .rsMinW .rsArrowRight {
-	right: 7px; top: 7px;
-	border-style:solid;
-	border-color: rgba(0, 0, 0, 0.30);
-	border-width: 1px;
-	border-radius: 0px 8px 8px 0px;
+	right: 1em; top: 0px;
 }
 
 .rsMinW .rsArrowIcn {		
-	width: 24px;
-	height: 24px;
-	margin-top: 3px;
-	margin-left: 3px;
+	width: 29px;
+	height: 29px;
 	position: absolute;
 	cursor: pointer;	
-	background: url('/wp-content/plugins/new-royalslider/lib/royalslider/skins/minimal-white/rs-minimal-white.png') transparent;
-	border-radius: 8px;
+	background: url('../images/rs-minimal-white.png') transparent;
 }
 .rsMinW .rsArrowIcn:hover {
 
 }
 
 
-.rsMinW.rsHor .rsArrowLeft .rsArrowIcn { background-position: -68px -36px; }
-.rsMinW.rsHor .rsArrowRight .rsArrowIcn { background-position: -68px -68px; }
+.rsMinW.rsHor .rsArrowLeft .rsArrowIcn { background-position: -66px -34px }
+.rsMinW.rsHor .rsArrowRight .rsArrowIcn { background-position: -66px -66px; }
 
 .rsMinW.rsVer .rsArrowLeft .rsArrowIcn { background-position: -100px -36px; }
 .rsMinW.rsVer .rsArrowRight .rsArrowIcn { background-position: -100px -68px; }
 
-.rsMinW .rsArrowDisabled .rsArrowIcn { opacity: .3 !important; filter: alpha(opacity=30);  *display: none; }
+.rsMinW .rsArrowDisabled .rsArrowIcn { opacity: 0 !important; filter: alpha(opacity=0);  *display: none; }
 
 
 .rsMinW .rsBullets {
 	position: absolute;
-	top: 11px;
-	right: 76px;
+	top: 0px;
+	left: 50%;
 	z-index: 35;
-	padding: 2px 8px 7px 4px;
 	height: auto;
-	border-radius: 8px;
-	border-style:solid;
-	border-width: 1px;
-	border-color: rgba(0, 0, 0, 0.30);
 	text-align: center;
 	line-height: 6px;
 	overflow: hidden;
 }
 .rsMinW .rsBullet {
-	width: 6px;
-	height: 6px;
 	display: inline-block;
 	*display:inline; 
 	*zoom:1;
-	padding: 6px 5px 6px 4px;
+	padding: 0px 2px 0px 2px;
 }
 .rsMinW .rsBullet span {
 	display: block;
-	width: 6px;
-	height: 6px;
+	width: 9px;
+	height: 9px;
 	border-radius: 50%;
-	background: #888;
-	background: rgba(255,255,255,0.5);
-	box-shadow: 0 0 1px 1px rgba(0, 0, 0, 0.1);
+	border: 1px solid rgba(0, 0, 0, 0.3);
 }
 .rsMinW .rsBullet.rsNavSelected span {
-	background: #CCC;
+	background: rgba(0, 0, 0, 0.3);
 }
 
 
@@ -940,7 +923,7 @@ img.rsImg {
 	margin-left: -8px;
 	position: absolute;	
 	cursor: pointer;	
-	background: url('/wp-content/plugins/new-royalslider/lib/royalslider/skins/minimal-white/rs-minimal-white.png');
+	background: url('../images/rs-minimal-white.png');
 }
 
 .rsMinW.rsWithThumbsHor .rsThumbsArrowLeft .rsThumbsArrowIcn { background-position: -128px -32px; }
@@ -1042,7 +1025,7 @@ img.rsImg {
 	width: 32px;
 	height: 32px;
 
-	background: url('/wp-content/plugins/new-royalslider/lib/royalslider/skins/minimal-white/rs-minimal-white.png') 0 0 transparent;
+	background: url('../images/rs-minimal-white.png') 0 0 transparent;
 }
 .rsMinW .rsFullscreenIcn:hover {
 	opacity: 0.8;
@@ -1071,7 +1054,7 @@ img.rsImg {
 	-moz-transition: .3s;
 	transition: .3s;
 
-	background:url(/wp-content/plugins/new-royalslider/lib/royalslider/skins/minimal-white/rs-minimal-white.png) no-repeat 0 -32px;
+	background:url('../images/rs-minimal-white.png') no-repeat 0 -32px;
 	background-color: #000;
 	background-color: rgba(0,0,0,0.75);
 	*background-color: #000;
@@ -1107,7 +1090,7 @@ img.rsImg {
 	margin: 6px;
 	width: 32px;
 	height: 32px;
-	background: url('/wp-content/plugins/new-royalslider/lib/royalslider/skins/minimal-white/rs-minimal-white.png') -64px 0;
+	background: url('../images/rs-minimal-white.png') -64px 0;
 	background-color: #000;
 	background-color: rgba(0,0,0,0.75);
 	*background-color: #000;
@@ -1169,7 +1152,12 @@ img.rsImg {
 
 /* royalSlider custom shunt-in */
 .royalSlider.rsMinW .rsSlide.rsActiveSlide {
-	margin-left:1em;
+	/* margin-left:1em; */
+	z-index:20;
+}
+.royalSlider.rsMinW .rsSlide.rsActiveSlide img {
+/* Was used to make the main slide stand out when overlapping other slides */
+/*	box-shadow: 1px 1px 9px -1px rgba(255, 255, 255, 0.51); */
 }
 .royalSlider .rsSlide img {
 	opacity: 0.45;
@@ -1230,8 +1218,8 @@ img.rsImg {
 .royalSlider.fullWidth {
 	width: 100%;
 	/*  height: auto !important; */
-	height: 520px; 
-	margin: 0.75empx auto;
+	height: 560px;
+	margin: 0 auto;
 }
 /*
 @media screen and (max-device-width: 1024px) {
