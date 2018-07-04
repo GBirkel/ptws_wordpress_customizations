@@ -81,10 +81,10 @@ jQuery(document).ready(function($) {
     transitionType:'move',
     visibleNearby: {
         enabled: true,
-        centerArea: 0.6,
+        centerArea: 0.7,
         center: false,
-        breakpoint: 1100,
-        breakpointCenterArea: 0.7
+        breakpoint: 1024,
+        breakpointCenterArea: 0.8
     },
     deeplinking: {
       enabled: false,
