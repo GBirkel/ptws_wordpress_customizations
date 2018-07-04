@@ -20,12 +20,14 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 require_once('afgFlickr/afgFlickr.php');
 
+
 function add_query_vars_filter( $vars ){
    $vars[] = "ptwsdo";
    return $vars;
 }
 add_filter( 'query_vars', 'add_query_vars_filter' );
 
+/*
 $do_var = (get_query_var('ptwsdo')) ? get_query_var('ptwsdo') : false;
 if ($do_var) {
 	if ($do_var == 'test') {
@@ -34,9 +36,22 @@ if ($do_var) {
 	    echo '</div>';
 	    die();
 	}
-} else {
-	define('PTWS_PLUGIN_URL', plugins_url() . '/' . basename(dirname(__FILE__)));
+} */
+
+if (!function_exists("ptws_add_settings_link")) {
+	function ptws_add_settings_link($links, $file) {
+	    static $this_plugin;
+	    if (!$this_plugin) $this_plugin = plugin_basename(__FILE__);
+	    if ($file == $this_plugin){
+	        $settings_link = '<a href="ptws-settings.php?page=general">'.__("Settings", "default").'</a>';
+	        array_unshift($links, $settings_link);
+	    }
+	    return $links;
+	}
 }
+
+define('PTWS_PLUGIN_URL', plugins_url() . '/' . basename(dirname(__FILE__)));
+
 
 function ptws_enqueue_scripts() {
     wp_enqueue_script('jquery');
@@ -50,6 +65,8 @@ function ptws_enqueue_styles() {
 if (!is_admin()) {
     add_action('wp_print_scripts', 'ptws_enqueue_scripts');
     add_action('wp_print_styles', 'ptws_enqueue_styles');
+} else {
+    add_filter('plugin_action_links','ptws_add_settings_link', 10, 2 );
 }
 
 ?>

@@ -16,7 +16,7 @@ function ptws_error($error_msg) {
     return "<h3>Awesome Flickr Gallery Error - $error_msg</h3>";
 }
 
-
+/*
 class ptws_parse_xml_string {
 
     // XML parser variables 
@@ -95,6 +95,36 @@ class ptws_parse_xml_string {
         array_push($this->errors, $msg);
     } 
 } 
+*/
+
+
+// http://php.net/manual/en/class.simplexmliterator.php
+
+function ptws_parse_gallery_xml($text) {
+    $sxi = new SimpleXmlIterator($text);
+    return ptws_parse_gallery_to_array($sxi)
+}
+
+
+function ptws_parse_gallery_to_array($sxi) {
+    $a = array();
+    for ($sxi->rewind(); $sxi->valid(); $sxi->next() ) {
+
+        if ($sxi->key() == 'photo') {
+            
+        }
+
+        if (!array_key_exists($sxi->key(), $a)) {
+            $a[$sxi->key()] = array();
+        }
+        if ($sxi->hasChildren()) {
+            $a[$sxi->key()][] = ptws_parse_gallery_to_array($sxi->current());
+        } else {
+            $a[$sxi->key()][] = strval($sxi->current());
+        }
+    }
+    return $a;
+}
 
 
 ?>
