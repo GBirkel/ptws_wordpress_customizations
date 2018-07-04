@@ -18,10 +18,61 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
+global $ptws_db_version;
+$ptws_db_version = '1.0';
+
 include_once('ptws-libs.php');
 require_once('afgFlickr/afgFlickr.php');
 
-ptws_create_afgFlickr_obj();
+
+function ptws_install() {
+    global $wpdb;
+    global $ptws_db_version;
+
+    $charset_collate = $wpdb->get_charset_collate();
+
+    $installed_ver = get_option( "ptws_db_version" );
+
+    // http://php.net/manual/en/function.version-compare.php
+    if (version_compare( $installed_ver, $ptws_db_version ) < 0) {
+
+        $table_name = $wpdb->prefix . 'ptwsflickrcache';
+
+        $sql = "CREATE TABLE $table_name (
+            id MEDIUMINT(9) NOT NULL AUTO_INCREMENT,
+            flickr_id TEXT NOT NULL,
+            title TEXT,
+            width INT UNSIGNED,
+            height INT UNSIGNED,
+            link_url TEXT,
+            thumbnail_url TEXT,
+            comments INT UNSIGNED DEFAULT 0 NOT NULL,
+            description TEXT DEFAULT '' NOT NULL,
+            taken_time DATETIME DEFAULT '0000-00-00 00:00:00' NOT NULL,
+            uploaded_time DATETIME DEFAULT '0000-00-00 00:00:00' NOT NULL,
+            updated_time DATETIME DEFAULT '0000-00-00 00:00:00' NOT NULL,
+            cached_time DATETIME DEFAULT '0000-00-00 00:00:00' NOT NULL,
+            UNIQUE (flickr_id),
+            PRIMARY KEY (id)
+        ) $charset_collate;";
+
+        require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
+        dbDelta( $sql );
+
+        update_option( "ptws_db_version", $ptws_db_version );
+    } else {
+        add_option( 'ptws_db_version', $ptws_db_version );
+    }
+}
+
+
+function ptws_update_db_check() {
+    global $ptws_db_version;
+    if ( get_site_option( 'ptws_db_version' ) != $ptws_db_version ) {
+        ptws_install();
+    }
+}
+
 
 /*
 function add_query_vars_filter( $vars ){
@@ -81,8 +132,10 @@ function ptws_append_image_and_comments($p, $picContainer, $commentFlag) {
     $commentSubContainer->addAttribute('class', 'imgComment');
     // http://stackoverflow.com/questions/3418019/simplexml-append-one-tree-to-another
     $domComContainer = dom_import_simplexml($commentSubContainer);
+
     $domDesc = dom_import_simplexml($descriptionElement);
     $domDesc = $domComContainer->ownerDocument->importNode($domDesc, TRUE);
+
     // Append the <cat> to <c> in the dictionary
     $domComContainer->appendChild($domDesc);
 }
@@ -103,7 +156,8 @@ function ptws_append_image_and_comments($p, $picContainer, $commentFlag) {
 		[ptwsgallery]
 			<description></p><p>Marking how much I need to saw off.</p><p></description>
 		[/ptwsgallery]
-	Which is clearly badly formed f*&%ing XML and ruins this plugin's content.
+	Which is clearly badly formed XML and ruins this plugin's content.  Thnanks, Wordpress.
+    The only available workaround is to turn off automatic paragraph insertion in all entries, sitewide.
 	Thanks, Wordpress.
 */
 
@@ -191,7 +245,6 @@ function ptwsgallery_shortcode( $atts, $content = null ) {
             }
         }
         $emit .= '</div>';
-
     }
     if ($fixedgalleryIDs) {
 
@@ -270,6 +323,7 @@ function ptws_enqueue_styles() {
 
 
 function ptws_admin_init() {
+    ptws_create_afgFlickr_obj();
     register_setting('ptws_settings_group', 'ptws_api_key');
     register_setting('ptws_settings_group', 'ptws_api_secret');
     register_setting('ptws_settings_group', 'ptws_user_id');
@@ -444,7 +498,62 @@ function ptws_admin_html_page() {
 			</div>
 		</div>
     </form>
+
 <?php
+
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'ptwsflickrcache';
+
+    $photo_cache_count = $wpdb->get_var( "SELECT COUNT(*) FROM $table_name" );
+    echo "<p>Flickr cache contains {$user_count} entries.</p>";
+
+    //$result = $wpdb->get_results('SELECT * FROM ' . $table_name . ' LIMIT 10');
+
+    //$ten_posts = $wpdb->get_results('SELECT * FROM ' . $wpdb->posts . ' LIMIT 10');
+    // post_modified, post_modified_gmt DATETIME
+/*
+    $wpdb->insert(
+            $table_name,
+            array(
+                'flickr_id'     => $flickr_id,
+                'title'         => $flickr_title,
+                'width'     => $flickr_id,
+                'height'     => $flickr_id,
+                'link_url'     => $flickr_id,
+                'thumbnail_url'     => $flickr_id,
+                'comments'     => $flickr_id,
+                'description'     => $flickr_id,
+                'taken_time'     => $flickr_id,
+                'uploaded_time'     => $flickr_id,
+                'updated_time'    => $flickr_id,
+                'cached_time'   => $_POST['meta_key']
+            ),
+            array( 
+                '%s', 
+                '%s', 
+                '%d',
+                '%d',
+                '%s', 
+                '%s', 
+                '%s', 
+                '%s', 
+                '%s', 
+                '%s', 
+                '%s', 
+                '%s'
+            ) 
+        );
+
+    $wpdb->query(
+        $wpdb->prepare(
+            "DELETE FROM $table_name
+            WHERE post_id = %d
+            AND meta_key = %s",
+            $post_id,
+            $key
+        )
+    );
+*/
 }
 
 
@@ -474,10 +583,13 @@ function ptws_test() {
 if (!is_admin()) {
     add_action('wp_print_scripts', 'ptws_enqueue_scripts');
     add_action('wp_print_styles', 'ptws_enqueue_styles');
+    // To prevent corruption of entries by the auto-processor
     remove_filter('the_content', 'wpautop');
     remove_filter('the_excerpt', 'wpautop');
 } else {
 /*    add_filter('plugin_action_links','ptws_add_settings_link', 10, 2 );*/
+    register_activation_hook( __FILE__, 'ptws_install' );
+    add_action('plugins_loaded', 'ptws_update_db_check' );
 	add_action('admin_init', 'ptws_admin_init');
 	add_action('admin_menu', 'ptws_admin_menu');
 	add_action('wp_ajax_ptws_gallery_auth', 'ptws_auth_init');

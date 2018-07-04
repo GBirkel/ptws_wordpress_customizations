@@ -13,8 +13,7 @@ function ptws_create_afgFlickr_obj() {
 
 
 function ptws_error($error_msg) {
-    return "<h3>Awesome Flickr Gallery Error - $error_msg</h3>";
+    return "<h3>PTWS Error - $error_msg</h3>";
 }
-
 
 ?>
