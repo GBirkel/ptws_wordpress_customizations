@@ -3,7 +3,7 @@
 Plugin Name: Poking Things With Sticks Extensions
 Plugin URI:  http://www.pokingthingswithsticks.com
 Description: This plugin supports all the non-standard WP stuff I do on PTWS.  Among other things, it finds recent posted pictures on my Flickr feed and integrates them with recent WP posts in a fancypants way
-Version:     1.4
+Version:     1.5
 Author:      Pokingthingswithsticks
 Author URI:  http://www.pokingthingswithsticks.com
 License:     MIT
@@ -19,7 +19,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
 global $ptws_db_version;
-$ptws_db_version = '1.4';
+$ptws_db_version = '1.5';
 
 include_once('ptws-libs.php');
 require_once('afgFlickr/afgFlickr.php');
@@ -35,19 +35,14 @@ function ptws_install() {
     global $ptws_db_version;
 
     $charset_collate = $wpdb->get_charset_collate();
-    echo 'Heres the debug. ';
-    echo get_option( "ptws_db_version" ) . ' ';
-    echo $ptws_db_version . ' ';
-
-    $wpdb->show_errors();
 
     // http://php.net/manual/en/function.version-compare.php
     if (version_compare( get_option( "ptws_db_version" ), $ptws_db_version, '<' )) {
-        echo 'Making a table. ';
 
         $table_name = $wpdb->prefix . 'ptwsflickrcache';
-        echo $table_name . ' ';
 
+        // last_seen_in_post references a field in the Wordpress posts table
+        // https://codex.wordpress.org/Database_Description#Table:_wp_posts
         $sql = "CREATE TABLE $table_name (
             id mediumint(9) NOT NULL AUTO_INCREMENT,
             flickr_id varchar(32) NOT NULL,
@@ -62,17 +57,19 @@ function ptws_install() {
             uploaded_time datetime DEFAULT 0 NOT NULL,
             updated_time datetime DEFAULT 0 NOT NULL,
             cached_time datetime DEFAULT CURRENT_TIMESTAMP NOT NULL,
+            auto_placed tinyint(1) DEFAULT 0,
+            last_seen_in_post bigint(20) unsigned,
             CONSTRAINT unique_flickr_id UNIQUE (flickr_id),
             PRIMARY KEY (id)
         ) $charset_collate;";
 
-        require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
+        if (!function_exists('dbDelta')) {
+            require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
+        }
         dbDelta( $sql );
 
         update_option( "ptws_db_version", $ptws_db_version );
     }
-
-    $wpdb->hide_errors();
 }
 
 /*
@@ -173,42 +170,41 @@ function ptws_append_image_and_comments($p, $picContainer, $commentFlag) {
 
 
 function ptwsgallery_shortcode( $atts, $content = null ) {
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'ptwsflickrcache';
+
 	if ($content == null) {
 		return '';
 	}
 	try {
+        // Handy PHP builtin to parse XML and provide an iterator
     	$sxe = simplexml_load_string($content, 'SimpleXMLIterator');
 	}
 	catch(Exception $e) {
-    	return $e->getMessage();
+    	return '<p>ptwsgallery shortcode content XML parsing error: ' . $e->getMessage() . '</p>';
 	}
     $sxe->rewind();
     $encloser = $sxe->getName();
     if ($encloser != 'ptwsgallery') {
         return '<p>ptwsgallery shortcode must contain a single ptwsgallery element</p>';
     }
+
     $emit = '';
     $photos = array();
     $fixedgalleryIDs = array();
     $swipegalleryIDs = array();
+
     for (; $sxe->valid(); $sxe->next()) {
         $majorSection = $sxe->key();
         if ($majorSection == 'photos') {
-            if ($sxe->hasChildren()) {
-                foreach ($sxe->getChildren() as $element=>$value) {
-                    if ($element == 'photo') {
-                        if (isset($value['id'])) {
-                            $photos[(string)$value['id']] = $value;
-                        }
-                    }
-                }
-            }
+            // Ignoring these sections now.
         } elseif ($majorSection == 'swipegallery') {
             if ($sxe->hasChildren()) {
                 foreach ($sxe->getChildren() as $element=>$value) {
                     if ($element == 'galleryitem') {
                         if (isset($value['id'])) {
                             array_push($swipegalleryIDs, (string)$value['id']);
+                            $photos[(string)$value['id']] = $value;
                         }
                     }
                 }
@@ -219,18 +215,48 @@ function ptwsgallery_shortcode( $atts, $content = null ) {
                     if ($element == 'galleryitem') {
                         if (isset($value['id'])) {
                             array_push($fixedgalleryIDs, (string)$value['id']);
+                            $photos[(string)$value['id']] = $value;
                         }
                     }
                 }
             }
         } else {
-            $emit .= '<p>Unrecognized major section ' . $majorSection . '. Must be photos, fixedgallery, or swipegallery.</p>';
+            $emit .= '<p>Unrecognized major section ' . $majorSection . '. Must be fixedgallery, or swipegallery.</p>';
         }
     }
+    if ($photos) {
+        $emit .= "\n<p>Photo IDs found: \n";
+        foreach($photos as $pid=>$element) {
+            $emit .= $pid;
+            $record_exists = get_flickr_cache_record($pid);
+            if ($record_exists == null) {
+                $wpdb->insert(
+                    $table_name,
+                    array(
+                        'flickr_id' => $pid,
+                        'cached_time' => 0,
+                        'last_seen_in_post' => $flickr_id
+                    ),
+                    array( 
+                        '%s', 
+                        '%d',
+                        '%s'
+                    ) 
+                );
+                $emit .= "(a)";
+                $photos[$pid] = get_flickr_cache_record($pid);
+            } else {
+                $photos[$pid] = $record_exists;
+            }
+            $emit .= ", ";
+        }
+        $emit .= "</p>\n";
+    }
+
     if ($swipegalleryIDs) {
         $emit .= "\n<div class='royalSlider heroSlider fullWidth rsMinW'>\n";
         foreach($swipegalleryIDs as $pid) {
-            if (isset($photos[$pid])) {
+            if ($photos[$pid]['cached_time'] > 0) {
                 $p = $photos[$pid];
                 $emit .= "  <div class='rsContent'>\n";
                 $emit .= '<a href="' . (string)$p['url'] . '" title="' . (string)$p['title'] . '">';
@@ -263,7 +289,7 @@ function ptwsgallery_shortcode( $atts, $content = null ) {
         $commentFlag = FALSE;
 
         foreach($fixedgalleryIDs as $pid) {
-            if (isset($photos[$pid])) {
+            if ($photos[$pid]['cached_time'] > 0) {
                 $p = $photos[$pid];
 
                 $wraw = floatval((int)$p['width']);
@@ -319,6 +345,23 @@ function ptwsgallery_shortcode( $atts, $content = null ) {
 
 
 add_shortcode( 'ptwsgallery', 'ptwsgallery_shortcode' );
+
+
+function get_flickr_cache_record($pid) {
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'ptwsflickrcache';
+    return $wpdb->get_row(
+        $wpdb->prepare( 
+            "
+                SELECT * 
+                FROM $table_name 
+                WHERE flickr_id = %s
+            ", 
+            $pid
+        ),
+        'ARRAY_A'
+    );
+}
 
 
 function ptws_enqueue_scripts() {
@@ -471,42 +514,6 @@ function ptws_admin_html_page() {
     			</table>
                 <br />
                 <input type="submit" name="submit" id="ptws_save_changes" class="button-primary" value="Save Changes" />
-                <br /><br />
-                <h3>Your Photostream Preview</h3>
-                <table class='widefat afg-settings-box'>
-                    <tr>
-                    	<th>If your Flickr Settings are correct, 5 of your recent photos from your Flickr photostream should appear here.</th>
-                    </tr>
-                    <tr>
-                    	<td>
-                    		<div style="margin-top:15px">
-<?php
-							    global $pf;
-							    if (get_option('ptws_flickr_token')) {
-							    	$rsp_obj = $pf->people_getPhotos(get_option('ptws_user_id'), array('per_page' => 5, 'page' => 1));
-							    } else {
-							    	$rsp_obj = $pf->people_getPublicPhotos(get_option('ptws_user_id'), NULL, NULL, 5, 1);
-							    }
-							    if (!$rsp_obj) {
-							    	echo ptws_error();
-							    } else {
-							        foreach($rsp_obj['photos']['photo'] as $photo) {
-							            $photo_url = "http://farm{$photo['farm']}.static.flickr.com/{$photo['server']}/{$photo['id']}_{$photo['secret']}_s.jpg";
-							            echo "<img src=\"$photo_url\"/>&nbsp;&nbsp;&nbsp;";
-							        }
-							    }
-?>
-
-							</div>
-                            <br />
-                            <span style="margin-top:15px">
-                                Note:  This preview is based on the Flickr Settings only.  Gallery Settings
-                                have no effect on this preview.  You will need to insert gallery code to a post
-                                or page to actually see the Gallery.
-                            </span>
-                        </td>
-                    </tr>
-                </table>
                 <br />
 				<input type="button" class="button-secondary"
 					value="Test"
@@ -521,8 +528,14 @@ function ptws_admin_html_page() {
     $table_name = $wpdb->prefix . 'ptwsflickrcache';
 
     $wpdb->show_errors();
-    $photo_cache_count = $wpdb->get_var( "SELECT COUNT(*) FROM $table_name" );
-    echo "<p>Flickr cache contains {$photo_cache_count} entries.</p>";
+    $cache_count = $wpdb->get_var( "SELECT COUNT(*) FROM $table_name" );
+    $cache_unresolved_count = $wpdb->get_var(
+        $wpdb->prepare( 
+            "SELECT COUNT(*) FROM $table_name WHERE cached_time = %d", 
+            0
+        )
+    );
+    echo "<p>Flickr cache contains {$cache_count} entries, with {$cache_unresolved_count} unresolved.</p>";
 
     //$result = $wpdb->get_results('SELECT * FROM ' . $table_name . ' LIMIT 10');
 
@@ -576,9 +589,11 @@ function ptws_admin_html_page() {
 }
 
 
-function ptws_test() {
+function ptws_flickr_connect_test() {
     session_start();
     global $pf;
+
+    echo '<h3>Your Photostream Preview</h3>';
 
     if (get_option('ptws_flickr_token')) {
     	$rsp_obj = $pf->people_getPhotos(get_option('ptws_user_id'), array('per_page' => 5, 'page' => 1));
@@ -588,10 +603,32 @@ function ptws_test() {
     if (!$rsp_obj) {
     	echo ptws_error();
     } else {
+?>
+        <table style='border-spacing:0;border:1px solid #e5e5e5;box-shadow: 0 1px 1px rgba(0, 0, 0, .04)'>
+            <tr>
+                <th style='text-align: left;line-height: 1.3em;font-size: 14px;padding:10px;'>If your Flickr Settings are correct, 5 of your recent photos from your Flickr photostream should appear here.</th>
+            </tr>
+            <tr>
+                <td style='padding: 8px 10px;color: #555;'>
+<?php
+
         foreach($rsp_obj['photos']['photo'] as $photo) {
             $photo_url = "http://farm{$photo['farm']}.static.flickr.com/{$photo['server']}/{$photo['id']}_{$photo['secret']}_s.jpg";
             echo "<img src=\"$photo_url\" />&nbsp;&nbsp;&nbsp;";
         }
+
+?>
+                    <br />
+                    <span style="margin-top:15px">
+                        Note:  This preview is based on the Flickr Settings only.  Gallery Settings
+                        have no effect on this preview.  You will need to insert gallery code to a post
+                        or page to actually see the Gallery.
+                    </span>
+                </td>
+            </tr>
+        </table>
+<?php
+
     }
     exit;
 }
@@ -612,7 +649,7 @@ if (!is_admin()) {
 	add_action('admin_init', 'ptws_admin_init');
 	add_action('admin_menu', 'ptws_admin_menu');
 	add_action('wp_ajax_ptws_gallery_auth', 'ptws_auth_init');
-	add_action('wp_ajax_ptws_test', 'ptws_test');
+	add_action('wp_ajax_ptws_test', 'ptws_flickr_connect_test');
 }
 
 ?>
