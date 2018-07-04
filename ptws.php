@@ -3,7 +3,7 @@
 Plugin Name: Poking Things With Sticks Extensions
 Plugin URI:  http://www.pokingthingswithsticks.com
 Description: This plugin supports all the non-standard WP stuff I do on PTWS.  Among other things, it finds recent posted pictures on my Flickr feed and integrates them with recent WP posts in a fancypants way
-Version:     1.6
+Version:     1.7
 Author:      Pokingthingswithsticks
 Author URI:  http://www.pokingthingswithsticks.com
 License:     MIT
@@ -19,7 +19,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
 global $ptws_db_version;
-$ptws_db_version = '1.6';
+$ptws_db_version = '1.7';
 
 include_once('ptws-libs.php');
 require_once('afgFlickr/afgFlickr.php');
@@ -130,18 +130,24 @@ function ptws_append_image_and_comments($p, $picContainer, $commentFlag) {
 
     if (!$commentFlag) { return; }
 
-    $descriptionElement = $p['description'];    // TODO is string needs to be XML frag
+    try {
+        // Handy PHP builtin to parse XML and provide an iterator
+        $sxe = simplexml_load_string($p['description'], 'SimpleXMLIterator');
+    }
+    catch(Exception $e) {
+        echo ptws_error('photo description XML parsing error: ' . $e->getMessage());
+    }
 
     $commentSubContainer = $picContainer->addChild('div', '');
     $commentSubContainer->addAttribute('class', 'imgComment');
     // http://stackoverflow.com/questions/3418019/simplexml-append-one-tree-to-another
-//    $domComContainer = dom_import_simplexml($commentSubContainer);
+    $domComContainer = dom_import_simplexml($commentSubContainer);
 
-//    $domDesc = dom_import_simplexml($descriptionElement);
-//    $domDesc = $domComContainer->ownerDocument->importNode($domDesc, TRUE);
+    $domDesc = dom_import_simplexml($sxe);
+    $domDesc = $domComContainer->ownerDocument->importNode($domDesc, TRUE);
 
     // Append the <cat> to <c> in the dictionary
-//    $domComContainer->appendChild($domDesc);
+    $domComContainer->appendChild($domDesc);
 }
 
 
@@ -222,17 +228,18 @@ function ptwsgallery_shortcode( $atts, $content = null ) {
         }
     }
     if ($photos) {
-        $emit .= "\n<p>Photo IDs found: \n";
+        //$emit .= "\n<p>Post " . get_the_ID() . ", Photo IDs found: \n";
         foreach($photos as $pid=>$element) {
-            $emit .= $pid;
-            $record_exists = get_flickr_cache_record($pid);
+            //$emit .= $pid;
+            $record_exists = ptws_get_flickr_cache_record($pid);
             if ($record_exists == null) {
+                $wpdb->show_errors();
                 $wpdb->insert(
                     $table_name,
                     array(
                         'flickr_id' => $pid,
                         'cached_time' => 0,
-                        'last_seen_in_post' => $flickr_id
+                        'last_seen_in_post' => get_the_ID()
                     ),
                     array( 
                         '%s', 
@@ -240,14 +247,15 @@ function ptwsgallery_shortcode( $atts, $content = null ) {
                         '%s'
                     ) 
                 );
-                $emit .= "(a)";
-                $photos[$pid] = get_flickr_cache_record($pid);
+                $wpdb->hide_errors();
+                //$emit .= "(a)";
+                $photos[$pid] = ptws_get_flickr_cache_record($pid);
             } else {
                 $photos[$pid] = $record_exists;
             }
-            $emit .= ", ";
+            //$emit .= ", ";
         }
-        $emit .= "</p>\n";
+        //$emit .= "</p>\n";
     }
 
     if ($swipegalleryIDs) {
@@ -340,10 +348,10 @@ function ptwsgallery_shortcode( $atts, $content = null ) {
 add_shortcode( 'ptwsgallery', 'ptwsgallery_shortcode' );
 
 
-function get_flickr_cache_record($pid) {
+function ptws_get_flickr_cache_record($pid) {
     global $wpdb;
     $table_name = $wpdb->prefix . 'ptwsflickrcache';
-    return $wpdb->get_row(
+    $one_row = $wpdb->get_row(
         $wpdb->prepare( 
             "
                 SELECT * 
@@ -354,6 +362,17 @@ function get_flickr_cache_record($pid) {
         ),
         'ARRAY_A'
     );
+    if ($one_row == null) {
+        return null;
+    }
+    // Use PHP to make epoch conversions since SQL may not properly handle negative epochs.
+    // https://www.epochconverter.com/programming/php
+    // https://www.epochconverter.com/programming/mysql
+    $one_row['taken_time_epoch'] = strtotime($one_row['taken_time']);
+    $one_row['uploaded_time_epoch'] = strtotime($one_row['uploaded_time']);
+    $one_row['updated_time_epoch'] = strtotime($one_row['updated_time']);
+    $one_row['cached_time_epoch'] = strtotime($one_row['cached_time']);
+    return $one_row;
 }
 
 
@@ -519,12 +538,7 @@ function ptws_admin_html_page() {
 
     $wpdb->show_errors();
     $cache_count = $wpdb->get_var( "SELECT COUNT(*) FROM $table_name" );
-    $cache_unresolved_count = $wpdb->get_var(
-        $wpdb->prepare( 
-            "SELECT COUNT(*) FROM $table_name WHERE cached_time = %d", 
-            0
-        )
-    );
+    $cache_unresolved_count = $wpdb->get_var("SELECT COUNT(*) FROM $table_name WHERE cached_time = 0");
     echo "<p>Flickr cache contains {$cache_count} entries, with {$cache_unresolved_count} unresolved.</p>";
 
     if ($cache_count > 0) {
@@ -555,49 +569,7 @@ function ptws_admin_html_page() {
     // https://codex.wordpress.org/Database_Description#Table:_wp_posts
     //$ten_posts = $wpdb->get_results('SELECT * FROM ' . $wpdb->posts . ' LIMIT 10');
     // post_modified, post_modified_gmt DATETIME
-/*
-    $wpdb->insert(
-            $table_name,
-            array(
-                'flickr_id'     => $flickr_id,
-                'title'         => $flickr_title,
-                'width'     => $flickr_id,
-                'height'     => $flickr_id,
-                'link_url'     => $flickr_id,
-                'thumbnail_url'     => $flickr_id,
-                'comments'     => $flickr_id,
-                'description'     => $flickr_id,
-                'taken_time'     => $flickr_id,
-                'uploaded_time'     => $flickr_id,
-                'updated_time'    => $flickr_id,
-                'cached_time'   => $_POST['meta_key']
-            ),
-            array( 
-                '%s', 
-                '%s', 
-                '%d',
-                '%d',
-                '%s', 
-                '%s', 
-                '%s', 
-                '%s', 
-                '%s', 
-                '%s', 
-                '%s', 
-                '%s'
-            ) 
-        );
 
-    $wpdb->query(
-        $wpdb->prepare(
-            "DELETE FROM $table_name
-            WHERE post_id = %d
-            AND meta_key = %s",
-            $post_id,
-            $key
-        )
-    );
-*/
     $wpdb->hide_errors();
 }
 
@@ -658,7 +630,7 @@ function ptws_admin_cache_resolve() {
 
     $uncached_recs = $wpdb->get_results(
         $wpdb->prepare( 
-            "SELECT * FROM $table_name WHERE cached_time = %d LIMIT 3", 
+            "SELECT * FROM $table_name WHERE cached_time = %d LIMIT 4", 
             0
         ),
         'ARRAY_A'
@@ -668,6 +640,7 @@ function ptws_admin_cache_resolve() {
 
     if ($uncached_recs) {
         foreach ($uncached_recs as $uncached_rec) {
+
             $rid = $uncached_rec['id'];
             $fid = $uncached_rec['flickr_id'];
 
@@ -699,11 +672,16 @@ function ptws_admin_cache_resolve() {
                 echo '<li>square_thumbnail_height ' . $f_sizes['Square']['height'] . '</li>';
                 echo '<li>square_thumbnail_url ' . $f_sizes['Square']['source'] . '</li>';
 
+                $upl_time = ptws_epoch_to_str($p['dateuploaded']);
+                $upd_time = ptws_epoch_to_str($p['dates']['lastupdate']);
+
                 echo '<li>comments ' . $p['comments']['_content'] . '</li>';
                 echo '<li>description ' . $p['description']['_content'] . '</li>';
                 echo '<li>taken_time ' . $p['dates']['taken'] . '</li>';
-                echo '<li>uploaded_time ' . $p['dateuploaded'] . '</li>';
-                echo '<li>updated_time ' . $p['dates']['lastupdate'] . '</li></ul>';
+                echo '<li>uploaded_time ' . $upl_time . '</li>';
+                echo '<li>updated_time ' . $upd_time . '</li>';
+                echo '<li>old cached_time ' . $uncached_rec['cached_time'] . '</li>';
+                echo '</ul>';
 
                 $wpdb->replace(
                     $table_name,
@@ -722,9 +700,10 @@ function ptws_admin_cache_resolve() {
                         'comments'     => intval($p['comments']['_content']),
                         'description'     => $p['description']['_content'],
                         'taken_time'     => $p['dates']['taken'],
-                        'uploaded_time'     => intval($p['dateuploaded']),
-                        'updated_time'    => intval($p['dates']['lastupdate']),
-                        'cached_time'   => intval($p['dates']['lastupdate'])
+                        'uploaded_time'     => $upl_time,
+                        'updated_time'    => $upd_time,
+                        'cached_time'   => $upd_time,
+                        'last_seen_in_post' => $uncached_rec['last_seen_in_post']
                     ),
                     array( 
                         '%s', 
@@ -741,9 +720,10 @@ function ptws_admin_cache_resolve() {
                         '%d', 
                         '%s', 
                         '%s', 
-                        '%d', 
-                        '%d', 
-                        '%d'
+                        '%s', 
+                        '%s', 
+                        '%s', 
+                        '%s'
                     ) 
                 );
             }
