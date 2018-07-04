@@ -55,6 +55,34 @@ if (!function_exists("ptws_add_settings_link")) {
 */
 
 
+function ptws_append_image_and_comments($p, $picContainer, $commentFlag) {
+
+    $objA = $picContainer->addChild('a');
+    $objA->addAttribute('href', (string)$p['url']);
+    $objA->addAttribute('title', (string)$p['title']);
+
+    $objImg = $objA->addChild('img');
+    $objImg->addAttribute('style', 'max-width:800px;');
+    $objImg->addAttribute('src', (string)$p['thumbnail']);
+
+    if ($commentFlag) {
+        $commentSubContainer = $picContainer->addChild('div');
+        $commentSubContainer->addAttribute('class', 'imgComment');
+        $domComContainer = dom_import_simplexml($commentSubContainer);
+        if ($p->count() > 0) {
+            foreach ($p->children() as $child) {
+                if ($child->getName() == 'description') {
+                    $domDesc = dom_import_simplexml($child);
+                    $domDesc = $domComContainer->ownerDocument->importNode($domDesc, TRUE);
+                    // Append the <cat> to <c> in the dictionary
+                    $domComContainer->appendChild($domDesc);
+                }
+            }
+        }
+    }
+}
+
+
 // https://gist.github.com/Narno/4677722
 // http://stackoverflow.com/questions/15830575/php-string-could-not-be-parsed-as-xml-when-using-simplexmlelement
 // https://codex.wordpress.org/Shortcode_API
@@ -73,6 +101,7 @@ if (!function_exists("ptws_add_settings_link")) {
 	Which is clearly badly formed f*&%ing XML and ruins this plugin's content.
 	Thanks, Wordpress.
 */
+
 
 function ptwsgallery_shortcode( $atts, $content = null ) {
 	if ($content == null) {
@@ -115,8 +144,18 @@ function ptwsgallery_shortcode( $atts, $content = null ) {
                     }
                 }
             }
+        } elseif ($majorSection == 'fixedgallery') {
+            if ($sxe->hasChildren()) {
+                foreach ($sxe->getChildren() as $element=>$value) {
+                    if ($element == 'galleryitem') {
+                        if (isset($value['id'])) {
+                            array_push($fixedgalleryIDs, (string)$value['id']);
+                        }
+                    }
+                }
+            }
         } else {
-            $emit .= '<p>Unrecognized major section ' . $majorSection . '. Must be photos or swipegallery.</p>';
+            $emit .= '<p>Unrecognized major section ' . $majorSection . '. Must be photos, fixedgallery, or swipegallery.</p>';
         }
     }
     if ($swipegalleryIDs) {
@@ -132,16 +171,87 @@ function ptwsgallery_shortcode( $atts, $content = null ) {
                 $emit .= '<img src="' . (string)$p['thumbnail'] . '" data-rsw="' . intval($wraw) . '" data-rsh="' . intval($hraw) . '" class="rsImg" />';
                 $emit .= '</a>';
 
-                $emit .= '<div class="rsCaption"><p>Marking how much I need to saw off.</p></div>';
-
+                $description = '';
+                if ($p->count() > 0) {
+                    foreach ($p->children() as $child) {
+                        if ($child->getName() == 'description') {
+                            $description = $child->asXML();
+                        }
+                    }
+                }
+                if ($description != '') {
+                    $emit .= '<div class="rsCaption">' . $description . '</div>';
+                }
                 $emit .= "  </div>\n";
             }
         }
         $emit .= '</div>';
 
     }
+    if ($fixedgalleryIDs) {
+
+        $itemsInPortrait = array();
+        $itemsNotInPortrait = array();
+        $commentFlag = FALSE;
+
+        foreach($fixedgalleryIDs as $pid) {
+            if (isset($photos[$pid])) {
+                $p = $photos[$pid];
+
+                $wraw = floatval((int)$p['width']);
+                $hraw = floatval((int)$p['height']);
+
+                if ($hraw > 0) {
+                    if ($wraw/$hraw < 0.8) {
+                        array_push($itemsInPortrait, (string)$p['id']);
+                    } else {
+                        array_push($itemsNotInPortrait, (string)$p['id']);
+                    }
+                } else {
+                    array_push($itemsNotInPortrait, (string)$p['id']);
+                }
+                if ($p->count() > 0) {
+                    foreach ($p->children() as $child) {
+                        if ($child->getName() == 'description') {
+                            $commentFlag = TRUE;
+                        }
+                    }
+                }
+            }
+        }
+
+        $fixedGalXML = simplexml_load_string('<div class="images" />');
+
+        if ((count($fixedgalleryIDs) == 3) && (count($itemsInPortrait) == 1)) {
+            // Append both items that are not in portrait mode to the same first div
+            $picContainer = $fixedGalXML->addChild('div');
+            foreach($itemsNotInPortrait as $pid) {
+                $p = $photos[$pid];
+                ptws_append_image_and_comments($p, $picContainer, $commentFlag);
+            }
+            // Then append the one item that is in portrait mode to the second div by itself
+            foreach($itemsInPortrait as $pid) {
+                $picContainer = $fixedGalXML->addChild('div');
+                $p = $photos[$pid];
+                ptws_append_image_and_comments($p, $picContainer, $commentFlag);
+            }
+        } else {
+            foreach($fixedgalleryIDs as $pid) {
+                if (isset($photos[$pid])) {
+                    $p = $photos[$pid];
+                    $picContainer = $fixedGalXML->addChild('div');
+                    ptws_append_image_and_comments($p, $picContainer, $commentFlag);
+                }
+            }
+        }
+        if ($commentFlag == TRUE) {
+            $emit .= "coommments";            
+        }
+        $emit .= $fixedGalXML->asXML() . "\n";
+    }
 	return $emit;
 }
+
 
 add_shortcode( 'ptwsgallery', 'ptwsgallery_shortcode' );
 
