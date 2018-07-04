@@ -1,0 +1,635 @@
+<html> 
+<head> 
+<title>Flicker Gallery Construction Kit</title>
+<link rel="stylesheet" href="http://www.pokingthingswithsticks.com/wp-content/themes/enterprise/style.css" type="text/css" media="screen">
+<link rel="stylesheet" href="http://www.pokingthingswithsticks.com/wp-content/plugins/ptws/css/ptws.css" type="text/css" media="screen">
+<script src="https://code.jquery.com/jquery-latest.js"></script> 
+<script>
+
+// GetPhotos: https://www.flickr.com/services/api/flickr.photosets.getPhotos.html
+// API explorer: https://www.flickr.com/services/api/explore/flickr.photosets.getPhotos
+
+var userID = '57897385@N07';	// Note: Using "%40" instead of "@" breaks Flickr's inline video embed script
+var perPage = 55;
+var apiKey = 'd0c4b17c9e3079978dc8bdcccb0ffd4c';
+var setID = null;
+
+var baseFlickrURL = 'https://api.flickr.com/services/rest/?api_key=' + apiKey;
+var setCollection = {};
+var selectedItems = [];	// Globals eew!
+
+var getPhotoSetsListPending = false;
+
+var loadMorePending = false;
+
+var showingOnlyVideos = false;
+var largeThumbnails = true;
+var comments = true;
+var shortcode = true;
+
+var loadingMoreSpan = null;
+
+
+$(document).ready(function() {
+
+	// Wire up the buttons
+	$('#clearButton').click(function () {
+		clearTemplate();
+	});
+	$('#useButton').click(function () {
+		markUsed();
+	});
+	$('#addPageButton').click(function () {
+		addPage();
+	});
+	$('#showOnlyVideosCheckbox').click(function () {
+		showOnlyVideos();
+	});
+	$('#largeThumbnailsCheckbox').click(function () {
+		largeThumbnailsFn();
+	});
+	$('#shortcodeCheckbox').click(function () {
+		shortcodeFn();
+	});
+	$('#commentsCheckbox').click(function () {
+		commentsFn();
+	});
+
+	$(document).on('keydown', keyHandler);
+
+	loadingMoreSpan = $("<span/>").attr("id", "loadingMore").attr("class", "loadingMore").text('Loading More...');
+
+	var container = $("#flickrThumbnailContainer");
+	var thumbnails = $("#flickrThumbnails");
+	// Each time the user scrolls
+	container.scroll(function() {
+		// End of the document reached?
+		if (!setCollection[setID]['pages']['loadedAll']) {
+			if (thumbnails[0].scrollHeight - container.height() < container.scrollTop()) {
+				addPage();
+			}
+		}
+	});
+	getPhotosetList();
+});
+
+
+function keyHandler(e) {
+	var key = e.which;
+	// Convert to lowercase
+    if (e.which >= 97 && e.which <= 122) {
+        key = e.which - 32;
+    }
+    if (key == 27) {		// 'ESC'
+    	if (e.shiftKey) {
+			markUsed();
+		}
+		clearTemplate();
+	}
+}
+
+
+function getPhotosetList() {
+
+	var setURL = baseFlickrURL + '&method=flickr.photosets.getList&user_id=' + userID + '&per_page=100&format=json&nojsoncallback=1';
+
+	if (getPhotoSetsListPending) { return; } // Avoid triggering two at once.
+	getPhotoSetsListPending = true;
+
+	// Flickr Photostream feed link.
+	$.getJSON(setURL, function(data) {
+		console.log(data);
+		var menu = $('select#photoSetSelection');
+		menu.empty();
+		if (data.photosets) {
+			var setElementsByID = {};
+			var setIDs = [];
+			data.photosets.photoset.forEach(function(item, index, array) {
+				var id = item.id;
+				setElementsByID[id] = {
+					modified: parseInt(item.date_update, 10),
+					element: $('<option>').text(item.title['_content']).val(item.id)
+				};
+				setIDs.push(id);
+			});
+			setIDs.sort(function(a, b) { return setElementsByID[b]['modified'] - setElementsByID[a]['modified']; });
+			setIDs.forEach(function(i) {
+				setElementsByID[i]['element'].appendTo(menu);
+			});
+
+			$('select#photoSetSelection').on('change', function (e) {
+	            madePhotoSetSelection();
+	    	});
+		}
+		getPhotoSetsListPending = false;
+
+		// Automatically add one page
+		madePhotoSetSelection();
+	}); 
+};
+
+
+function madePhotoSetSelection() {
+    setID = $('select#photoSetSelection').val();	// Global
+    if (!setCollection[setID]) {
+		setCollection[setID] = {
+			pageCount: 0,
+			pages: {},
+			loadedAll: false
+		};
+	}
+	redrawGallery();
+	if (setCollection[setID]['pageCount'] == 0) {
+		addPage();
+	}
+}
+
+
+function addPage() {
+
+	var setURL = baseFlickrURL + '&method=flickr.photosets.getPhotos&photoset_id=' + setID + '&extras=date_taken%2Cmedia%2Curl_t%2Curl_m%2Curl_s%2Co_dims&per_page=' + perPage + '&page=' + (setCollection[setID]['pageCount']+1) + '&format=json&nojsoncallback=1';
+
+	if (loadMorePending) {	// If we've already made a call to load more, avoid triggering another.
+		return;
+	}
+	loadMorePending = true;
+
+	if (loadingMoreSpan) { loadingMoreSpan.appendTo("#flickrThumbnails"); }
+
+	// Flickr Photostream feed link.
+	$.getJSON(setURL, function(data) {
+		if (loadingMoreSpan) {
+			loadingMoreSpan.detach();
+		}
+		if (data.photoset) {
+			data.photoset.photo.every(function(item, index, array) {
+		
+				// Create images and append to div id flickr and wrap link around the image.
+				var newImg = document.createElement("img");
+	
+				$(newImg).attr("src", item.url_t);
+	
+				$(newImg).click(function () {
+					clickOnItem(item);
+				});
+	
+				item.ourGalleryElement = newImg;
+				item.fetchedInfo = false;
+				item.markedUsed = false;
+				item.selected = false;
+				item.setID = setID;
+	
+				return true;
+			});
+			setCollection[setID]['pageCount'] += 1;
+			setCollection[setID]['pages'][setCollection[setID]['pageCount']] = data.photoset.photo;
+			redrawGallery();
+		} else {
+			setCollection[setID]['pages']['loadedAll'] = true;
+		}
+		loadMorePending = false;
+	}); 
+};
+
+
+function redrawGallery() {
+	// Instead of re-populating, we detach the ones that aren't relevant.
+	// This way javascript onclick handlers aren't trashed.
+	$('#flickrThumbnails').children().detach();
+
+	var loop = 1;
+	while (loop <= setCollection[setID]['pageCount']) {
+		setCollection[setID]['pages'][loop].every(function(item, index, array) {
+			// if (item.setID != setID) { return; }
+			$(item.ourGalleryElement).appendTo("#flickrThumbnails");
+			redrawOneGalleryItem(item);
+			return true;
+		});
+		loop++;
+	}
+};
+
+
+function redrawOneGalleryItem(item) {
+	var style = [];
+	if (item.selected) {
+		style.push('selected');
+	}
+	if (item.markedUsed) {
+		style.push('markedUsed');
+	}
+	if (item.hasDescription) {
+		style.push('hasDescription');
+	}
+	if (showingOnlyVideos) {
+		if (item.media != "video") {
+			style.push('hidden');
+		}
+	}
+	item.ourGalleryElement.className = style.join(' ') || '';
+}
+
+
+function clickOnItem(item) {
+    if (!item.fetchedInfo) {    
+	    var getInfo = baseFlickrURL + '&method=flickr.photos.getInfo&photo_id=' + item.id + '&format=json&nojsoncallback=1';
+	    $.getJSON(getInfo, function(data) {
+	    	item.fullInfo = data.photo;
+    		item.hasDescription = false;
+	    	if (item.fullInfo.description._content != "") {
+	    		item.hasDescription = true;
+	    	}
+	    	// Call to get size info immediately after calling to get general info
+		    var getInfo = baseFlickrURL + '&method=flickr.photos.getSizes&photo_id=' + item.id + '&format=json&nojsoncallback=1';
+		    $.getJSON(getInfo, function(data) {
+		    	item.fetchedInfo = true;
+		    	item.fullSizes = {};
+		    	if (data.sizes) {
+			    	if (data.sizes.size) {
+			    		data.sizes.size.forEach(function(s, index, array) {
+			    			item.fullSizes[s.label] = s;
+			    		});
+			    	}
+			    }
+		    	// Call this after getting a response from this AJAX info request
+		    	addToSelection(item);
+			});
+		});
+    } else {
+    	// Info already fetched, call this immediately
+    	addToSelection(item);
+    }
+}
+
+
+function addToSelection(item) {
+	item.selected = true;
+	selectedItems.push(item);
+	redrawOneGalleryItem(item);
+	redrawSelection();
+}
+
+
+function redrawSelection() {
+
+	$("#entry").empty();
+
+	var s = selectedItems.length;
+	var sgt = '[ptwsgallery]\n<ptwsgallery>\n';
+
+	if (!s) {
+		return;
+	}
+
+	if ((s == 1) && (selectedItems[0].media == 'video')) {
+
+		var item = selectedItems[0];
+		var imgFlickrURL = getImgFlickrURL(item);
+		var centerDiv = $("<center/>").appendTo("#entry");
+
+        var href = $("<a data-flickr-embed='true' href='" + imgFlickrURL + "' title='" +  item.title + "'></a>").appendTo(centerDiv);
+    	$('<script async="async" src="//embedr.flickr.com/assets/client-code.js" charset="utf-8"></sc'+'ript>').appendTo(centerDiv);
+		var newImg = document.createElement("img");
+       	$(newImg).attr("src", item.url_m).attr("style", "width:800px;height:450px;").attr("width", "800").attr("height", "450").appendTo(href);
+		if (item.hasDescription && comments) {
+			var commentContainer = $('<div class="imgComment"/>').appendTo("#entry");
+			commentContainer.append(splitPeaSoup(item.fullInfo.description._content));
+		}
+
+	} else if ((s == 1) || (s == 2) || ((s == 3) && largeThumbnails)) {
+
+		var centerDiv = $("<div class='images'/>").appendTo("#entry");
+	    var atLeastOneComment = false;
+	    if (comments && largeThumbnails) {
+		    selectedItems.every(function(item, index, array) {
+				if (item.hasDescription) { atLeastOneComment = true; }
+				return !atLeastOneComment;
+			});
+		}
+
+		var itemsInPortrait = [];
+		var itemsNotInPortrait = [];
+		sgt += '<photos>\n';
+	    selectedItems.every(function(item, index, array) {
+			var t = getThumbnail(item);
+	        sgt += shortCodeSinglePhotoXML(item);
+			if (t.w/t.h < 0.8) {
+				itemsInPortrait.push(item);
+			} else {
+				itemsNotInPortrait.push(item);
+			}
+			return true;
+		});
+		sgt += '</photos>\n';
+
+	    if ((s == 3) && (itemsInPortrait.length == 1)) {
+			// Append both items that are not in portrait mode to the same first div
+			var picContainer = $('<div/>').appendTo(centerDiv);
+		    itemsNotInPortrait.every(function(item, index, array) {
+				appendImageHREFAndComments(item, picContainer, atLeastOneComment);
+		       	return true;
+			});
+			// Then append the one item that is in portrait mode to the second div by itself
+		    itemsInPortrait.every(function(item, index, array) {
+				picContainer = $('<div/>').appendTo(centerDiv);
+				appendImageHREFAndComments(item, picContainer, atLeastOneComment);
+		       	return true;
+			});
+	    } else {
+		    selectedItems.every(function(item, index, array) {
+				var picContainer = $('<div/>').appendTo(centerDiv);
+				appendImageHREFAndComments(item, picContainer, atLeastOneComment);
+		       	return true;
+			});
+		}
+		sgt += '<fixedgallery>\n';
+	    selectedItems.every(function(item, index, array) {
+	        sgt += '  <galleryitem id="' + item.id + '" />\n';
+	       	return true;
+		});
+		sgt += '</fixedgallery>\n';
+
+	} else {
+
+		var newGrid = $("<div/>").attr("class", "imageStrip");
+		var newRow = $("<div/>").appendTo(newGrid);
+		var divideIndex = 0;
+		if (s > 5) {
+			if (s % 5 == 0) {
+				divideIndex = 5;
+			} else if (s % 4 == 0) {
+				divideIndex = 4;
+			} else if (s % 3 == 0) {
+				divideIndex = 3;
+			}
+		}
+		var divideStep = 0;
+
+		sgt += '<photos>\n';
+		var sgtSecondPiece = '';
+
+	    selectedItems.every(function(item, index, array) {
+
+	    	if (divideIndex) {
+	    		if (divideStep == divideIndex) {
+	    			divideStep = 1;
+					newRow = $("<div/>").appendTo(newGrid);
+	    		} else {
+		    		divideStep += 1;
+		    	}
+	    	}
+
+			var imgFlickrURL = getImgFlickrURL(item);
+			var wrapper = $("<div/>").appendTo(newRow);
+	        var href = $("<a href='" + imgFlickrURL + "' title='" +  item.title + "'></a>").appendTo(wrapper);
+	        var newImg = $("<img/>").attr("src", item.url_t).appendTo(href);
+
+	        sgt += shortCodeSinglePhotoXML(item);
+
+	        sgtSecondPiece += '  <galleryitem id="' + item.id + '" />\n';
+
+	        return true;
+	    });
+		newGrid.appendTo("#entry");
+
+		sgt += '</photos>\n<swipegallery>\n' + sgtSecondPiece;
+		sgt += '</swipegallery>\n';
+	}
+
+	sgt += '</ptwsgallery>\n[/ptwsgallery]\n';
+
+	var entry = document.getElementById("entry");
+	var astext = document.getElementById("astext");
+
+	if (shortcode) {
+		astext.value = sgt;
+	} else {
+		astext.value = entry.innerHTML;
+	}
+
+  	astext.select();
+	document.execCommand('copy');
+}
+
+
+function getImgFlickrURL(item) {
+	return "https://www.flickr.com/photos/" + userID + "/" + item.id + "/in/album-" + setID + "/";
+}
+
+function getThumbnail(item) {
+	// By default, use the medium photo supplied by getInfo:
+	var t = {
+		'h': parseInt(item.height_m, 10),
+		'w': parseInt(item.width_m, 10),
+		'url': item.url_m
+	}
+	// If available, use the 'large' size:
+	if (item.fullSizes['Large']) {
+		var f = item.fullSizes['Large'];
+		t = {
+			'h': parseInt(f.height, 10),
+			'w': parseInt(f.width, 10),
+			'url': f.source
+		}
+	}
+	return t;
+}
+
+
+function shortCodeSinglePhotoXML(item) {
+	var imgFlickrURL = getImgFlickrURL(item);
+	var t = getThumbnail(item);
+	var s = '';
+    s += '  <photo id="' + item.id + '" width="' + t.w + '" height="' + t.h + '"\n';
+    s += '    title="' + item.title + '"\n';
+    s += '    taken="' + item.fullInfo.dates.taken + '" ';
+    s += 'uploaded="' + item.fullInfo.dateuploaded + '" ';
+    s += 'posted="' + item.fullInfo.dates.posted + '" ';
+    s += 'lastupdate="' + item.fullInfo.dates.lastupdate + '"\n';
+
+    s += '    url="' + imgFlickrURL + '"\n';
+    s += '    thumbnail="' + t.url + '"\n';
+    s += '    comments="0">\n';
+	if (item.hasDescription) {
+    	if (item.fullInfo.description._content != "") {
+	        s += '    <description>' + splitPeaSoup(item.fullInfo.description._content) + '</description>\n';
+		}
+	}
+    s += '  </photo>\n';
+    return s;
+}
+
+
+function appendImageHREFAndComments(item, picContainer, withComment) {
+	var imgFlickrURL = getImgFlickrURL(item);
+	var t = getThumbnail(item);
+    var href = $("<a href='" + imgFlickrURL + "' title='" +  item.title + "'></a>").appendTo(picContainer);
+	var newImg = document.createElement("img");
+	if (largeThumbnails) {
+       	$(newImg).attr("src", t.url).attr("style", "max-width:800px;").appendTo(href);
+	} else {
+       	$(newImg).attr("src", item.url_s).appendTo(href);
+	}
+	if (withComment) {
+		var commentSubContainer = $('<div class="imgComment"/>').appendTo(picContainer);
+		if (item.hasDescription) {
+			commentSubContainer.append(splitPeaSoup(item.fullInfo.description._content));
+		}
+	}
+}
+
+
+function splitPeaSoup(soup) {
+	var re = /\n+/;
+	var bits = soup.split(re);
+	var joint = '';
+	bits.forEach(function(item, index, array) {
+		joint += '<p>' + item + '</p>';
+	});
+	return joint;
+}
+
+
+function markUsed() {
+	selectedItems.every(function(item, index, array) {
+	    item.markedUsed = true;
+	    return true;
+	});
+	clearTemplate();
+}
+
+
+function showOnlyVideos() {
+	var cb = document.getElementById("showOnlyVideosCheckbox");
+	showingOnlyVideos = cb.checked;
+	redrawGallery();
+}
+
+
+function largeThumbnailsFn() {
+	var cb = document.getElementById("largeThumbnailsCheckbox");
+	largeThumbnails = cb.checked;
+	redrawSelection();
+}
+
+
+function commentsFn() {
+	var cb = document.getElementById("commentsCheckbox");
+	comments = cb.checked;
+	redrawSelection();
+}
+
+
+function shortcodeFn() {
+	var cb = document.getElementById("shortcodeCheckbox");
+	shortcode = cb.checked;
+	redrawSelection();
+}
+
+
+function clearTemplate() {
+	selectedItems.every(function(item, index, array) {
+	    item.selected = false;
+	    return true;
+	});
+	redrawGallery();
+	$("#entry").empty();
+	var astext = document.getElementById("astext");
+	astext.value = '';
+	selectedItems = [];
+}
+
+
+</script>
+<style type="text/css">
+
+/******** Styling for the construction kit *******/
+
+
+#flickrThumbnailContainer {
+	resize: vertical;
+	height: 400px;
+	overflow-y: scroll;
+	padding:0;
+	margin:6px 0 6px 0;
+}
+
+#flickrThumbnails {
+	margin:0;
+	padding:0;
+}
+
+#flickrThumbnails img {
+    margin:3px;
+    padding:1px;
+    vertical-align:middle;
+}
+
+#flickrThumbnails img.selected {
+	opacity:0.3;
+}
+
+#flickrThumbnails img.hasDescription {
+	border-style: solid;
+	border-width: 2px;
+	border-color: green;
+}
+
+#flickrThumbnails img.markedUsed {
+	opacity:0.3;
+}
+
+#flickrThumbnails img.hidden {
+	display:none;
+	visibility:hidden;
+}
+
+#flickrThumbnails span.loadingMore {
+	padding:20px 20px;
+	font-size:15px;
+	color:gray;
+	border:1px solid gray;
+	border-radius:5px;
+}
+
+</style>
+
+</head> 
+<body> 
+<form>
+
+<select id="photoSetSelection"></select>
+
+<input type=button value="Add Page" name="addPage" id="addPageButton" />
+
+<input type=checkbox value="1" name="showOnlyVideos" id="showOnlyVideosCheckbox" /> <label for="showOnlyVideosCheckbox">Show Videos Only</label>
+
+<input type=checkbox value="1" name="largeThumbnails" id="largeThumbnailsCheckbox" checked="checked" /> <label for="largeThumbnailsCheckbox">Large Thumbnails</label>
+
+<input type=checkbox value="1" name="comments" id="commentsCheckbox" checked="checked" /> <label for="commentsCheckbox">Comments</label>
+
+<input type=checkbox value="1" name="shortcode" id="shortcodeCheckbox" checked="checked" /> <label for="shortcodeCheckbox">Shortcode</label>
+
+<div id="flickrThumbnailContainer"><div id="flickrThumbnails"></div></div>
+
+<hr>
+
+<div class="content">
+	<div class="post">
+		<div class="entry" id="entry">
+		</div>
+	</div>
+</div>
+
+<textarea rows="8" style="width:100%;" id="astext">
+
+</textarea>
+
+<input type=button value="Clear Template (ESC)" name="clearTemplate" id="clearButton" />
+<input type=button value="Mark As Used, Then Clear (Shift-ESC)" name="markUsed" id="useButton" />
+
+<form>
+
+
+</body> 
+</html>
