@@ -9,7 +9,7 @@ Author URI:  http://www.pokingthingswithsticks.com
 License:     MIT
 License URI: https://Icantbebothered.tolook.thisup.right.now
 
-Copyright 2017 Mile42 (email : gbirkel@gmail.com)
+Copyright 2018 Mile42 (email : gbirkel@gmail.com)
 This is free software: you can redistribute it and/or modify
 it under the terms of the MIT License.
  
@@ -118,6 +118,13 @@ if (!function_exists("ptws_add_settings_link")) {
 */
 
 
+// Given an object describing a photo, construct HTML describing it and append
+// it inside the given element.
+//
+// $p - An object of info about the photo, derived from a db record
+// $picContainer - An HTML element to append the constructed HTML into as children
+// $commentFlag - If true, append the photo's comment
+//
 function ptws_append_image_and_comments($p, $picContainer, $commentFlag) {
 
     $objA = $picContainer->addChild('a');
@@ -169,6 +176,11 @@ function ptws_append_image_and_comments($p, $picContainer, $commentFlag) {
 */
 
 
+// Called when the [ptwsgallery] shortcode is encountered in an entry.
+//
+// $atts - The attributes given inside the brackets (none in our case)
+// $content - A string of the content between the opening and closing (which we will parse as XML)
+//
 function ptwsgallery_shortcode( $atts, $content = null ) {
     global $wpdb;
     $table_name = $wpdb->prefix . 'ptwsflickrcache';
@@ -345,6 +357,9 @@ function ptwsgallery_shortcode( $atts, $content = null ) {
 add_shortcode( 'ptwsgallery', 'ptwsgallery_shortcode' );
 
 
+// Given the Flickr ID of a photo, seek its record in the database, and return it.
+// If no record exists, return null instead.
+//
 function ptws_get_flickr_cache_record($pid) {
     global $wpdb;
     $table_name = $wpdb->prefix . 'ptwsflickrcache';
@@ -571,6 +586,11 @@ function ptws_admin_html_page() {
 }
 
 
+
+// Gets 5 of the most recent public photos in the stream and displays their thumbnails.
+// Uses $pf, a global variable providing access to the afgFlickr flickr library (see ptws-libs).
+// Responds to the "ptws_test" AJAX call, e.g. ".../admin-ajax.php?action=ptws_test".
+//
 function ptws_flickr_connect_test() {
     session_start();
     global $pf;
@@ -616,6 +636,10 @@ function ptws_flickr_connect_test() {
 }
 
 
+// Finds up to four images in the photo cache that have not been fetched from Flickr,
+// and uses the Flickr library via $pf to resolve them.
+// Responds to the "cache_resolve" AJAX call, e.g. ".../admin-ajax.php?action=cache_resolve".
+//
 function ptws_admin_cache_resolve() {
     session_start();
     global $pf;
@@ -731,6 +755,9 @@ function ptws_admin_cache_resolve() {
 }
 
 
+// Clears all records from the Flickr metadata cache.
+// Responds to the "cache_clear" AJAX call, e.g. ".../admin-ajax.php?action=cache_clear".
+//
 function ptws_admin_cache_clear() {
     session_start();
     global $wpdb;
@@ -755,7 +782,7 @@ function ptws_admin_cache_clear() {
 if (!is_admin()) {
     add_action('wp_print_scripts', 'ptws_enqueue_scripts');
     add_action('wp_print_styles', 'ptws_enqueue_styles');
-    // To prevent corruption of entries by the auto-processor
+    // Turn off auto-formatting of entries, to prevent corruption of XML by the auto-processor
     // http://wordpress.stackexchange.com/questions/46894/why-is-wordpress-changing-my-html-code
     // https://wordpress.org/plugins/wpautop-control/
     remove_filter('the_content', 'wpautop');
