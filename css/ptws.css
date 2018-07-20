@@ -61,8 +61,8 @@ span.ui-icon-triangle-1-s::before {
 
 .content .entry a > img {
 	border: none;
-	padding:0px;
-	margin:4px 10px 4px 10px;
+	padding: 0px;
+	margin: 4px 10px 4px 10px;
 	box-shadow: 1px 1px 9px -1px rgba(81, 81, 81, 0.51);
 }
 
@@ -455,7 +455,8 @@ span.ui-icon-triangle-1-s::before {
 .content div.gear img {
 	padding: 0;
 	margin: 0px 15px 10px 6px;
-	float:left;
+	float: left;
+	max-width: 128px;
 }
 
 .content div.gear p {
@@ -467,14 +468,9 @@ span.ui-icon-triangle-1-s::before {
 /* Project presentation customizations, e.g. USB charger */
 
 .divtoc {
-	float:right;
-	padding:0.7em 1em;
-	border:1px solid #666;
-	margin:0.0em 0em 0.7em 1.6em;
-	border-radius: 9px;
-	-moz-border-radius: 9px;
-	-khtml-border-radius: 9px;
-	-webkit-border-radius: 9px;
+	float:left;
+	padding:0.5em 1em 1em 1em;
+	margin:0.0em 1em 0.7em 0.5em;
 }
 
 .maintoc {
