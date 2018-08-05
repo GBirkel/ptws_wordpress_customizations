@@ -246,15 +246,24 @@ span.ui-icon-triangle-1-s::before {
 }
 
 
+/* Music playlist tables */
+
+table.musicplaylist {
+	font-size: 0.8em;
+}
+table.musicplaylist tr td {
+	margin:0;
+	padding:0 5px 0 0;
+}
+
+
 /* Question-And-Answer sequences */
 
 .content blockquote {
 	background: #F5F5F5;
 	margin: 1.2em 2em 1.2em 2em;
 	padding: 0px 20px 0 15px;
-	-moz-border-radius: 3px;
-	-khtml-border-radius: 3px;
-	-webkit-border-radius: 3px;
+	border-radius: 3px;
 	border: 1px solid #E6E6E6;
 }
 
@@ -270,18 +279,6 @@ span.ui-icon-triangle-1-s::before {
 	border-top-right-radius: 4px;
 	border-bottom-right-radius: 0px;
 	border-bottom-left-radius: 0px;
-	-webkit-border-top-left-radius: 4px;
-	-webkit-border-top-right-radius: 4px;
-	-webkit-border-bottom-right-radius: 0px;
-	-webkit-border-bottom-left-radius: 0px;
-	-moz-border-radius-topleft: 4px;
-	-moz-border-radius-topright: 4px;
-	-moz-border-radius-bottomright: 0px;
-	-moz-border-radius-bottomleft: 0px;
-	-khtml-border-radius-topleft: 4px;
-	-khtml-border-radius-topright: 4px;
-	-khtml-border-radius-bottomright: 0px;
-	-khtml-border-radius-bottomleft: 0px;
 }
 
 .content blockquote.q p {
@@ -303,18 +300,6 @@ span.ui-icon-triangle-1-s::before {
 	border-top-right-radius: 0px;
 	border-bottom-right-radius: 4px;
 	border-bottom-left-radius: 4px;
-	-webkit-border-top-left-radius: 0px;
-	-webkit-border-top-right-radius: 0px;
-	-webkit-border-bottom-right-radius: 4px;
-	-webkit-border-bottom-left-radius: 4px;
-	-moz-border-radius-topleft: 0px;
-	-moz-border-radius-topright: 0px;
-	-moz-border-radius-bottomright: 4px;
-	-moz-border-radius-bottomleft: 4px;
-	-khtml-border-radius-topleft: 0px;
-	-khtml-border-radius-topright: 0px;
-	-khtml-border-radius-bottomright: 4px;
-	-khtml-border-radius-bottomleft: 4px;
 }
 
 .content blockquote.a p {
@@ -341,9 +326,6 @@ span.ui-icon-triangle-1-s::before {
 	border:0px solid black;
 	border-radius: 6px;
 	clear:left;
-	-webkit-border-radius: 6px;
-	-moz-border-radius: 6px;
-	-khtml-border-radius: 6px;
 }
 
 .content blockquote.pictitle p {
