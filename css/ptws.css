@@ -250,10 +250,12 @@ span.ui-icon-triangle-1-s::before {
 
 table.musicplaylist {
 	font-size: 0.8em;
+	border:none;
 }
 table.musicplaylist tr td {
 	margin:0;
 	padding:0 5px 0 0;
+	border:none;
 }
 
 
