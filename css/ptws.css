@@ -468,8 +468,8 @@ span.ui-icon-triangle-1-s::before {
 /* Project presentation customizations, e.g. USB charger */
 
 .divtoc {
-	float:left;
-	padding:0.5em 1em 1em 1em;
+	float:right;
+	padding:0 1em 1em 1em;
 	margin:0.0em 1em 0.7em 0.5em;
 }
 
