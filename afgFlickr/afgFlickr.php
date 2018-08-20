@@ -72,7 +72,6 @@ if ( !class_exists('afgFlickr') ) {
 
         // https://stackoverflow.com/questions/36339774/php7-constructor-class-name
         public function afgFlickr ($api_key, $secret = NULL, $die_on_error = false) {
-        {
             // PHP4-style constructor.
             // This will NOT be invoked, unless a sub-class that extends `foo` calls it.
             // In that case, call the new-style constructor to keep compatibility.
@@ -1713,7 +1712,6 @@ if ( !class_exists('afgFlickr_pager') ) {
         }
 
         public function afgFlickr_pager($afgFlickr, $method = null, $args = null, $per_page = 30) {
-        {
             // PHP4-style constructor.
             // This will NOT be invoked, unless a sub-class that extends `foo` calls it.
             // In that case, call the new-style constructor to keep compatibility.
