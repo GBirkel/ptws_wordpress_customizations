@@ -706,11 +706,11 @@ function ptws_admin_cache_resolve() {
 
                 $large_w = intval($f_sizes['Large']['width']);
                 $large_h = intval($f_sizes['Large']['height']);
-                $large_src = f_sizes['Large']['source'];
+                $large_src = $f_sizes['Large']['source'];
                 if ($large_w == 0 || $large_h == 0) {
                     $large_w = intval($f_sizes['Original']['width']);
                     $large_h = intval($f_sizes['Original']['height']);
-                    $large_src = f_sizes['Original']['source'];
+                    $large_src = $f_sizes['Original']['source'];
                 }
 
                 $wpdb->replace(
