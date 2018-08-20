@@ -55,9 +55,10 @@ if ( !class_exists('afgFlickr') ) {
          */
         var $max_cache_rows = 1000;
 
-        function afgFlickr ($api_key, $secret = NULL, $die_on_error = false) {
-            //The API Key must be set before any calls can be made.  You can
-            //get your own at http://www.flickr.com/services/api/misc.api_keys.html
+
+        public function __construct($api_key, $secret = NULL, $die_on_error = false) {
+            // The API Key must be set before any calls can be made.  You can
+            // get your own at http://www.flickr.com/services/api/misc.api_keys.html
             $this->api_key = $api_key;
             $this->secret = $secret;
             $this->die_on_error = $die_on_error;
@@ -67,6 +68,17 @@ if ( !class_exists('afgFlickr') ) {
             $this->php_version = explode("-", phpversion());
             $this->php_version = explode(".", $this->php_version[0]);
         }
+
+
+        // https://stackoverflow.com/questions/36339774/php7-constructor-class-name
+        public function afgFlickr ($api_key, $secret = NULL, $die_on_error = false) {
+        {
+            // PHP4-style constructor.
+            // This will NOT be invoked, unless a sub-class that extends `foo` calls it.
+            // In that case, call the new-style constructor to keep compatibility.
+            self::__construct($api_key, $secret, $die_on_error);
+        }
+
 
         function enableCache ($type, $connection, $cache_expire = 600, $table = 'flickr_cache') {
             // Turns on caching.  $type must be either "db" (for database caching) or "fs" (for filesystem).
@@ -1693,12 +1705,21 @@ if ( !class_exists('afgFlickr_pager') ) {
         var $total = null, $page = 0, $pages = null, $photos, $_extra = null;
 
 
-        function afgFlickr_pager($afgFlickr, $method = null, $args = null, $per_page = 30) {
+        public function __construct($afgFlickr, $method = null, $args = null, $per_page = 30) {
             $this->per_page = $per_page;
             $this->method = $method;
             $this->args = $args;
             $this->set_afgFlickr($afgFlickr);
         }
+
+        public function afgFlickr_pager($afgFlickr, $method = null, $args = null, $per_page = 30) {
+        {
+            // PHP4-style constructor.
+            // This will NOT be invoked, unless a sub-class that extends `foo` calls it.
+            // In that case, call the new-style constructor to keep compatibility.
+            self::__construct($afgFlickr, $method, $args, $per_page);
+        }
+
 
         function set_afgFlickr($afgFlickr) {
             if ( is_a($afgFlickr, 'afgFlickr') ) {

@@ -2,8 +2,6 @@
 
 define('PTWS_PLUGIN_URL', plugins_url() . '/' . basename(dirname(__FILE__)));
 define('PTWS_SITE_URL', site_url());
-define('DEBUG', false);
-define('VERSION', '0.0.1');
 
 function ptws_create_afgFlickr_obj() {
     global $pf;
