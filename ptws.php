@@ -704,6 +704,15 @@ function ptws_admin_cache_resolve() {
                 echo '<li>old cached_time ' . $uncached_rec['cached_time'] . '</li>';
                 echo '</ul>';
 
+                $large_w = intval($f_sizes['Large']['width']);
+                $large_h = intval($f_sizes['Large']['height']);
+                $large_src = f_sizes['Large']['source'];
+                if ($large_w == 0 || $large_h == 0) {
+                    $large_w = intval($f_sizes['Original']['width']);
+                    $large_h = intval($f_sizes['Original']['height']);
+                    $large_src = f_sizes['Original']['source'];
+                }
+
                 $wpdb->replace(
                     $table_name,
                     array(
@@ -712,9 +721,9 @@ function ptws_admin_cache_resolve() {
                         'width'     => intval($f_sizes['Original']['width']),
                         'height'     => intval($f_sizes['Original']['height']),
                         'link_url'     => $url,
-                        'large_thumbnail_width'     => intval($f_sizes['Large']['width']),
-                        'large_thumbnail_height'     => intval($f_sizes['Large']['height']),
-                        'large_thumbnail_url'     => $f_sizes['Large']['source'],
+                        'large_thumbnail_width'     => $large_w,
+                        'large_thumbnail_height'     => $large_h,
+                        'large_thumbnail_url'     => $large_src,
                         'square_thumbnail_width'     => intval($f_sizes['Square']['width']),
                         'square_thumbnail_height'     => intval($f_sizes['Square']['height']),
                         'square_thumbnail_url'     => $f_sizes['Square']['source'],
