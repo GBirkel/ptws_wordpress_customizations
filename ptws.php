@@ -283,7 +283,7 @@ function ptwsgallery_shortcode( $atts, $content = null ) {
                 if ($p['description']) {
                     if ($p['description'] != null) {
                         if ($p['description'] != '') {
-                            $emit .= '<div class="rsCaption">' . $description . '</div>';
+                            $emit .= '<div class="rsCaption">' . $p['$description'] . '</div>';
                         }
                     }
                 }
