@@ -255,11 +255,11 @@ table.musicplaylist {
 }
 table.musicplaylist tr td {
 	margin:0;
-	padding:0 5px 0 0;
+	padding:0 5px 0 2px;
 	border:none;
 }
 table.musicplaylist tr td:first-child {
-	font-size: 0.8em;
+	font-size: 1.1em;
 }
 
 
