@@ -59,6 +59,7 @@ function showGear(e) {
 }
 
 
+// http://learn.jquery.com/using-jquery-core/document-ready/
 jQuery(document).ready(function($) {
 
 	/**
@@ -122,6 +123,8 @@ jQuery(document).ready(function($) {
 	});
 	$.rsModules.globalCaption = $.rsProto._initGlobalCaption;
 
+	// Seek out and init RoyalSlider instances on the page
+	// only when we've finished overloading the global caption module.
   $('div.royalSlider').royalSlider({
   	addActiveClass: true,
     arrowsNav: true,
