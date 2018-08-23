@@ -362,7 +362,7 @@ table.musicplaylist tr td:first-child {
 	text-align:left;
 	border: 0px solid;
 	padding: 0px;
-	margin:0.5em 0.5em 1.1em 0.4em;
+	margin:0.5em 0.5em 1.1em 1em;
 }
 
 .content div.gearFilterButtons > span {
