@@ -3,7 +3,7 @@
 Plugin Name: Poking Things With Sticks Extensions
 Plugin URI:  http://www.pokingthingswithsticks.com
 Description: This plugin supports all the non-standard WP stuff I do on PTWS.  Among other things, it finds recent posted pictures on my Flickr feed and integrates them with recent WP posts in a fancypants way
-Version:     1.7
+Version:     1.91
 Author:      Pokingthingswithsticks
 Author URI:  http://www.pokingthingswithsticks.com
 License:     MIT
@@ -19,7 +19,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
 global $ptws_db_version;
-$ptws_db_version = '1.7';
+$ptws_db_version = '1.91';
 
 include_once('ptws-libs.php');
 require_once('afgFlickr/afgFlickr.php');
@@ -39,11 +39,11 @@ function ptws_install() {
     // http://php.net/manual/en/function.version-compare.php
     if (version_compare( get_option( "ptws_db_version" ), $ptws_db_version, '<' )) {
 
-        $table_name = $wpdb->prefix . 'ptwsflickrcache';
+        $flickr_cache_table_name = $wpdb->prefix . 'ptwsflickrcache';
 
         // last_seen_in_post references a field in the Wordpress posts table
         // https://codex.wordpress.org/Database_Description#Table:_wp_posts
-        $sql = "CREATE TABLE $table_name (
+        $sql = "CREATE TABLE $flickr_cache_table_name (
             id mediumint(9) NOT NULL AUTO_INCREMENT,
             flickr_id varchar(32) NOT NULL,
             title text,
@@ -73,18 +73,32 @@ function ptws_install() {
         }
         dbDelta( $sql );
 
+        $route_table_name = $wpdb->prefix . 'ptwsroutes';
+
+        $route_sql = "CREATE TABLE $route_table_name (
+            id mediumint(9) NOT NULL AUTO_INCREMENT,
+            route_id varchar(32) NOT NULL,
+            route_json LONGTEXT,
+            route_description text DEFAULT '',
+            cached_time datetime DEFAULT CURRENT_TIMESTAMP NOT NULL,
+            auto_placed tinyint(1) DEFAULT 0,
+            last_seen_in_post bigint(20) unsigned,
+            CONSTRAINT unique_route_id UNIQUE (route_id),
+            PRIMARY KEY (id)
+        ) $charset_collate;";
+
+        dbDelta( $route_sql );
+
         update_option( "ptws_db_version", $ptws_db_version );
     }
 }
 
-/*
 function ptws_update_db_check() {
     global $ptws_db_version;
     if (version_compare( get_site_option( 'ptws_db_version' ), $ptws_db_version, '<' )) {
         ptws_install();
     }
 }
-*/
 
 /*
 function add_query_vars_filter( $vars ){
@@ -174,6 +188,64 @@ function ptws_append_image_and_comments($p, $picContainer, $commentFlag) {
 	Which is clearly badly formed XML and ruins this plugin's content.  Thanks, Wordpress.
     The only available workaround is to turn off automatic paragraph insertion in all entries, sitewide.
 */
+
+
+// Called when the [ptwsroute] shortcode is encountered in an entry.
+//
+// $atts - The attributes given inside the brackets
+// $content - A string of the content between the opening and closing
+//
+function ptwsroute_shortcode( $atts, $content = null ) {
+    global $wpdb;
+	$atts = shortcode_atts(
+		array(
+			'routeid' => ''
+		), $atts, 'ptws' );
+    if (!isset($atts['routeid'])) { return 'ptwsroute shortcode: missing routeid'; }
+    if ($atts['routeid'] == '') { return 'ptwsroute shortcode: routeid is blank'; }
+    $record_exists = ptws_get_route_record($atts['routeid']);
+    if ($record_exists == null) { return 'ptwsroute shortcode: routeid "' . $atts['routeid'] . '" not in database'; }
+    $table_name = $wpdb->prefix . 'ptwsroutes';
+    $wpdb->replace(
+        $table_name,
+        array(
+            'route_id'   => $request['id'],
+            'last_seen_in_post' => get_the_ID()
+        ),
+        array( 
+            '%s', 
+            '%d'
+        ) 
+    );
+    $all_out = "<div class='ptws-ride-log' rideid='" . (string)$record_exists['route_id'] . "'><div class='data'>" . (string)$record_exists['route_json'] . "</div></div>";
+    return $all_out;
+}
+
+
+// Given the Flickr ID of a photo, seek its record in the database, and return it.
+// If no record exists, return null instead.
+//
+function ptws_get_route_record($pid) {
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'ptwsroutes';
+    $one_row = $wpdb->get_row(
+        $wpdb->prepare( 
+            "
+                SELECT * 
+                FROM $table_name 
+                WHERE route_id = %s
+            ", 
+            $pid
+        ),
+        'ARRAY_A'
+    );
+    if ($one_row == null) { return null; }
+    // Use PHP to make epoch conversions since SQL may not properly handle negative epochs.
+    // https://www.epochconverter.com/programming/php
+    // https://www.epochconverter.com/programming/mysql
+    $one_row['cached_time_epoch'] = strtotime($one_row['cached_time']);
+    return $one_row;
+}
 
 
 // Called when the [ptwsgallery] shortcode is encountered in an entry.
@@ -355,6 +427,7 @@ function ptwsgallery_shortcode( $atts, $content = null ) {
 
 
 add_shortcode( 'ptwsgallery', 'ptwsgallery_shortcode' );
+add_shortcode( 'ptwsroute', 'ptwsroute_shortcode' );
 
 
 // Given the Flickr ID of a photo, seek its record in the database, and return it.
@@ -390,7 +463,9 @@ function ptws_get_flickr_cache_record($pid) {
 
 function ptws_enqueue_scripts() {
     wp_enqueue_script('jquery');
-    wp_enqueue_script('ptws_script', PTWS_PLUGIN_URL . "/js/ptws.js" , array('jquery'));
+    wp_enqueue_script('google_maps_apis', "https://maps.googleapis.com/maps/api/js?sensor=false" , array('jquery'));
+    wp_enqueue_script('chartjs', PTWS_PLUGIN_URL . "/js/Chart.bundle.min.js" , array('jquery'));
+    wp_enqueue_script('ptws_script', PTWS_PLUGIN_URL . "/js/ptws.js" , array('google_maps_apis'));
 }
 
 
@@ -585,6 +660,140 @@ function ptws_admin_html_page() {
     $wpdb->hide_errors();
 }
 
+
+function ptws_rest_route_get($request) {
+    if (!isset( $request['id'] ) ) {
+        return new WP_Error( 'rest_invalid', esc_html__( 'The id parameter is required.', 'my-text-domain' ), array( 'status' => 400 ) );
+    }
+    // rest_ensure_response() wraps the data we want to return into a WP_REST_Response, and ensures it will be properly returned.
+    return rest_ensure_response( 'Hello World, this is the PTWS REST API' );
+}
+
+
+function ptws_rest_route_get_arguments() {
+    $args = array();
+    // Here we are registering the schema for the route id argument.
+    $args['id'] = array(
+        // description should be a human readable description of the argument.
+        'description' => esc_html__( 'The id parameter is the unique identifier string for the route', 'my-text-domain' ),
+        // type specifies the type of data that the argument should be.
+        'type'        => 'string',
+        // enum specified what values filter can take on.
+        //'enum'        => array( 'red', 'green', 'blue' ),
+    );
+    return $args;
+}
+
+
+function ptws_rest_route_create_validate( $value, $request, $param ) {
+    // If the 'filter' argument is not a string return an error.
+    if (!is_string($value)) {
+        return new WP_Error( 'rest_invalid_param', esc_html__( 'The ' . $param . ' argument must be a string.', 'my-text-domain' ), array( 'status' => 400 ) );
+    }
+}
+
+
+function ptws_rest_route_create_arguments() {
+    $args = array();
+    $args['id'] = array(
+        'description' => esc_html__( 'The id parameter is the unique identifier string for the route', 'my-text-domain' ),
+        'type'        => 'string',
+        'validate_callback' => 'ptws_rest_route_create_validate',
+    );
+    $args['route'] = array(
+        'description' => esc_html__( 'The contents of the route as JSON', 'my-text-domain' ),
+        'type'        => 'string',
+        'validate_callback' => 'ptws_rest_route_create_validate',
+    );
+    return $args;
+}
+
+
+function ptws_rest_route_create($request) {
+    global $wpdb;
+    if (!isset( $request['id'] ) ) {
+        return new WP_Error( 'rest_invalid', esc_html__( 'The id parameter is required.', 'my-text-domain' ), array( 'status' => 400 ) );
+    }
+    if (!isset( $request['route'] ) ) {
+        return new WP_Error( 'rest_invalid', esc_html__( 'The route parameter is required.', 'my-text-domain' ), array( 'status' => 400 ) );
+    }
+    $table_name = $wpdb->prefix . 'ptwsroutes';
+
+    $one_row = $wpdb->get_row(
+        $wpdb->prepare( 
+            "
+                SELECT * 
+                FROM $table_name 
+                WHERE route_id = %s
+            ",
+            $request['id']
+        ),
+        'ARRAY_A'
+    );
+    if ($one_row == null) {
+        $wpdb->show_errors();
+        $wpdb->insert(
+            $table_name,
+            array(
+                'route_id' => $request['id'],
+                'route_json' => $request['route']
+            ),
+            array( 
+                '%s', 
+                '%s'
+            ) 
+        );
+        $wpdb->hide_errors();
+        return rest_ensure_response( 'Record ' . $request['id'] . ' inserted.' );
+    } else {
+        $wpdb->show_errors();
+        $wpdb->replace(
+            $table_name,
+            array(
+                'route_id'   => $request['id'],
+                'route_json' => $request['route']
+            ),
+            array( 
+                '%s', 
+                '%s'
+            ) 
+        );
+        $wpdb->hide_errors();
+        return rest_ensure_response( 'Record ' . $request['id'] . ' updated.' );
+    }
+}
+
+
+function ptws_rest_route_permissions_check() {
+    // Restrict endpoint to only users who have the edit_posts capability.
+    //if ( ! current_user_can( 'edit_others_posts' ) ) {
+    //    return new WP_Error( 'rest_forbidden', esc_html__( 'OMG you can not view private data.', 'my-text-domain' ), array( 'status' => 401 ) );
+    //}
+    return true;
+}
+
+
+function ptws_register_route_management() {
+    register_rest_route( 'ptws/v1', '/route', array(
+        array(
+            // By using this constant we ensure that when the WP_REST_Server changes, our readable endpoints will work as intended.
+            'methods'  => WP_REST_Server::READABLE,
+            // Here we register our callback. The callback is fired when this endpoint is matched by the WP_REST_Server class.
+            'callback' => 'ptws_rest_route_get',
+            'args' => ptws_rest_route_get_arguments(),
+        ),
+        array(
+            // By using this constant we ensure that when the WP_REST_Server changes, our create endpoints will work as intended.
+            'methods'  => WP_REST_Server::CREATABLE,
+            // Here we register our callback. The callback is fired when this endpoint is matched by the WP_REST_Server class.
+            'callback' => 'ptws_rest_route_create',
+            // Here we register our permissions callback.
+            // The callback is fired before the main callback to check if the current user can access the endpoint.
+            'permission_callback' => 'ptws_rest_route_permissions_check',
+            'args' => ptws_rest_route_create_arguments(),
+        ),
+    ) );
+}
 
 
 // Gets 5 of the most recent public photos in the stream and displays their thumbnails.
@@ -799,7 +1008,7 @@ if (!is_admin()) {
 } else {
     register_activation_hook( __FILE__, 'ptws_activate' );
 /*    add_filter('plugin_action_links','ptws_add_settings_link', 10, 2 );*/
-//    add_action('plugins_loaded', 'ptws_update_db_check' );
+    add_action('plugins_loaded', 'ptws_update_db_check');
 	add_action('admin_init', 'ptws_admin_init');
 	add_action('admin_menu', 'ptws_admin_menu');
 	add_action('wp_ajax_ptws_gallery_auth', 'ptws_auth_init');
@@ -807,5 +1016,7 @@ if (!is_admin()) {
     add_action('wp_ajax_ptws_resolve', 'ptws_admin_cache_resolve');
     add_action('wp_ajax_ptws_clear', 'ptws_admin_cache_clear');
 }
+
+add_action('rest_api_init', 'ptws_register_route_management');
 
 ?>
