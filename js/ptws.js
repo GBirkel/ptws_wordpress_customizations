@@ -155,53 +155,52 @@ var ptws = {
 				}
 			}
 
+			// Build and embed the map
+
 			// Container and div for the embedded Google map with the route.
-			var mapFrame = jQuery("<div/>").attr("class", "ptws-googlemap").appendTo(jqRideLogDiv);
+			var mapFrame = jQuery("<div/>").attr("class", "ptws-routemap").appendTo(jqRideLogDiv);
 			var mapContainer = jQuery("<div/>").appendTo(mapFrame);
 
-			// Container and canvas for the Chart.js speed/elevation graph.
-			var chartFrame = jQuery("<div/>").attr("class", "ptws-elevation-chart").appendTo(jqRideLogDiv);
-			var chartContainer = jQuery("<canvas/>").attr("width", "640").attr("height", "140").appendTo(chartFrame);
+			var map = L.map(mapContainer.get(0));
+
+			L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWlsZTQyIiwiYSI6ImNqbGgyY2l0NDFkcm8zcWxxMWJrd2RvaXEifQ.uMQoOnrPBsLbLV2v4COFjA', {
+				maxZoom: 18,
+				attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
+					'<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+					'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+				id: 'mapbox.outdoors'
+			}).addTo(map);
+
+			var routeLeafletPoints = smoothedPoints.map(function (pt) { return [pt['lat'], pt['lon']]; });
+			var routeInnerStyle = {
+				weight: 4,
+				opacity: 1,
+				stroke: true,
+				fill: false,
+				color: '#d0ff57'
+			};
+			var routeOuterStyle = {
+				weight: 7,
+				opacity: 1,
+				stroke: true,
+				fill: false,
+				color: '#78a120'
+			};
+			var polylineOuter = L.polyline(routeLeafletPoints, routeOuterStyle).addTo(map);
+			var polylineInner = L.polyline(routeLeafletPoints, routeInnerStyle).addTo(map);
 
 			// Calculate the center point and the outer bounds for the route.
 			var latMin = Math.min.apply(0, rawdata['lat']);
 			var latMax = Math.max.apply(0, rawdata['lat']);
 			var lonMin = Math.min.apply(0, rawdata['lon']);
 			var lonMax = Math.max.apply(0, rawdata['lon']);
-			var latCenter = (latMin + latMax) / 2;
-			var lonCenter = (lonMin + lonMax) / 2;
+			map.fitBounds([[latMin, lonMin], [latMax, lonMax]]);
 
-			var mapCenter = new google.maps.LatLng(latCenter, lonCenter);
-			var mapBounds = new google.maps.LatLngBounds(new google.maps.LatLng(latMin, lonMin), new google.maps.LatLng(latMax, lonMax));
-			var mapOptions = {
-				zoom: 5,
-				center: mapCenter,
-				mapTypeId: google.maps.MapTypeId.TERRAIN
-			};
+			// Build and embed the chart
 
-			var map = new google.maps.Map(mapContainer.get(0), mapOptions);
-
-			var trackPoints = smoothedPoints.map(function (pt) { return new google.maps.LatLng(pt['lat'], pt['lon']); });
-
-			var border = new google.maps.Polyline({
-				clickable: true,
-				path: trackPoints,
-				strokeColor: '#78a120',
-				strokeWeight: 6.000000,
-				zIndex: 10
-			});
-
-			var track = new google.maps.Polyline({
-				clickable: true,
-				path: trackPoints,
-				strokeColor: '#beff33',
-				strokeWeight: 4.000000,
-				zIndex: 20
-			});
-
-			border.setMap(map);
-			track.setMap(map);
-			map.fitBounds(mapBounds);
+			// Container and canvas for the Chart.js speed/elevation graph.
+			var chartFrame = jQuery("<div/>").attr("class", "ptws-elevation-chart").appendTo(jqRideLogDiv);
+			var chartContainer = jQuery("<canvas/>").attr("width", "640").attr("height", "140").appendTo(chartFrame);
 
 			// Format the elevation and speed data for Chart.js .
 			var elevData = sparsifiedPoints.map(function (pt) { return { x: pt['t'], y: pt['el'] }; });

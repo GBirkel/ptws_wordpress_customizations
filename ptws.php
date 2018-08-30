@@ -463,14 +463,15 @@ function ptws_get_flickr_cache_record($pid) {
 
 function ptws_enqueue_scripts() {
     wp_enqueue_script('jquery');
-    wp_enqueue_script('google_maps_apis', "https://maps.googleapis.com/maps/api/js?sensor=false" , array('jquery'));
-    wp_enqueue_script('chartjs', PTWS_PLUGIN_URL . "/js/Chart.bundle.min.js" , array('jquery'));
-    wp_enqueue_script('ptws_script', PTWS_PLUGIN_URL . "/js/ptws.js" , array('google_maps_apis'));
+    wp_enqueue_script('ptws_chart_js', PTWS_PLUGIN_URL . "/js/Chart.bundle.min.js" , array('jquery'));
+    wp_enqueue_script('ptws_leaflet_js', PTWS_PLUGIN_URL . "/js/leaflet.js" , array('jquery'));
+    wp_enqueue_script('ptws_js', PTWS_PLUGIN_URL . "/js/ptws.js" , array('jquery'));
 }
 
 
 function ptws_enqueue_styles() {
-    wp_enqueue_style('ptws_css', PTWS_PLUGIN_URL . "/css/ptws.css");
+    wp_enqueue_style('ptws_css', PTWS_PLUGIN_URL . "/css/leaflet.css");
+    wp_enqueue_style('ptws_leaflet_css', PTWS_PLUGIN_URL . "/css/ptws.css");
 }
 
 
