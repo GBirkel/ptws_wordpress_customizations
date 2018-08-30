@@ -421,7 +421,9 @@ jQuery(document).ready(function($) {
 			}
 		}
 	});
-	$.rsModules.globalCaption = $.rsProto._initGlobalCaption;
+	if ($.rsModules) {
+		$.rsModules.globalCaption = $.rsProto._initGlobalCaption;
+	}
 
 	ptws.findAndInitRoyalsliders();
 	ptws.findAndInitGPSLogDisplays();
