@@ -2,7 +2,8 @@
 
 table.ptws-admin-settings {
 	background:white;
-	padding:0.3em;
+	padding:0.5em;
+	margin:1em;
 }
 
 table.ptws-admin-settings tr td {
@@ -11,9 +12,9 @@ table.ptws-admin-settings tr td {
 
 table.ptws-admin-settings tr td:first-of-type {
 	white-space:nowrap;
-	margin:1em 0.4em 1em 0.2em;
+	padding:0.4em 1em 0.2em 1em;
 }
 
 table.ptws-admin-settings tr td:last-of-type {
-	margin:1em 0.4em 1em 0.2em;
+	padding:0.4em 1em 0.2em 1em;
 }
