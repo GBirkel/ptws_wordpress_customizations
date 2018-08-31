@@ -1021,9 +1021,9 @@ function ptws_admin_cache_clear() {
 }
 
 
+add_action('wp_print_styles', 'ptws_enqueue_styles');
 if (!is_admin()) {
     add_action('wp_print_scripts', 'ptws_enqueue_scripts');
-    add_action('wp_print_styles', 'ptws_enqueue_styles');
     // Turn off auto-formatting of entries, to prevent corruption of XML by the auto-processor
     // http://wordpress.stackexchange.com/questions/46894/why-is-wordpress-changing-my-html-code
     // https://wordpress.org/plugins/wpautop-control/
