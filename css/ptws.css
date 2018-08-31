@@ -355,6 +355,15 @@ table.musicplaylist tr td:first-child {
 }
 
 
+/* Embedded routes (via wikiloc) showing a map and elevation graph */
+
+div.ptws-wikiloc-frame {
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+}
+
+
 /* General CSS */
 
 .content table.pictable {
