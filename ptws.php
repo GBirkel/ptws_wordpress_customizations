@@ -475,6 +475,11 @@ function ptws_enqueue_styles() {
 }
 
 
+function ptws_enqueue_admin_styles() {
+    wp_enqueue_style('ptws_leaflet_css', PTWS_PLUGIN_URL . "/css/ptws-admin.css");
+}
+
+
 function ptws_admin_init() {
 
     if (is_admin() && get_option( 'ptws_plugin_activation' ) == 'just-activated' ) {
@@ -1033,7 +1038,7 @@ if (!is_admin()) {
     register_activation_hook( __FILE__, 'ptws_activate' );
 /*    add_filter('plugin_action_links','ptws_add_settings_link', 10, 2 );*/
     add_action('plugins_loaded', 'ptws_update_db_check');
-    add_action('admin_print_styles', 'ptws_enqueue_styles' );
+    add_action('admin_print_styles', 'ptws_enqueue_admin_styles' );
 	add_action('admin_init', 'ptws_admin_init');
 	add_action('admin_menu', 'ptws_admin_menu');
 	add_action('wp_ajax_ptws_gallery_auth', 'ptws_auth_init');
