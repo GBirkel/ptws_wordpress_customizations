@@ -39,11 +39,11 @@ function ptws_install() {
     // http://php.net/manual/en/function.version-compare.php
     if (version_compare( get_option( "ptws_db_version" ), $ptws_db_version, '<' )) {
 
-        $flickr_cache_table_name = $wpdb->prefix . 'ptwsflickrcache';
+        $flickr_table_name = $wpdb->prefix . 'ptwsflickrcache';
 
         // last_seen_in_post references a field in the Wordpress posts table
         // https://codex.wordpress.org/Database_Description#Table:_wp_posts
-        $sql = "CREATE TABLE $flickr_cache_table_name (
+        $sql = "CREATE TABLE $flickr_table_name (
             id mediumint(9) NOT NULL AUTO_INCREMENT,
             flickr_id varchar(32) NOT NULL,
             title text,
@@ -622,11 +622,14 @@ function ptws_admin_html_page() {
 <?php
 
     global $wpdb;
-    $table_name = $wpdb->prefix . 'ptwsflickrcache';
+    $flickr_table_name = $wpdb->prefix . 'ptwsflickrcache';
+    $route_table_name = $wpdb->prefix . 'ptwsroutes';
 
     $wpdb->show_errors();
-    $cache_count = $wpdb->get_var( "SELECT COUNT(*) FROM $table_name" );
-    $cache_unresolved_count = $wpdb->get_var("SELECT COUNT(*) FROM $table_name WHERE cached_time = 0");
+    $cache_count = $wpdb->get_var( "SELECT COUNT(*) FROM $flickr_table_name" );
+    $cache_unresolved_count = $wpdb->get_var("SELECT COUNT(*) FROM $flickr_table_name WHERE cached_time = 0");
+    $route_count = $wpdb->get_var( "SELECT COUNT(*) FROM $route_table_name" );
+    echo "<p>Route database contains {$route_count} entries.</p>";
     echo "<p>Flickr cache contains {$cache_count} entries, with {$cache_unresolved_count} unresolved.</p>";
 
     if ($cache_count > 0) {
@@ -652,7 +655,7 @@ function ptws_admin_html_page() {
 
 <?php
 
-    //$result = $wpdb->get_results('SELECT * FROM ' . $table_name . ' LIMIT 10');
+    //$result = $wpdb->get_results('SELECT * FROM ' . $flickr_table_name . ' LIMIT 10');
 
     // https://codex.wordpress.org/Database_Description#Table:_wp_posts
     //$ten_posts = $wpdb->get_results('SELECT * FROM ' . $wpdb->posts . ' LIMIT 10');
@@ -718,13 +721,13 @@ function ptws_rest_route_create($request) {
     if (!isset( $request['route'] ) ) {
         return new WP_Error( 'rest_invalid', esc_html__( 'The route parameter is required.', 'my-text-domain' ), array( 'status' => 400 ) );
     }
-    $table_name = $wpdb->prefix . 'ptwsroutes';
+    $routes_table_name = $wpdb->prefix . 'ptwsroutes';
 
     $one_row = $wpdb->get_row(
         $wpdb->prepare( 
             "
                 SELECT * 
-                FROM $table_name 
+                FROM $routes_table_name 
                 WHERE route_id = %s
             ",
             $request['id']
@@ -734,7 +737,7 @@ function ptws_rest_route_create($request) {
     if ($one_row == null) {
         $wpdb->show_errors();
         $wpdb->insert(
-            $table_name,
+            $routes_table_name,
             array(
                 'route_id' => $request['id'],
                 'route_json' => $request['route']
@@ -749,7 +752,7 @@ function ptws_rest_route_create($request) {
     } else {
         $wpdb->show_errors();
         $wpdb->replace(
-            $table_name,
+            $routes_table_name,
             array(
                 'route_id'   => $request['id'],
                 'route_json' => $request['route']
@@ -854,14 +857,14 @@ function ptws_admin_cache_resolve() {
     session_start();
     global $pf;
     global $wpdb;
-    $table_name = $wpdb->prefix . 'ptwsflickrcache';
+    $flickr_table_name = $wpdb->prefix . 'ptwsflickrcache';
     $wpdb->show_errors();
 
     echo '<h3>Manually resolve cache entries</h3>';
 
     $uncached_recs = $wpdb->get_results(
         $wpdb->prepare( 
-            "SELECT * FROM $table_name WHERE cached_time = %d LIMIT 4", 
+            "SELECT * FROM $flickr_table_name WHERE cached_time = %d LIMIT 4", 
             0
         ),
         'ARRAY_A'
@@ -924,7 +927,7 @@ function ptws_admin_cache_resolve() {
                 }
 
                 $wpdb->replace(
-                    $table_name,
+                    $flickr_table_name,
                     array(
                         'flickr_id'     => $fid,
                         'title'         => $p['title']['_content'],
@@ -980,14 +983,14 @@ function ptws_admin_cache_resolve() {
 function ptws_admin_cache_clear() {
     session_start();
     global $wpdb;
-    $table_name = $wpdb->prefix . 'ptwsflickrcache';
+    $flickr_table_name = $wpdb->prefix . 'ptwsflickrcache';
     $wpdb->show_errors();
 
     echo '<h3>Clear cache</h3>';
 
     $wpdb->query(
         $wpdb->prepare(
-            "DELETE FROM $table_name"
+            "DELETE FROM $flickr_table_name"
         )
     );
 
