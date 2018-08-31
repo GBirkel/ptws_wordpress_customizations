@@ -485,6 +485,7 @@ function ptws_admin_init() {
     ptws_create_afgFlickr_obj();
     register_setting('ptws_settings_group', 'ptws_api_key');
     register_setting('ptws_settings_group', 'ptws_api_secret');
+    register_setting('ptws_settings_group', 'ptws_route_api_secret');
     register_setting('ptws_settings_group', 'ptws_user_id');
     register_setting('ptws_settings_group', 'ptws_flickr_token');
     // Get afgFlickr auth token
@@ -531,6 +532,7 @@ function ptws_admin_html_page() {
 	    global $pf, $custom_size_err_msg;
 
         if (isset($_POST['submit']) && $_POST['submit'] == 'Save Changes') {
+            update_option('ptws_route_api_secret', $_POST['ptws_route_api_secret']);
             update_option('ptws_api_key', $_POST['ptws_api_key']);
             if (!$_POST['ptws_api_secret'] || $_POST['ptws_api_secret'] != get_option('ptws_api_secret')) {
                 update_option('ptws_flickr_token', '');
@@ -564,13 +566,20 @@ function ptws_admin_html_page() {
 		<div id='afg-wrap'>
 	        <h2>PTWS Custom Settings</h2>
             <div id="afg-main-box">
-            	<h3>Flickr User Settings</h3>
-                <table class='widefat afg-settings-box'>
+            	<h3>General Settings</h3>
+                <table class='ptws-admin-settings'>
                     <tr>
-                        <th class="afg-label"></th>
-                        <th class="afg-input"></th>
-                        <th class="afg-help-bubble"></th>
+                        <td>Route upload API Secret</td>
+                        <td>
+                        	<input class='afg-input' type='text' name='ptws_route_api_secret' id='ptws_route_api_secret' value="<?php echo get_option('ptws_route_api_secret'); ?>"/>
+                        </td>
+                        <td>
+                        	A unique string to authorize submitting routes to this PTWS Wordpress plugin.  Embed this in the client-side GPS importer.
+                        </td>
                     </tr>
+    			</table>
+            	<h3>Flickr User Settings</h3>
+                <table class='ptws-admin-settings'>
                     <tr>
                     	<td>Flickr User ID</td>
                     	<td><input class='afg-input' type='text' name='ptws_user_id' value="<?php echo get_option('ptws_user_id'); ?>" /></td>
@@ -709,6 +718,11 @@ function ptws_rest_route_create_arguments() {
         'type'        => 'string',
         'validate_callback' => 'ptws_rest_route_create_validate',
     );
+    $args['key'] = array(
+        'description' => esc_html__( 'The secret API key (set in the plugin admin section)', 'my-text-domain' ),
+        'type'        => 'string',
+        'validate_callback' => 'ptws_rest_route_create_validate',
+    );
     return $args;
 }
 
@@ -720,6 +734,12 @@ function ptws_rest_route_create($request) {
     }
     if (!isset( $request['route'] ) ) {
         return new WP_Error( 'rest_invalid', esc_html__( 'The route parameter is required.', 'my-text-domain' ), array( 'status' => 400 ) );
+    }
+    if (!isset( $request['key'] ) ) {
+        return new WP_Error( 'rest_invalid', esc_html__( 'The key parameter is required.', 'my-text-domain' ), array( 'status' => 400 ) );
+    }
+    if ($request['key'] != get_option('ptws_route_api_secret')) {
+        return new WP_Error( 'rest_invalid', esc_html__( 'The key parameter is incorrect.', 'my-text-domain' ), array( 'status' => 400 ) );
     }
     $routes_table_name = $wpdb->prefix . 'ptwsroutes';
 

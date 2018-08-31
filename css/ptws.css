@@ -354,7 +354,19 @@ table.musicplaylist tr td:first-child {
     height: 140px;
 }
 
-/* end CSS for ride logs */
+
+/* Admin area */
+
+table.ptws-admin-settings {
+	background:white;
+}
+
+table.ptws-admin-settings tr td:first-of-type {
+	white-space:nowrap;
+}
+
+
+/* General CSS */
 
 
 .content table.pictable {
