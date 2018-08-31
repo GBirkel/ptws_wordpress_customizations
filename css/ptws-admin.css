@@ -2,8 +2,18 @@
 
 table.ptws-admin-settings {
 	background:white;
+	padding:0.3em;
+}
+
+table.ptws-admin-settings tr td {
+	vertical-align:top;
 }
 
 table.ptws-admin-settings tr td:first-of-type {
 	white-space:nowrap;
+	margin:1em 0.4em 1em 0.2em;
+}
+
+table.ptws-admin-settings tr td:last-of-type {
+	margin:1em 0.4em 1em 0.2em;
 }
