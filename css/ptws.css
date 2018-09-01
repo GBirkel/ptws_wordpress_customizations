@@ -608,7 +608,7 @@ ul.qa > li.qaq span.qaq:first-child:hover, div.qaq:hover, h4.qaq:hover {
 
 .entry ul:not(.qa) {
 	list-style-type: square;
-	margin: 0.8em 1em 0.8em 1em;
+	margin: 0.8em 1.5em 0.8em 2em;
 	padding: 0;
 }
 
