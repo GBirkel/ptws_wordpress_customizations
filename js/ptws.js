@@ -189,6 +189,21 @@ var ptws = {
 			var polylineOuter = L.polyline(routeLeafletPoints, routeOuterStyle).addTo(map);
 			var polylineInner = L.polyline(routeLeafletPoints, routeInnerStyle).addTo(map);
 
+			var startFlag = L.icon({
+				iconSize: [15, 18],
+				iconAnchor: [2, 17],
+				iconUrl: 'https://mile42.net/wp-content/plugins/ptws/images/start_flag.png'
+			});
+
+			var finishFlag = L.icon({
+				iconSize: [15, 18],
+				iconAnchor: [2, 17],
+				iconUrl: 'https://mile42.net/wp-content/plugins/ptws/images/checkered_flag.png'
+			});
+
+			L.marker(routeLeafletPoints[0], { icon: startFlag }).addTo(map);
+			L.marker(routeLeafletPoints[routeLeafletPoints.length-1], { icon: finishFlag }).addTo(map);
+
 			// Calculate the center point and the outer bounds for the route.
 			var latMin = Math.min.apply(0, rawdata['lat']);
 			var latMax = Math.max.apply(0, rawdata['lat']);
