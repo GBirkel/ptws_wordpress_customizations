@@ -526,7 +526,8 @@ div.ptws-wikiloc-frame {
 	/*	font-size:0.9em;	*/
 }
 div.qaq, span.qaq {
-	color:rgb(3, 138, 170);
+	color:rgb(45, 170, 3);
+	padding-left: 0.32em;
 }
 
 div.qaq {
@@ -535,13 +536,13 @@ div.qaq {
 }
 
 ul.qa {
-	margin-left: 1em;
+	margin: 0.8em 1.5em 0.8em 2em;
 	padding-left: 1.2em;
 }
 
 ul.qa > li.qaq {
 	list-style: none;
-	text-indent: -1.2em;
+	text-indent: -1.3em;
 }
 
 li.qaq::before, div.qaq::before, h4.qaq::before { 
@@ -572,6 +573,7 @@ ul.qa > li.qaq span.qaq:first-child:hover, div.qaq:hover, h4.qaq:hover {
 }
 .qaq.disclosed .qaa {
 	display: block;	/* For when the intended qaa is inside a qaq, like in a li.qaq */
+	text-indent: 0;
 }
 
 .qaa p {
