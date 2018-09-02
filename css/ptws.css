@@ -319,12 +319,11 @@ table.musicplaylist tr td:first-child {
 /* Embedded routes (via [ptwsroute]) showing a map and elevation graph */
 
 .ptws-ride-log {
-    border: #ccc 1px solid;
-    border-radius: 10px;
-    padding: 4px;
-    margin: 1.5em auto;
-    width: 640px;
-    background-color: #F8F8F8;
+	margin: 1.5em;
+	display: flex;
+	flex-direction: column;
+	flex-wrap: nowrap;
+	align-items: center;
 }
 
 .ptws-ride-log > div.data {
@@ -332,10 +331,10 @@ table.musicplaylist tr td:first-child {
 }
 
 .ptws-ride-log .ptws-routemap {
-    padding: 0;
-    margin: 0;
-    width: 640px;
-    background-color: #F8F8F8;
+	width: 100%;
+	min-width: 640px;
+	max-width: 800px;
+	box-shadow: 1px 1px 9px -1px rgba(81, 81, 81, 0.51);
 }
 
 .ptws-ride-log .ptws-routemap > div {
@@ -343,11 +342,10 @@ table.musicplaylist tr td:first-child {
 }
 
 .ptws-ride-log .ptws-elevation-chart {
-    border-radius: 0 0 10px 10px;
-    padding: 7px 0 0 0;
-    margin: 0;
-    width: 640px;
-    background-color: #F8F8F8;
+    padding: 17px 0 0 0;
+	width: 100%;
+	min-width: 640px;
+	max-width: 800px;
 }
 
 .ptws-ride-log .ptws-elevation-chart > canvas {
