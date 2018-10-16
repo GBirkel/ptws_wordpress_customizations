@@ -29,6 +29,83 @@ iframe.wikiloc {
 	height:600px;
 }
 
+/* Entry content */
+
+.content {
+	margin: 0 auto 0;
+	font-size:15px;
+	padding: 0;
+}
+@media screen and (max-device-width: 1024px) {
+	.content {
+		font-size:20px;
+	}
+}
+
+.content blockquote p {
+	margin: 0;
+	padding: 0 0 10px 0;
+}
+
+.post {
+	margin: 0 0 9px 0;
+	padding: 0 0 1px 0;
+	clear: left;
+}
+
+.entry {
+	margin: 0;
+	padding: 0;
+}
+
+.entry > p {
+	margin: 1em 1.4em 1em 1.5em;
+	padding: 0 0 0 0;
+	text-indent:1.6em;
+}
+
+.entry ul ul {
+	margin: 0;
+	padding: 0 0 0 0;
+}
+
+.entry ol {
+	margin: 0.7em 1em 0.7em 2em;
+	padding: 0;
+}
+
+.entry ol li {
+	margin: 0 0 0 20px;
+	padding: 0;
+}
+
+.entry table {
+	border: 1px solid #e6e6e6;
+	margin: 0.7em 1em 0.7em 1em;
+}
+
+.entry th,
+.entry td {
+	border: 1px solid #e6e6e6;
+	padding: .25em 1em;
+	text-align: left;
+}
+
+.comments-content {
+	margin: 0;
+	padding: 0;
+}
+
+.sticky {
+	background: #F5F5F5;
+	margin: 0 0 40px 0;
+	padding: 20px 20px 15px 20px;
+	border: 1px solid #E6E6E6;
+}
+
+.clear {
+	clear: left;
+}
 
 /* Disclose icons, expressed to override jquery-ui style */
 
@@ -234,14 +311,14 @@ span.ui-icon-triangle-1-s::before {
 .content .entry div.dialogue > div > div:first-child {
 	color: #666;
 	text-align: right;
-	font-size: 13px;
+	font-size: 14px;
 	white-space: nowrap;
 	font-weight: bold;
 	padding-right:8px;
 }
 @media screen and (max-device-width: 1024px) {
 	.content .entry div.dialogue > div > div:first-child {
-		font-size: 18px;
+		font-size: 19px;
 	}
 }
 
