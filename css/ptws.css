@@ -21,6 +21,11 @@ body {
 		color: #111111;
 	}
 }
+@media screen and (max-device-width: 1024px) and (orientation:portrait) {
+	body {
+		font-size:1.2em;
+	}
+}
 
 div.comment-respond {
 	margin-left: 1em;
@@ -39,9 +44,14 @@ iframe.wikiloc {
 	margin: 0 auto 0;
 	padding: 0;
 }
-@media screen and (max-device-width: 1024px) {
+@media screen and (max-device-width: 1024px) and (orientation:landscape) {
 	.content {
 		font-size:1.5em;
+	}
+}
+@media screen and (max-device-width: 1024px) and (orientation:portrait) {
+	.content {
+		font-size:1.6em;
 	}
 }
 
@@ -1302,7 +1312,7 @@ img.rsImg {
 
 @media screen and (max-device-width: 1024px) {
 	.rsMinW .rsGCaption p {
-		font-size:18px;
+		font-size:1.5em;
 	}
 }
 
