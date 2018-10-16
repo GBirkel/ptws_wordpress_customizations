@@ -33,12 +33,11 @@ iframe.wikiloc {
 
 .content {
 	margin: 0 auto 0;
-	font-size:15px;
 	padding: 0;
 }
 @media screen and (max-device-width: 1024px) {
 	.content {
-		font-size:20px;
+		font-size:1.4em;
 	}
 }
 
@@ -165,6 +164,7 @@ span.ui-icon-triangle-1-s::before {
 .content .entry div.imgComment {
 	text-align: left;
 	text-indent: 10px;
+	font-size: 0.9em;
 	margin: 0 10px 0 10px;
 	padding: 0px 15px 0 15px;
 }
@@ -311,15 +311,10 @@ span.ui-icon-triangle-1-s::before {
 .content .entry div.dialogue > div > div:first-child {
 	color: #666;
 	text-align: right;
-	font-size: 14px;
+	font-size: 0.8em;
 	white-space: nowrap;
 	font-weight: bold;
 	padding-right:8px;
-}
-@media screen and (max-device-width: 1024px) {
-	.content .entry div.dialogue > div > div:first-child {
-		font-size: 19px;
-	}
 }
 
 
@@ -368,7 +363,7 @@ table.musicplaylist tr td:first-child {
 	padding-bottom: 8px;
 	font-weight: normal;
 	text-shadow: 1px 1px 1px rgba(150,126,126,0.6);
-	font-size: 13px;
+	font-size: 0.75em;
 }
 
 .content blockquote.a {
@@ -389,7 +384,7 @@ table.musicplaylist tr td:first-child {
 	padding-top: 6px;
 	padding-bottom: 2px;
 	font-weight: normal;
-	font-size: 13px;
+	font-size: 0.75em;
 }
 
 
@@ -463,7 +458,7 @@ div.ptws-wikiloc-frame {
 	padding-bottom: 8px;
 	font-weight: normal;
 	text-shadow: 1px 1px 1px rgba(150,126,126,0.6);
-	font-size: 14px;
+	font-size: 0.8em;
 }
 
 .content blockquote.picdesc {
@@ -477,7 +472,7 @@ div.ptws-wikiloc-frame {
 	padding-top: 6px;
 	padding-bottom: 2px;
 	font-weight: normal;
-	font-size: 13px;
+	font-size: 0.75em;
 }
 
 
@@ -497,7 +492,7 @@ div.ptws-wikiloc-frame {
 	background: rgb(255, 248, 226);
 	box-shadow: inset 0 1px 0 #fff, 0 1px 0 rgba(0, 0, 0, .08);
 	display: inline-block;
-	font-size: 13px;
+	font-size: 0.75em;
 	margin: 5px 5px;
 	padding: 2px 7px 2px 7px;
 	cursor: pointer;
@@ -512,7 +507,7 @@ div.ptws-wikiloc-frame {
 }
 @media screen and (max-device-width: 1024px) {
 	.content div.gearFilterButtons > span {
-		font-size:26px;
+		font-size: 1.1em;
 		padding: 8px 12px 8px 12px;
 		margin: 8px 8px;
 	}
@@ -550,12 +545,7 @@ div.ptws-wikiloc-frame {
 
 .content div.gear span.gearname {
 	padding: 0px 15px 0px 5px;
-	font-size: 17px;
-}
-@media screen and (max-device-width: 1024px) {
-	.content div.gear span.gearname {
-		font-size: 23px;
-	}
+	font-size: 1.1em;
 }
 
 .content div.gear span.gearpurchase {
@@ -567,9 +557,10 @@ div.ptws-wikiloc-frame {
 
 .content div.gear img {
 	padding: 0;
-	margin: 0px 15px 10px 6px;
+	margin: 0 1.1em 0.7em 0.4em;
 	float: left;
-	max-width: 128px;
+	max-width: 9em;
+	max-height: 7em;
 }
 
 .content div.gear p {
@@ -680,8 +671,6 @@ ul.qa > li.qaq span.qaq:first-child:hover, div.qaq:hover, h4.qaq:hover {
 	border-radius: 3px;
 	text-indent:0;
 }
-
-
 
 .entry ul:not(.qa) {
 	list-style-type: square;
@@ -1309,7 +1298,7 @@ img.rsImg {
 
 @media screen and (max-device-width: 1024px) {
 	.rsMinW .rsGCaption p {
-		font-size:20px;
+		font-size:18px;
 	}
 }
 
