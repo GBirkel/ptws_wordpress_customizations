@@ -1,9 +1,14 @@
 /******** General customization *******/
 
+@font-face {
+  font-family: 'Didact Gothic';
+  src: url('../fonts/DidactGothic-Regular.ttf')  format('truetype');
+}
+
 body {
 	background: #FFFFFF;
 	color: #000000;
-	font-family: 'Century Gothic', CenturyGothic, AppleGothic, sans-serif;
+	font-family: 'Didact Gothic', sans-serif;
 	line-height: 1.5;	/* Unitless means multiply font size */
 	margin: 0 auto 20px;
 	padding: 0;
@@ -14,7 +19,6 @@ body {
 		/* affected by glare from surrounding text and background.       */
 		background: #EAEAEA;
 		color: #111111;
-		font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;
 	}
 }
 
@@ -37,7 +41,7 @@ iframe.wikiloc {
 }
 @media screen and (max-device-width: 1024px) {
 	.content {
-		font-size:1.4em;
+		font-size:1.5em;
 	}
 }
 
