@@ -51,7 +51,7 @@ iframe.wikiloc {
 }
 @media screen and (max-device-width: 1024px) and (orientation:portrait) {
 	.content {
-		font-size:1.6em;
+		font-size:1.3em;
 	}
 }
 
@@ -487,6 +487,67 @@ div.ptws-wikiloc-frame {
 	padding-bottom: 2px;
 	font-weight: normal;
 	font-size: 0.75em;
+}
+
+
+/***** Post Info ********************/
+	
+.post-info {
+	font-size: 0.8em;
+	color: #999999;
+	margin: 0 0 13px 2em;
+	padding: 0;
+	text-transform: uppercase;
+}
+	
+.post-info p {
+	margin: 0;
+	padding: 0;
+}
+
+.post-info abbr {
+	border: none;
+}		
+
+
+/***** Post Meta ********************/
+	
+.post-meta {
+	font-size: 0.8em;
+	text-transform: uppercase;
+	margin: 0 0 5px 0;
+	padding: 1px 0 9px 0;
+	border-bottom: 1px dotted #CCCCCC;
+}
+	
+.post-meta p {
+	margin: 0;
+	padding: 0;
+}	
+
+
+/***** Author Box ********************/
+	
+.author-box {
+	background: #F5F5F5;
+	margin: 20px 0 40px 0;
+	padding: 10px;
+	border: 1px solid #DDDDDD;
+	overflow: auto;
+	clear: both;
+}
+	
+.author-box p {
+	margin: 0;
+	padding: 0;
+}
+	
+.author-box img {
+	background: #FFFFFF;
+	float: left;
+	margin: 0 10px 0 0;
+	padding: 4px;
+	border: 1px solid #E6E6E6;
 }
 
 
