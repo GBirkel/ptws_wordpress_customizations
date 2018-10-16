@@ -490,10 +490,169 @@ div.ptws-wikiloc-frame {
 }
 
 
+/***** Nav Menu  ********************/
+
+.menu-main-container ul {
+	margin: 0;
+	padding: 0;
+	list-style-type: none;
+	display:flex;
+}
+
+.menu-main-container > ul > li {
+	font-size:1.2em;
+	margin:0.1em 0.2em 0 0.2em;
+	white-space: nowrap;
+	text-transform: uppercase;
+	padding: 0.3em 0.5em 0.3em 0.5em;
+	border-radius: 8px;
+	-webkit-border-radius: 8px;
+	-moz-border-radius: 8px;
+	border-style:solid;
+	border-width:2px;
+	font-weight:bold;
+	border-color:white;
+}
+@media screen and (max-device-width: 1024px) {
+	.menu-main-container > ul > li {
+		font-size:1.6em;
+	}
+}
+
+.menu-main-container > ul > li > a {
+	color: rgb(143,137,111);
+	display: block;
+	border:none;
+	text-decoration: none;
+	text-shadow: #E8D1B3 1px 1px;
+}
+
+.menu-main-container ul ul {
+	display:none;
+	position:absolute;
+	z-index: 99999;
+}	
+
+.menu-main-container ul ul ul {
+	left:100%;
+	top:0;
+}	
+
+.menu-main-container ul li:hover > ul {
+	display:block;
+}
+
+.menu-main-container > ul > li:hover {
+	border-color:rgb(182,168,4);
+	background:rgb(255, 243, 208);
+	box-shadow: inset 0 1px 0 #fff, 0 1px 0 rgba(0, 0, 0, .08);
+	text-decoration:underline;
+}
+
+.menu-main-container > ul > li > a.selected,
+.menu-main-container > ul > li.current_page_item,
+.menu-main-container > ul > li.current_page_ancestor {
+	box-shadow: inset 0 1px 0 #fff, 0 1px 0 rgba(0, 0, 0, .08);
+	border-color:rgb(200, 186, 103);
+	background-color:rgb(255, 248, 226);
+}
+
+ul.children {
+	min-width: 200px;
+	padding-left: 0;
+	background: rgb(250,244,220);
+	border:1px solid rgb(232,225,179);
+	border-radius: 8px;
+}
+
+ul.children > li > a:hover,
+ul.children > li.current_page_item > a,
+ul.children > li.current_page_ancestor > a,
+ul.children > li.current_menu_item > a,
+ul.children > li.current_menu_ancestor > a {
+	margin: 0;
+	padding: 4px 10px 4px 10px;
+	border:1px solid #E8D1B3;
+}
+
+ul.children > li > a {
+	display: block;
+	font-size: 12px;
+	border:none;
+	text-decoration: none;
+	color: #735940;
+	margin: 0;
+	padding: 5px 11px 5px 11px;
+	text-shadow: #E8D1B3 1px 1px;
+	text-transform: none;
+	border-radius: 8px;
+	-webkit-border-radius: 8px;
+	-moz-border-radius: 8px;
+}
+
+
+/***** Headlines ********************/
+
+.content h1, .content h4, .content h5, .content h6 {
+	color: #333333;
+	text-decoration: none;
+	margin: 0 1em 5px 1em;
+	padding: 0;
+}
+
+.content h1 {
+	font-size: 1.5em;
+	margin-bottom: 0.2em;
+	font-weight: normal;
+}
+
+.content h2 {
+	color: #333333;
+	text-decoration: none;
+	font-size: 1.3em;
+	font-weight: normal;
+	margin: 0 1em 8px 1em;
+	padding: 0 0 5px 0;
+}
+	
+.content h2 a, .content h2 a:visited {
+	color: #333333;
+	text-decoration: none;
+}
+	
+.content h2 a:hover {
+	color: #008DCF;
+	text-decoration: none;
+}
+	
+.content h3 {
+	font-size: 1.2em;
+	color: #333333;
+	font-weight: normal;
+	text-decoration: none;
+	margin: 0 1em 10px 1em;
+	padding: 0;
+}
+	
+.content h4 {
+	font-size: 1.15em;
+	font-weight: normal;
+}
+	
+.content h5 {
+	font-size: 1.05em;
+	font-weight: bold;
+}
+	
+.content h6 {
+	font-size: 1.05em;
+}
+
+
 /***** Post Info ********************/
 	
 .post-info {
-	font-size: 0.8em;
+	font-size: 0.72em;
 	color: #999999;
 	margin: 0 0 13px 2em;
 	padding: 0;
@@ -507,13 +666,13 @@ div.ptws-wikiloc-frame {
 
 .post-info abbr {
 	border: none;
-}		
+}
 
 
 /***** Post Meta ********************/
 	
 .post-meta {
-	font-size: 0.8em;
+	font-size: 0.72em;
 	text-transform: uppercase;
 	margin: 0 0 5px 0;
 	padding: 1px 0 9px 0;
