@@ -472,6 +472,7 @@ function ptws_enqueue_scripts() {
 function ptws_enqueue_styles() {
     wp_enqueue_style('ptws_css', PTWS_PLUGIN_URL . "/css/leaflet.css");
     wp_enqueue_style('ptws_leaflet_css', PTWS_PLUGIN_URL . "/css/ptws.css");
+    wp_enqueue_style('ptws_leaflet_css', PTWS_PLUGIN_URL . "/css/rscustom.css");
 }
 
 
