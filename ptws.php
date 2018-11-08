@@ -149,6 +149,14 @@ function ptws_append_image_and_comments($p, $picContainer, $commentFlag) {
     $objImg->addAttribute('style', 'max-width:800px;');
     $objImg->addAttribute('src', (string)$p['large_thumbnail_url']);
 
+    $wraw = floatval((int)$p['large_thumbnail_width']);
+    $hraw = floatval((int)$p['large_thumbnail_height']);
+
+    if (($hraw > 0) && ($hraw > 0)) {
+        $objImg->addAttribute('ptwswidth', (string)$wraw);
+        $objImg->addAttribute('ptwsheight', (string)$hraw);
+    }
+
     if (!$commentFlag) { return; }
 
     try {

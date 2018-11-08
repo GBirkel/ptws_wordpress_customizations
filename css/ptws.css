@@ -1,30 +1,56 @@
-/******** General customization *******/
+/******** Custom fonts and CSS variables *******/
 
 @font-face {
   font-family: 'Didact Gothic';
   src: url('../fonts/DidactGothic-Regular.ttf')  format('truetype');
 }
 
+:root {
+	--ptws-body-font-size: 1em;
+	--ptws-body-background: #FFFFFF;
+	--ptws-body-color: #000000;
+    --ptws-content-font-size: 1em;
+	--ptws-menu-main-container-ul-li-font-size: 1.2em;
+
+	--ptws-gearFilterButtons-span-font-size: 0.75em;
+	--ptws-gearFilterButtons-span-padding: 2px 7px 2px 7px;
+	--ptws-gearFilterButtons-span-margin: 5px 5px;
+}
+@media screen and (max-device-width: 1024px) {
+  :root {
+		/* On mobile devices, the photos are much smaller, and much more */
+		/* affected by glare from surrounding text and background.       */
+	    --ptws-body-background: #EAEAEA;
+	    --ptws-body-color: #111111;
+		/* On mobile devices but not in portrait mode, boost entry text size a bit */
+	    --ptws-content-font-size: 1.3em;
+		--ptws-menu-main-container-ul-li-font-size: 1.6em;
+
+		--ptws-gearFilterButtons-span-font-size: 1.1em;
+		--ptws-gearFilterButtons-span-padding: 8px 12px 8px 12px;
+		--ptws-gearFilterButtons-span-margin: 8px 8px;
+  }
+}
+@media screen and (max-device-width: 1024px) and (orientation:portrait) {
+  :root {
+	  	/* Boost font sizes from the body on down in portrait mode */
+	    --ptws-body-font-size: 1.4em;
+	  	/* Compensate for the boost in the main menu so it's not huge */
+		--ptws-menu-main-container-ul-li-font-size: 1.4em;
+  }
+}
+
+
+/******** General customization *******/
+
 body {
-	background: #FFFFFF;
-	color: #000000;
+	background: var(--ptws-body-background);
+	color: var(--ptws-body-color);
 	font-family: 'Didact Gothic', sans-serif;
 	line-height: 1.5;	/* Unitless means multiply font size */
 	margin: 0 auto 20px;
 	padding: 0;
-}
-@media screen and (max-device-width: 1024px) {
-	body {
-		/* On mobile devices, the photos are much smaller, and much more */
-		/* affected by glare from surrounding text and background.       */
-		background: #EAEAEA;
-		color: #111111;
-	}
-}
-@media screen and (max-device-width: 1024px) and (orientation:portrait) {
-	body {
-		font-size:1.4em;
-	}
+	font-size: var(--ptws-body-font-size);
 }
 
 div.comment-respond {
@@ -38,16 +64,13 @@ iframe.wikiloc {
 	height:600px;
 }
 
+
 /* Entry content */
 
 .content {
 	margin: 0 auto 0;
 	padding: 0;
-}
-@media screen and (max-device-width: 1024px) {
-	.content {
-		font-size:1.3em;
-	}
+	font-size: var(--ptws-content-font-size);
 }
 
 .content blockquote p {
@@ -117,7 +140,7 @@ iframe.wikiloc {
 
 
 /***** Post Icons ********************/
-	
+
 .time {
 	background: url(../images/icon-time.png) no-repeat center left;
 	margin: 0 0 0 0px;
@@ -125,19 +148,19 @@ iframe.wikiloc {
 }
 
 .post-comments {
-	background: url(../images/icon-comments.png) no-repeat bottom left;
+	background: url(../images/icon-comments.png) no-repeat center left;
 	margin: 0 0 0 3px;
 	padding: 0 0 6px 18px;
 }
 	
 .categories {
-	background: url(../images/icon-categories.png) no-repeat bottom left;
+	background: url(../images/icon-categories.png) no-repeat center left;
 	margin: 0 0 0 6px;
 	padding: 0 0 2px 18px;
 }
 	
 .tags {
-	background: url(../images/icon-tags.png) no-repeat bottom left;
+	background: url(../images/icon-tags.png) no-repeat center left;
 	margin: 0 0 0 3px;
 	padding: 0 0 2px 18px;
 }
@@ -523,7 +546,7 @@ div.ptws-wikiloc-frame {
 }
 
 .menu-main-container > ul > li {
-	font-size:1.2em;
+	font-size: var(--ptws-menu-main-container-ul-li-font-size);
 	margin:0.1em 0.2em 0 0.2em;
 	white-space: nowrap;
 	text-transform: uppercase;
@@ -535,16 +558,6 @@ div.ptws-wikiloc-frame {
 	border-width:2px;
 	font-weight:bold;
 	border-color:white;
-}
-@media screen and (max-device-width: 1024px) {
-	.menu-main-container > ul > li {
-		font-size:1.6em;
-	}
-}
-@media screen and (max-device-width: 1024px) and (orientation:portrait) {
-	.menu-main-container > ul > li {
-		font-size:1.4em;
-	}
 }
 
 .menu-main-container > ul > li > a {
@@ -754,9 +767,9 @@ ul.children > li > a {
 	background: rgb(255, 248, 226);
 	box-shadow: inset 0 1px 0 #fff, 0 1px 0 rgba(0, 0, 0, .08);
 	display: inline-block;
-	font-size: 0.75em;
-	margin: 5px 5px;
-	padding: 2px 7px 2px 7px;
+	font-size: var(--ptws-gearFilterButtons-span-font-size);
+	padding: var(--ptws-gearFilterButtons-span-padding);
+	margin: var(--ptws-gearFilterButtons-span-margin);
 	cursor: pointer;
 	border-width: 1px;
 	border-style: solid;
@@ -766,13 +779,6 @@ ul.children > li > a {
 	transition-property: border, background, color;
 	transition-duration: .2s;
 	transition-timing-function: ease-in-out;
-}
-@media screen and (max-device-width: 1024px) {
-	.content div.gearFilterButtons > span {
-		font-size: 1.1em;
-		padding: 8px 12px 8px 12px;
-		margin: 8px 8px;
-	}
 }
 
 .content div.gearFilterButtons > span:hover {
