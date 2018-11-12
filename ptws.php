@@ -1,22 +1,25 @@
 <?php
 /*
 Plugin Name: Poking Things With Sticks Extensions
-Plugin URI:  http://www.pokingthingswithsticks.com
+Plugin URI:  http://www.mile42.net
 Description: This plugin supports all the non-standard WP stuff I do on PTWS.  Among other things, it finds recent posted pictures on my Flickr feed and integrates them with recent WP posts in a fancypants way
 Version:     1.91
 Author:      Pokingthingswithsticks
 Author URI:  http://www.pokingthingswithsticks.com
-License:     MIT
+License:     GPL2
 License URI: https://Icantbebothered.tolook.thisup.right.now
 
-Copyright 2018 Mile42 (email : gbirkel@gmail.com)
+Written 2018 Mile42 (email : gbirkel@gmail.com)
 This is free software: you can redistribute it and/or modify
-it under the terms of the MIT License.
- 
+it under the terms of the GPL2 License.
+
 It is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- */
+
+Uses LazyLoad Code by the WordPress.com VIP team, TechCrunch 2011 Redesign team, and Jake Goldman (10up LLC),
+which uses jQuery.sonar by Dave Artz (AOL): http://www.artzstudio.com/files/jquery-boston-2010/jquery.sonar/
+*/
 
 global $ptws_db_version;
 $ptws_db_version = '1.91';
@@ -153,8 +156,8 @@ function ptws_append_image_and_comments($p, $picContainer, $commentFlag) {
     $hraw = floatval((int)$p['large_thumbnail_height']);
 
     if (($hraw > 0) && ($hraw > 0)) {
-        $objImg->addAttribute('ptwswidth', (string)$wraw);
-        $objImg->addAttribute('ptwsheight', (string)$hraw);
+        $objImg->addAttribute('ptws-width', (string)$wraw);
+        $objImg->addAttribute('ptws-height', (string)$hraw);
     }
 
     if (!$commentFlag) { return; }
@@ -419,13 +422,54 @@ function ptwsgallery_shortcode( $atts, $content = null ) {
                 $p = $photos[$pid];
                 ptws_append_image_and_comments($p, $picContainer, $commentFlag);
             }
-        } else {
+        } elseif (count($fixedgalleryIDs) == 1) {
             foreach($fixedgalleryIDs as $pid) {
                 if (isset($photos[$pid])) {
                     $p = $photos[$pid];
                     $picContainer = $fixedGalXML->addChild('div');
                     ptws_append_image_and_comments($p, $picContainer, $commentFlag);
                 }
+            }
+        } else {
+
+            $galleryItems = array();
+            foreach($fixedgalleryIDs as $pid) {
+                if (isset($photos[$pid])) {
+                    array_push($galleryItems, $photos[$pid]);
+                }
+            }
+            $imgMaxHeight = 0;
+            $missingSize = false;
+            foreach($galleryItems as $p) {
+                $hraw = floatval((int)$p['large_thumbnail_height']);
+                $wraw = floatval((int)$p['large_thumbnail_width']);
+                if (($hraw > 0) && ($wraw > 0)) {
+                    if ($imgMaxHeight < $hraw) { $imgMaxHeight = $hraw; }
+                } else {
+                    $missingSize = true;
+                }
+            }
+            $imgTotalScaledWidth = 0;
+            foreach($galleryItems as $p) {
+                $hraw = floatval((int)$p['large_thumbnail_height']);
+                $wraw = floatval((int)$p['large_thumbnail_width']);
+                if (($hraw > 0) && ($wraw > 0)) {
+                    $imgScaledWidth = ($imgMaxHeight / $hraw) * $wraw;
+                    $imgTotalScaledWidth = $imgTotalScaledWidth + $imgScaledWidth;
+                }
+            }
+            $galleryCount = floatval(count($galleryItems));
+            foreach($galleryItems as $p) {
+                $picContainer = $fixedGalXML->addChild('div');
+
+                if (($imgMaxHeight > 0) && ($imgTotalScaledWidth > 0) && ($missingSize == false)) {
+                    $wraw = floatval((int)$p['large_thumbnail_width']);
+                    $hraw = floatval((int)$p['large_thumbnail_height']);
+                    $imgScaledWidth = ($imgMaxHeight / $hraw) * $wraw;
+                    $flexProportion = ($galleryCount / $imgTotalScaledWidth) * $imgScaledWidth;
+                    $picContainer->addAttribute('style', sprintf( 'flex:%01.4f', $flexProportion ));
+                }
+                ptws_append_image_and_comments($p, $picContainer, $commentFlag);
             }
         }
         $emit .= $fixedGalXML->asXML() . "\n";
@@ -471,8 +515,13 @@ function ptws_get_flickr_cache_record($pid) {
 
 function ptws_enqueue_scripts() {
     wp_enqueue_script('jquery');
+    // For lazy-loading images
+	wp_enqueue_script('jquery-sonar', PTWS_PLUGIN_URL . '/js/jquery.sonar.min.js', array( 'jquery' ));
+    // For route and elevation lines
     wp_enqueue_script('ptws_chart_js', PTWS_PLUGIN_URL . "/js/Chart.bundle.min.js" , array('jquery'));
+    // For placing routes on maps
     wp_enqueue_script('ptws_leaflet_js', PTWS_PLUGIN_URL . "/js/leaflet.js" , array('jquery'));
+    // Everything else
     wp_enqueue_script('ptws_js', PTWS_PLUGIN_URL . "/js/ptws.js" , array('jquery'));
 }
 
@@ -1035,6 +1084,60 @@ function ptws_admin_cache_clear() {
 }
 
 
+function ptws_ll_build_attributes_string( $attributes ) {
+    $string = array();
+    foreach ( $attributes as $name => $attribute ) {
+        $value = $attribute['value'];
+        if ( '' === $value ) {
+            $string[] = sprintf( '%s', $name );
+        } else {
+            $string[] = sprintf( '%s="%s"', $name, esc_attr( $value ) );
+        }
+    }
+    return implode( ' ', $string );
+}
+
+
+function ptws_ll_process_image( $matches ) {
+    // In case you want to change the placeholder image
+    $placeholder_image = PTWS_PLUGIN_URL . '/images/1x1.trans.gif';
+
+    $old_attributes_str = $matches[2];
+    $old_attributes = wp_kses_hair( $old_attributes_str, wp_allowed_protocols() );
+
+    if ( empty( $old_attributes['src'] ) ) {
+        return $matches[0];
+    }
+
+    $image_src = $old_attributes['src']['value'];
+
+    // Remove src and lazy-src since we manually add them
+    $new_attributes = $old_attributes;
+    unset( $new_attributes['src'], $new_attributes['data-lazy-src'] );
+
+    $new_attributes_str = ptws_ll_build_attributes_string( $new_attributes );
+
+    return sprintf( '<img src="%1$s" data-lazy-src="%2$s" %3$s><noscript>%4$s</noscript>', esc_url( $placeholder_image ), esc_url( $image_src ), $new_attributes_str, $matches[0] );
+}
+
+
+function ptws_ll_add_image_placeholders( $content ) {
+
+    // Don't lazyload for feeds, previews
+    if( is_feed() || is_preview() )
+        return $content;
+
+    // Don't lazy-load if the content has already been run through previously
+    if ( false !== strpos( $content, 'data-lazy-src' ) )
+        return $content;
+
+    // This is a pretty simple regex, but it works
+    $content = preg_replace_callback( '#<(img)([^>]+?)(>(.*?)</\\1>|[\/]?>)#si', 'ptws_ll_process_image', $content );
+
+    return $content;
+}
+
+
 if (!is_admin()) {
     add_action('wp_print_scripts', 'ptws_enqueue_scripts');
     add_action('wp_print_styles', 'ptws_enqueue_styles');
@@ -1043,6 +1146,8 @@ if (!is_admin()) {
     // https://wordpress.org/plugins/wpautop-control/
     remove_filter('the_content', 'wpautop');
     remove_filter('the_excerpt', 'wpautop');
+    // run this later, so other content filters have run, including image_add_wh on WP.com
+	add_filter( 'the_content', 'ptws_ll_add_image_placeholders', 99 );
 } else {
     register_activation_hook( __FILE__, 'ptws_activate' );
 /*    add_filter('plugin_action_links','ptws_add_settings_link', 10, 2 );*/

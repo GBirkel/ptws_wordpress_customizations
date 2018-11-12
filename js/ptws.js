@@ -320,7 +320,39 @@ var ptws = {
 				}
 			});
 		});
+	},
+
+
+	lazyLoadImage: function(img) {
+		var jqImg = jQuery(img);
+		var src = jqImg.attr('data-lazy-src');
+
+		if (!src || 'undefined' === typeof (src))
+			return;
+
+		jqImg.unbind('scrollin') // remove event binding
+			.hide()
+			.removeAttr('data-lazy-src')
+			.attr('data-lazy-loaded', 'true');
+
+		img.src = src;
+		jqImg.fadeIn();
+	},
+
+
+	lazyLoadInit: function() {
+		jQuery('img[data-lazy-src]').bind('scrollin', { distance: 200 }, function () {
+			ptws.lazyLoadImage(this);
+		});
+
+		// We need to force load gallery images in Jetpack Carousel and give up lazy-loading otherwise images don't show up correctly
+		jQuery('[data-carousel-extra]').each(function () {
+			jQuery(this).find('img[data-lazy-src]').each(function () {
+				ptws.lazyLoadImage(this);
+			});
+		});
 	}
+
 };
 
 
@@ -442,4 +474,7 @@ jQuery(document).ready(function($) {
 
 	ptws.findAndInitRoyalsliders();
 	ptws.findAndInitGPSLogDisplays();
+
+	ptws.lazyLoadInit();
+	$('body').bind('post-load', ptws.lazyLoadInit); // Work with WP.com infinite scroll
 });
