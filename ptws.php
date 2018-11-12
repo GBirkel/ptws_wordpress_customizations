@@ -592,7 +592,6 @@ function ptws_admin_html_page() {
     global $pf;
 
 	if ($_POST) {
-	    global $pf, $custom_size_err_msg;
 
         if (isset($_POST['submit']) && $_POST['submit'] == 'Save Changes') {
             update_option('ptws_route_api_secret', $_POST['ptws_route_api_secret']);
@@ -629,18 +628,6 @@ function ptws_admin_html_page() {
 		<div id='afg-wrap'>
 	        <h2>PTWS Custom Settings</h2>
             <div id="afg-main-box">
-            	<h3>General Settings</h3>
-                <table class='ptws-admin-settings'>
-                    <tr>
-                        <td>Route upload API Secret</td>
-                        <td>
-                        	<input class='afg-input' type='text' name='ptws_route_api_secret' id='ptws_route_api_secret' value="<?php echo get_option('ptws_route_api_secret'); ?>"/>
-                        </td>
-                        <td>
-                        	A unique string to authorize submitting routes to this PTWS Wordpress plugin.  Embed this in the client-side GPS importer.
-                        </td>
-                    </tr>
-    			</table>
             	<h3>Flickr User Settings</h3>
                 <table class='ptws-admin-settings'>
                     <tr>
@@ -684,6 +671,108 @@ function ptws_admin_html_page() {
                         </td>
                     </tr>
     			</table>
+<?php
+
+    global $wpdb;
+
+    $flickr_table_name = $wpdb->prefix . 'ptwsflickrcache';
+    $route_table_name = $wpdb->prefix . 'ptwsroutes';
+
+	if ($_POST) {
+        if (isset($_POST['submit']) && $_POST['submit'] == 'Clear Photo') {
+
+            if (!$_POST['ptws_photo_id_to_clear']) {
+                echo '<p>No photo ID to clear entered.</p>';
+            } else {
+                $wpdb->show_errors();
+
+                $pid = $_POST['ptws_photo_id_to_clear'];
+                $wpdb->query(
+                    $wpdb->prepare(
+                        "DELETE FROM $flickr_table_name WHERE flickr_id = %s", $pid
+                    )
+                );
+                echo '<p>Photo cleared from cache.</p>';
+                $wpdb->hide_errors();
+            }
+        }
+    }
+
+    $wpdb->show_errors();
+    $cache_count = $wpdb->get_var( "SELECT COUNT(*) FROM $flickr_table_name" );
+    $cache_unresolved_count = $wpdb->get_var("SELECT COUNT(*) FROM $flickr_table_name WHERE cached_time = 0");
+    $route_count = $wpdb->get_var( "SELECT COUNT(*) FROM $route_table_name" );
+
+    if ($cache_count > 0) {
+?>
+            	<h3>Photo Cache</h3>
+
+                <table class='ptws-admin-settings'>
+
+                    <tr>
+                        <td colspan="2">
+                            <input type="button" class="button-secondary"
+                                value="Clear All Cache"
+                                onClick="document.location.href='<?php echo get_admin_url() .  'admin-ajax.php?action=ptws_cache_clear'; ?>';" />
+                        </td>
+                        <td>
+                        	Wipes the entire cache.
+                        </td>
+                    </tr>
+<?php
+        if ($cache_unresolved_count > 0) {
+?>
+
+                    <tr>
+                        <td colspan="2">
+                            <input type="button" class="button-secondary"
+                                value="Resolve Entries"
+                                onClick="document.location.href='<?php echo get_admin_url() .  'admin-ajax.php?action=ptws_resolve'; ?>';" />
+                        </td>
+                        <td>
+                        	Resolves 4 of the most recently added unresolved cache entries.
+                        </td>
+                    </tr>
+
+<?php
+        }
+?>
+    			</table>
+
+                <table class='ptws-admin-settings'>
+                    <tr>
+                        <td>Flickr Photo ID</td>
+                        <td>
+                        	<input class='afg-input' type='text' name='ptws_photo_id_to_clear' id='ptws_photo_id_to_clear' value=""/>
+                            <input type="submit" name="submit" id="ptws_clear_single_photo" class="button-primary" value="Clear Photo" />
+                        </td>
+                        <td>
+                        	Clear a single photo from the cache.
+                        </td>
+                    </tr>
+    			</table>
+<?php
+        echo "<p>Flickr cache contains {$cache_count} entries, with {$cache_unresolved_count} unresolved.</p>";
+    }
+
+?>
+            	<h3>Route Database</h3>
+
+                <table class='ptws-admin-settings'>
+                    <tr>
+                        <td>Route upload API Secret</td>
+                        <td>
+                        	<input class='afg-input' type='text' name='ptws_route_api_secret' id='ptws_route_api_secret' value="<?php echo get_option('ptws_route_api_secret'); ?>"/>
+                        </td>
+                        <td>
+                        	A unique string to authorize submitting routes to this PTWS Wordpress plugin.  Embed this in the client-side GPS importer.
+                        </td>
+                    </tr>
+    			</table>
+<?php
+    echo "<p>Route database contains {$route_count} entries.</p>";
+?>
+
                 <br />
                 <input type="submit" name="submit" id="ptws_save_changes" class="button-primary" value="Save Changes" />
                 <br />
@@ -691,35 +780,6 @@ function ptws_admin_html_page() {
 				<input type="button" class="button-secondary"
 					value="Test Flickr Credentials"
 					onClick="document.location.href='<?php echo get_admin_url() .  'admin-ajax.php?action=ptws_test'; ?>';" />
-<?php
-
-    global $wpdb;
-    $flickr_table_name = $wpdb->prefix . 'ptwsflickrcache';
-    $route_table_name = $wpdb->prefix . 'ptwsroutes';
-
-    $wpdb->show_errors();
-    $cache_count = $wpdb->get_var( "SELECT COUNT(*) FROM $flickr_table_name" );
-    $cache_unresolved_count = $wpdb->get_var("SELECT COUNT(*) FROM $flickr_table_name WHERE cached_time = 0");
-    $route_count = $wpdb->get_var( "SELECT COUNT(*) FROM $route_table_name" );
-    echo "<p>Route database contains {$route_count} entries.</p>";
-    echo "<p>Flickr cache contains {$cache_count} entries, with {$cache_unresolved_count} unresolved.</p>";
-
-    if ($cache_count > 0) {
-?>
-                <input type="button" class="button-secondary"
-                    value="Clear All Cache"
-                    onClick="document.location.href='<?php echo get_admin_url() .  'admin-ajax.php?action=ptws_clear'; ?>';" />
-<?php
-    }
-
-    if ($cache_unresolved_count > 0) {
-?>
-                <input type="button" class="button-secondary"
-                    value="Resolve Entries"
-                    onClick="document.location.href='<?php echo get_admin_url() .  'admin-ajax.php?action=ptws_resolve'; ?>';" />
-<?php
-    }
-?>
 
 			</div>
 		</div>
@@ -1158,7 +1218,7 @@ if (!is_admin()) {
 	add_action('wp_ajax_ptws_gallery_auth', 'ptws_auth_init');
 	add_action('wp_ajax_ptws_test', 'ptws_flickr_connect_test');
     add_action('wp_ajax_ptws_resolve', 'ptws_admin_cache_resolve');
-    add_action('wp_ajax_ptws_clear', 'ptws_admin_cache_clear');
+    add_action('wp_ajax_ptws_cache_clear', 'ptws_admin_cache_clear');
 }
 
 add_action('rest_api_init', 'ptws_register_route_management');
