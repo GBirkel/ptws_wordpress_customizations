@@ -336,11 +336,33 @@ var ptws = {
 
 
 	lazyLoadImage: function(img) {
+		ptws.handleLazyLoadImage(img);
+		var jqImg = jQuery(img);
+
+		// If this picture is inside a RoyalSlider div, initialize the RoyalSlider,
+		// and immediately load all the related images without triggering a recursive RoyalSlider check.
+		var insideRoyalSlider = jqImg.closest('div.royalSlider');
+		insideRoyalSlider.each(function (i, oneRSContainer) {
+			// Once a RoyalSlider is inited, users can scroll left and right through the slides,
+			// bringing them into view even though they are not technically made visible by a scroll event.
+			// This breaks lazy loading.
+			var otherImages = jQuery(oneRSContainer).find('img[data-lazy-src]:not([data-lazy-loaded])');
+			// Also it creates a stack of slides that does not include all the slides in the oroginal
+			// set, and modifies the stack as it scrolls.  So we need to find all the other images
+			// before calling the RoyalSlider init.
+			otherImages.each(function (i, additonalImage) {
+				ptws.handleLazyLoadImage(additonalImage);
+			});
+			ptws.initRoyalslider(oneRSContainer);
+		});
+	},
+
+
+	handleLazyLoadImage: function(img) {
 		var jqImg = jQuery(img);
 		var src = jqImg.attr('data-lazy-src');
 
-		if (!src || 'undefined' === typeof (src))
-			return;
+		if (!src || 'undefined' === typeof (src)) { return; }
 
 		jqImg.unbind('scrollin') // remove event binding
 			.hide()
@@ -349,11 +371,6 @@ var ptws = {
 
 		img.src = src;
 		jqImg.fadeIn();
-		// If this picture is inside a RoyalSlider div, initialize it.
-		var insideRoyalSlider = jqImg.closest('div.royalSlider');
-		insideRoyalSlider.each(function (index, item) {
-			ptws.initRoyalslider(item);
-		});
 	},
 
 
