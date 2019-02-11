@@ -156,8 +156,8 @@ function ptws_append_image_and_comments($p, $picContainer, $commentFlag) {
     $hraw = floatval((int)$p['large_thumbnail_height']);
 
     if (($hraw > 0) && ($hraw > 0)) {
-        $objImg->addAttribute('ptws-width', (string)$wraw);
-        $objImg->addAttribute('ptws-height', (string)$hraw);
+        $objImg->addAttribute('data-ptws-width', (string)$wraw);
+        $objImg->addAttribute('data-ptws-height', (string)$hraw);
     }
 
     if (!$commentFlag) { return; }
@@ -360,7 +360,13 @@ function ptwsgallery_shortcode( $atts, $content = null ) {
                 $wraw = floatval((int)$p['large_thumbnail_width']);
                 $hraw = floatval((int)$p['large_thumbnail_height']);
                 $w = $wraw / ($hraw / 500.0); // Not using this since we're embedding proper thumbnail-sized dimensions
-                $emit .= '<img src="' . (string)$p['large_thumbnail_url'] . '" data-rsw="' . intval($wraw) . '" data-rsh="' . intval($hraw) . '" class="rsImg" />';
+                $emit .= '<img src="' . (string)$p['large_thumbnail_url'] . '" ';
+                $emit .= 'data-rsw="' . intval($wraw) . '" ';
+                $emit .= 'data-rsh="' . intval($hraw) . '" ';
+                $emit .= 'data-ptws-width="' . intval($wraw) . '" ';
+                $emit .= 'data-ptws-height="' . intval($hraw) . '" ';
+
+                $emit .= 'class="rsImg" />';
                 $emit .= '</a>';
 
                 if ($p['description']) {
@@ -527,14 +533,14 @@ function ptws_enqueue_scripts() {
 
 
 function ptws_enqueue_styles() {
-    wp_enqueue_style('ptws_css', PTWS_PLUGIN_URL . "/css/leaflet.css");
-    wp_enqueue_style('ptws_leaflet_css', PTWS_PLUGIN_URL . "/css/ptws.css");
-    wp_enqueue_style('ptws_leaflet_css', PTWS_PLUGIN_URL . "/css/rscustom.css");
+    wp_enqueue_style('ptws_leaflet_css', PTWS_PLUGIN_URL . "/css/leaflet.css");
+    wp_enqueue_style('ptws_css', PTWS_PLUGIN_URL . "/css/ptws.css");
+    wp_enqueue_style('ptws_royalsider_custom_css', PTWS_PLUGIN_URL . "/css/rscustom.css");
 }
 
 
 function ptws_enqueue_admin_styles() {
-    wp_enqueue_style('ptws_leaflet_css', PTWS_PLUGIN_URL . "/css/ptws-admin.css");
+    wp_enqueue_style('ptws_admin_css', PTWS_PLUGIN_URL . "/css/ptws-admin.css");
 }
 
 
@@ -1145,22 +1151,22 @@ function ptws_admin_cache_clear() {
 
 
 function ptws_ll_build_attributes_string( $attributes ) {
-    $string = array();
+    $strs = array();
     foreach ( $attributes as $name => $attribute ) {
         $value = $attribute['value'];
         if ( '' === $value ) {
-            $string[] = sprintf( '%s', $name );
+            $strs[] = sprintf( '%s', $name );
         } else {
-            $string[] = sprintf( '%s="%s"', $name, esc_attr( $value ) );
+            $strs[] = sprintf( '%s="%s"', $name, esc_attr( $value ) );
         }
     }
-    return implode( ' ', $string );
+    return implode( ' ', $strs );
 }
 
 
 function ptws_ll_process_image( $matches ) {
     // In case you want to change the placeholder image
-    $placeholder_image = PTWS_PLUGIN_URL . '/images/1x1.trans.gif';
+    $placeholder_image = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
 
     $old_attributes_str = $matches[2];
     $old_attributes = wp_kses_hair( $old_attributes_str, wp_allowed_protocols() );
@@ -1177,7 +1183,11 @@ function ptws_ll_process_image( $matches ) {
 
     $new_attributes_str = ptws_ll_build_attributes_string( $new_attributes );
 
-    return sprintf( '<img src="%1$s" data-lazy-src="%2$s" %3$s><noscript>%4$s</noscript>', esc_url( $placeholder_image ), esc_url( $image_src ), $new_attributes_str, $matches[0] );
+    return sprintf( '<img src="%1$s" data-lazy-src="%2$s" %3$s><noscript>%4$s</noscript>',
+        $placeholder_image,
+        esc_url( $image_src ),
+        $new_attributes_str,
+        $matches[0] );
 }
 
 

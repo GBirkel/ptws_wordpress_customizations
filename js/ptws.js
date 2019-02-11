@@ -8,50 +8,62 @@ var ptws = {
 	},
 
 	// Seek out and init RoyalSlider instances on the page, marking them as inited as we go.
-	// (Should be valled only when we've finished overloading the global caption module.)
+	// Note: Currently not used.
 	findAndInitRoyalsliders: function () {
 		jQuery('div.royalSlider').each(function (index, item) {
-			var sDiv = jQuery(item);
-			if (sDiv.attr('ptwsinitialized')) { return; }
-			sDiv.attr('ptwsinitialized', 1);
-			sDiv.royalSlider({
-				addActiveClass: true,
-				arrowsNav: true,
-				arrowsNavAutoHide: false,
-				autoPlay: false,
-				autoScaleSlider: false,
-				controlNavigation: 'bullets',
-				controlsInside: false,
-				globalCaption: true,
-				imageScaleMode: 'fit',
-				imageScalePadding: 0,
-				imageAlignCenter: true,
-				slidesSpacing: 0,
-				keyboardNavEnabled: false,
-				loop: false,
-				minSlideOffset: 0,
-				navigateByClick: false,
-				startSlideId: 0,
-				sliderDrag: true,
-				thumbsFitInViewport: false,
-				transitionType: 'move',
-				visibleNearby: {
-					enabled: true,
-					centerArea: 0.6,
-					center: true,
-					breakpoint: 1124,
-					breakpointCenterArea: 0.7
-				},
-				deeplinking: {
-					enabled: false,
-					change: false
-				}
-				/* size of all images http://help.dimsemenov.com/kb/royalslider-jquery-plugin-faq/adding-width-and-height-properties-to-images */
-				/* imgWidth: 1400, */
-				/* imgHeight: 680 */
-			});
+			ptws.initRoyalslider(item);
 		});
 	},
+
+
+	// Init the RoyalSlider instance, marking it inited afterwards.
+	// (Should be called only when we've finished overloading the global caption module.)
+	initRoyalslider: function (item) {
+		var sDiv = jQuery(item);
+		if (sDiv.attr('ptwsinitialized')) { return; }
+		sDiv.attr('ptwsinitialized', 1);
+		if (sDiv.royalSlider === undefined) {
+			console.log("PTWS: Royalslider plugin is not present/activated.");
+			return;
+		}
+		sDiv.royalSlider({
+			addActiveClass: true,
+			arrowsNav: true,
+			arrowsNavAutoHide: false,
+			autoPlay: false,
+			autoScaleSlider: false,
+			controlNavigation: 'bullets',
+			controlsInside: false,
+			globalCaption: true,
+			imageScaleMode: 'fit',
+			imageScalePadding: 0,
+			imageAlignCenter: true,
+			slidesSpacing: 0,
+			keyboardNavEnabled: false,
+			loop: false,
+			minSlideOffset: 0,
+			navigateByClick: false,
+			startSlideId: 0,
+			sliderDrag: true,
+			thumbsFitInViewport: false,
+			transitionType: 'move',
+			visibleNearby: {
+				enabled: true,
+				centerArea: 0.6,
+				center: true,
+				breakpoint: 1124,
+				breakpointCenterArea: 0.7
+			},
+			deeplinking: {
+				enabled: false,
+				change: false
+			}
+			/* size of all images http://help.dimsemenov.com/kb/royalslider-jquery-plugin-faq/adding-width-and-height-properties-to-images */
+			/* imgWidth: 1400, */
+			/* imgHeight: 680 */
+		});
+	},
+
 
 	// Seek out and init GPS log data chunks on the page, marking them as inited as we go.
 	findAndInitGPSLogDisplays: function () {
@@ -337,6 +349,11 @@ var ptws = {
 
 		img.src = src;
 		jqImg.fadeIn();
+		// If this picture is inside a RoyalSlider div, initialize it.
+		var insideRoyalSlider = jqImg.closest('div.royalSlider');
+		insideRoyalSlider.each(function (index, item) {
+			ptws.initRoyalslider(item);
+		});
 	},
 
 
@@ -472,7 +489,7 @@ jQuery(document).ready(function($) {
 		$.rsModules.globalCaption = $.rsProto._initGlobalCaption;
 	}
 
-	ptws.findAndInitRoyalsliders();
+	//ptws.findAndInitRoyalsliders();
 	ptws.findAndInitGPSLogDisplays();
 
 	ptws.lazyLoadInit();
