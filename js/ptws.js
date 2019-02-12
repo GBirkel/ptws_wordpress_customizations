@@ -347,7 +347,7 @@ var ptws = {
 			// bringing them into view even though they are not technically made visible by a scroll event.
 			// This breaks lazy loading.
 			var otherImages = jQuery(oneRSContainer).find('img[data-lazy-src]:not([data-lazy-loaded])');
-			// Also it creates a stack of slides that does not include all the slides in the oroginal
+			// Also RoyalSlider creates a stack of slides that does not include all the slides in the oroginal
 			// set, and modifies the stack as it scrolls.  So we need to find all the other images
 			// before calling the RoyalSlider init.
 			otherImages.each(function (i, additonalImage) {
