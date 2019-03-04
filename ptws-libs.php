@@ -1,11 +1,16 @@
 <?php
 
+namespace Poking_Things_With_Sticks;
+
+
 define('PTWS_PLUGIN_URL', plugins_url() . '/' . basename(dirname(__FILE__)));
 define('PTWS_SITE_URL', site_url());
+define('PTWS_PLUGIN_DIRECTORY', __DIR__);
+
 
 function ptws_create_afgFlickr_obj() {
     global $pf;
-    $pf = new afgFlickr(get_option('ptws_api_key'), get_option('ptws_api_secret') ? get_option('ptws_api_secret') : NULL);
+    $pf = new \afgFlickr(get_option('ptws_api_key'), get_option('ptws_api_secret') ? get_option('ptws_api_secret') : NULL);
     $pf->setToken(get_option('ptws_flickr_token'));
 }
 

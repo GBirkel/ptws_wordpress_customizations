@@ -3,7 +3,7 @@
 Plugin Name: Poking Things With Sticks Extensions
 Plugin URI:  http://www.mile42.net
 Description: This plugin supports all the non-standard WP stuff I do on PTWS.  Among other things, it finds recent posted pictures on my Flickr feed and integrates them with recent WP posts in a fancypants way
-Version:     1.91
+Version:     2.00b1
 Author:      Pokingthingswithsticks
 Author URI:  http://www.pokingthingswithsticks.com
 License:     GPL2
@@ -21,11 +21,13 @@ Uses LazyLoad Code by the WordPress.com VIP team, TechCrunch 2011 Redesign team,
 which uses jQuery.sonar by Dave Artz (AOL): http://www.artzstudio.com/files/jquery-boston-2010/jquery.sonar/
 */
 
+namespace Poking_Things_With_Sticks;
+
 global $ptws_db_version;
 $ptws_db_version = '1.91';
 
-include_once('ptws-libs.php');
 require_once('afgFlickr/afgFlickr.php');
+include_once('ptws-libs.php');
 
 
 function ptws_activate() {
@@ -233,7 +235,7 @@ function ptwsroute_shortcode( $atts, $content = null ) {
 }
 
 
-// Given the Flickr ID of a photo, seek its record in the database, and return it.
+// Given the ID of a GPS route in the database, locate and return it.
 // If no record exists, return null instead.
 //
 function ptws_get_route_record($pid) {
@@ -532,6 +534,20 @@ function ptws_enqueue_scripts() {
 }
 
 
+/**
+ * Enqueue block editor only JavaScript
+ */
+function enqueue_block_editor_assets() {
+	$block_path = '/js/editor.blocks.js';
+	wp_enqueue_script(
+		'ptws-blocks-js',
+		PTWS_PLUGIN_URL . $block_path,
+		[ 'wp-i18n', 'wp-element', 'wp-blocks', 'wp-components' ],
+		filemtime( PTWS_PLUGIN_DIRECTORY . $block_path )
+	);
+}
+
+
 function ptws_enqueue_styles() {
     wp_enqueue_style('ptws_leaflet_css', PTWS_PLUGIN_URL . "/css/leaflet.css");
     wp_enqueue_style('ptws_css', PTWS_PLUGIN_URL . "/css/ptws.css");
@@ -563,10 +579,10 @@ function ptws_admin_init() {
 
 
 function ptws_admin_menu() {
-    add_menu_page('PTWS Custom', 'PTWS Custom', 'publish_pages', 'ptws_plugin_page', 'ptws_admin_html_page', PTWS_PLUGIN_URL . "/images/ptws_logo.png", 898);
+    add_menu_page('PTWS Custom', 'PTWS Custom', 'publish_pages', 'ptws_plugin_page', __NAMESPACE__ . '\ptws_admin_html_page', PTWS_PLUGIN_URL . "/images/ptws_logo.png", 898);
 
     // adds "Settings" link to the plugin action page
-/*    add_filter( 'plugin_action_links', 'ptws_add_settings_links', 10, 2);*/
+/*    add_filter( 'plugin_action_links', __NAMESPACE__ . '\ptws_add_settings_links', 10, 2);*/
 
 /*    ptws_setup_options();*/
 }
@@ -840,17 +856,17 @@ function ptws_rest_route_create_arguments() {
     $args['id'] = array(
         'description' => esc_html__( 'The id parameter is the unique identifier string for the route', 'my-text-domain' ),
         'type'        => 'string',
-        'validate_callback' => 'ptws_rest_route_create_validate',
+        'validate_callback' => __NAMESPACE__ . '\ptws_rest_route_create_validate',
     );
     $args['route'] = array(
         'description' => esc_html__( 'The contents of the route as JSON', 'my-text-domain' ),
         'type'        => 'string',
-        'validate_callback' => 'ptws_rest_route_create_validate',
+        'validate_callback' => __NAMESPACE__ . '\ptws_rest_route_create_validate',
     );
     $args['key'] = array(
         'description' => esc_html__( 'The secret API key (set in the plugin admin section)', 'my-text-domain' ),
         'type'        => 'string',
-        'validate_callback' => 'ptws_rest_route_create_validate',
+        'validate_callback' => __NAMESPACE__ . '\ptws_rest_route_create_validate',
     );
     return $args;
 }
@@ -930,19 +946,19 @@ function ptws_register_route_management() {
     register_rest_route( 'ptws/v1', '/route', array(
         array(
             // By using this constant we ensure that when the WP_REST_Server changes, our readable endpoints will work as intended.
-            'methods'  => WP_REST_Server::READABLE,
+            'methods'  => \WP_REST_Server::READABLE,
             // Here we register our callback. The callback is fired when this endpoint is matched by the WP_REST_Server class.
-            'callback' => 'ptws_rest_route_get',
+            'callback' => __NAMESPACE__ . '\ptws_rest_route_get',
             'args' => ptws_rest_route_get_arguments(),
         ),
         array(
             // By using this constant we ensure that when the WP_REST_Server changes, our create endpoints will work as intended.
-            'methods'  => WP_REST_Server::CREATABLE,
+            'methods'  => \WP_REST_Server::CREATABLE,
             // Here we register our callback. The callback is fired when this endpoint is matched by the WP_REST_Server class.
-            'callback' => 'ptws_rest_route_create',
+            'callback' => __NAMESPACE__ . '\ptws_rest_route_create',
             // Here we register our permissions callback.
             // The callback is fired before the main callback to check if the current user can access the endpoint.
-            'permission_callback' => 'ptws_rest_route_permissions_check',
+            'permission_callback' => __NAMESPACE__ . '\ptws_rest_route_permissions_check',
             'args' => ptws_rest_route_create_arguments(),
         ),
     ) );
@@ -1150,6 +1166,52 @@ function ptws_admin_cache_clear() {
 }
 
 
+/**
+ * Register the dynamic block.
+ */
+function register_dynamic_block() {
+
+	// Only load if Gutenberg is available.
+	if ( ! function_exists( 'register_block_type' ) ) {
+		return;
+	}
+
+	// Hook server side rendering into render callback
+	register_block_type( 'ptws/gallery', [
+		'render_callback' => __NAMESPACE__ . '\render_dynamic_block',
+	] );
+
+}
+
+
+/**
+ * Server rendering for dynamic block
+ */
+function render_dynamic_block() {
+	$recent_posts = wp_get_recent_posts( [
+		'numberposts' => 3,
+		'post_status' => 'publish',
+	] );
+
+	if ( empty( $recent_posts ) ) {
+		return '<p>No posts</p>';
+	}
+
+	$markup = '<ul>';
+
+	foreach ( $recent_posts as $post ) {
+		$post_id  = $post['ID'];
+		$markup  .= sprintf(
+			'<li><a href="%1$s">%2$s</a></li>',
+			esc_url( get_permalink( $post_id ) ),
+			esc_html( get_the_title( $post_id ) )
+		);
+	}
+
+	return "{$markup}</ul>";
+}
+
+
 function ptws_ll_build_attributes_string( $attributes ) {
     $strs = array();
     foreach ( $attributes as $name => $attribute ) {
@@ -1202,35 +1264,37 @@ function ptws_ll_add_image_placeholders( $content ) {
         return $content;
 
     // This is a pretty simple regex, but it works
-    $content = preg_replace_callback( '#<(img)([^>]+?)(>(.*?)</\\1>|[\/]?>)#si', 'ptws_ll_process_image', $content );
+    $content = preg_replace_callback( '#<(img)([^>]+?)(>(.*?)</\\1>|[\/]?>)#si', __NAMESPACE__ . '\ptws_ll_process_image', $content );
 
     return $content;
 }
 
 
 if (!is_admin()) {
-    add_action('wp_print_scripts', 'ptws_enqueue_scripts');
-    add_action('wp_print_styles', 'ptws_enqueue_styles');
+    add_action('wp_print_scripts', __NAMESPACE__ . '\ptws_enqueue_scripts');
+    add_action('wp_print_styles', __NAMESPACE__ . '\ptws_enqueue_styles');
     // Turn off auto-formatting of entries, to prevent corruption of XML by the auto-processor
     // http://wordpress.stackexchange.com/questions/46894/why-is-wordpress-changing-my-html-code
     // https://wordpress.org/plugins/wpautop-control/
     remove_filter('the_content', 'wpautop');
     remove_filter('the_excerpt', 'wpautop');
     // run this later, so other content filters have run, including image_add_wh on WP.com
-	add_filter( 'the_content', 'ptws_ll_add_image_placeholders', 99 );
+	add_filter( 'the_content', __NAMESPACE__ . '\ptws_ll_add_image_placeholders', 99 );
 } else {
     register_activation_hook( __FILE__, 'ptws_activate' );
-/*    add_filter('plugin_action_links','ptws_add_settings_link', 10, 2 );*/
-    add_action('plugins_loaded', 'ptws_update_db_check');
-    add_action('admin_print_styles', 'ptws_enqueue_admin_styles' );
-	add_action('admin_init', 'ptws_admin_init');
-	add_action('admin_menu', 'ptws_admin_menu');
-	add_action('wp_ajax_ptws_gallery_auth', 'ptws_auth_init');
-	add_action('wp_ajax_ptws_test', 'ptws_flickr_connect_test');
-    add_action('wp_ajax_ptws_resolve', 'ptws_admin_cache_resolve');
-    add_action('wp_ajax_ptws_cache_clear', 'ptws_admin_cache_clear');
+/*    add_filter('plugin_action_links', __NAMESPACE__ . '\ptws_add_settings_link', 10, 2 );*/
+    add_action('plugins_loaded', __NAMESPACE__ . '\ptws_update_db_check');
+    add_action('admin_print_styles', __NAMESPACE__ . '\ptws_enqueue_admin_styles' );
+	add_action('admin_init', __NAMESPACE__ . '\ptws_admin_init');
+	add_action('admin_menu', __NAMESPACE__ . '\ptws_admin_menu');
+	add_action('wp_ajax_ptws_gallery_auth', __NAMESPACE__ . '\ptws_auth_init');
+	add_action('wp_ajax_ptws_test', __NAMESPACE__ . '\ptws_flickr_connect_test');
+    add_action('wp_ajax_ptws_resolve', __NAMESPACE__ . '\ptws_admin_cache_resolve');
+    add_action('wp_ajax_ptws_cache_clear', __NAMESPACE__ . '\ptws_admin_cache_clear');
 }
 
-add_action('rest_api_init', 'ptws_register_route_management');
+add_action( 'plugins_loaded', __NAMESPACE__ . '\register_dynamic_block' );
+add_action('enqueue_block_editor_assets', __NAMESPACE__ . '\enqueue_block_editor_assets');
+add_action('rest_api_init', __NAMESPACE__ . '\ptws_register_route_management');
 
 ?>
