@@ -415,7 +415,7 @@ function ptwsgallery_shortcode( $atts, $content = null ) {
             }
         }
 
-        $fixedGalXML = new SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><div class="images"></div>', null, false);
+        $fixedGalXML = new \SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><div class="images"></div>', null, false);
 
         if ((count($fixedgalleryIDs) == 3) && (count($itemsInPortrait) == 1)) {
             // Append both items that are not in portrait mode to the same first div
@@ -484,10 +484,6 @@ function ptwsgallery_shortcode( $atts, $content = null ) {
     }
 	return $emit;
 }
-
-
-add_shortcode( 'ptwsgallery', 'ptwsgallery_shortcode' );
-add_shortcode( 'ptwsroute', 'ptwsroute_shortcode' );
 
 
 // Given the Flickr ID of a photo, seek its record in the database, and return it.
@@ -821,7 +817,7 @@ function ptws_admin_html_page() {
 
 function ptws_rest_route_get($request) {
     if (!isset( $request['id'] ) ) {
-        return new WP_Error( 'rest_invalid', esc_html__( 'The id parameter is required.', 'my-text-domain' ), array( 'status' => 400 ) );
+        return new \WP_Error( 'rest_invalid', esc_html__( 'The id parameter is required.', 'my-text-domain' ), array( 'status' => 400 ) );
     }
     // rest_ensure_response() wraps the data we want to return into a WP_REST_Response, and ensures it will be properly returned.
     return rest_ensure_response( 'Hello World, this is the PTWS REST API' );
@@ -846,7 +842,7 @@ function ptws_rest_route_get_arguments() {
 function ptws_rest_route_create_validate( $value, $request, $param ) {
     // If the 'filter' argument is not a string return an error.
     if (!is_string($value)) {
-        return new WP_Error( 'rest_invalid_param', esc_html__( 'The ' . $param . ' argument must be a string.', 'my-text-domain' ), array( 'status' => 400 ) );
+        return new \WP_Error( 'rest_invalid_param', esc_html__( 'The ' . $param . ' argument must be a string.', 'my-text-domain' ), array( 'status' => 400 ) );
     }
 }
 
@@ -875,16 +871,16 @@ function ptws_rest_route_create_arguments() {
 function ptws_rest_route_create($request) {
     global $wpdb;
     if (!isset( $request['id'] ) ) {
-        return new WP_Error( 'rest_invalid', esc_html__( 'The id parameter is required.', 'my-text-domain' ), array( 'status' => 400 ) );
+        return new \WP_Error( 'rest_invalid', esc_html__( 'The id parameter is required.', 'my-text-domain' ), array( 'status' => 400 ) );
     }
     if (!isset( $request['route'] ) ) {
-        return new WP_Error( 'rest_invalid', esc_html__( 'The route parameter is required.', 'my-text-domain' ), array( 'status' => 400 ) );
+        return new \WP_Error( 'rest_invalid', esc_html__( 'The route parameter is required.', 'my-text-domain' ), array( 'status' => 400 ) );
     }
     if (!isset( $request['key'] ) ) {
-        return new WP_Error( 'rest_invalid', esc_html__( 'The key parameter is required.', 'my-text-domain' ), array( 'status' => 400 ) );
+        return new \WP_Error( 'rest_invalid', esc_html__( 'The key parameter is required.', 'my-text-domain' ), array( 'status' => 400 ) );
     }
     if ($request['key'] != get_option('ptws_route_api_secret')) {
-        return new WP_Error( 'rest_invalid', esc_html__( 'The key parameter is incorrect.', 'my-text-domain' ), array( 'status' => 400 ) );
+        return new \WP_Error( 'rest_invalid', esc_html__( 'The key parameter is incorrect.', 'my-text-domain' ), array( 'status' => 400 ) );
     }
     $routes_table_name = $wpdb->prefix . 'ptwsroutes';
 
@@ -936,7 +932,7 @@ function ptws_rest_route_create($request) {
 function ptws_rest_route_permissions_check() {
     // Restrict endpoint to only users who have the edit_posts capability.
     //if ( ! current_user_can( 'edit_others_posts' ) ) {
-    //    return new WP_Error( 'rest_forbidden', esc_html__( 'OMG you can not view private data.', 'my-text-domain' ), array( 'status' => 401 ) );
+    //    return new \WP_Error( 'rest_forbidden', esc_html__( 'OMG you can not view private data.', 'my-text-domain' ), array( 'status' => 401 ) );
     //}
     return true;
 }
@@ -1279,7 +1275,7 @@ if (!is_admin()) {
     remove_filter('the_content', 'wpautop');
     remove_filter('the_excerpt', 'wpautop');
     // run this later, so other content filters have run, including image_add_wh on WP.com
-	add_filter( 'the_content', __NAMESPACE__ . '\ptws_ll_add_image_placeholders', 99 );
+	add_filter('the_content', __NAMESPACE__ . '\ptws_ll_add_image_placeholders', 99 );
 } else {
     register_activation_hook( __FILE__, 'ptws_activate' );
 /*    add_filter('plugin_action_links', __NAMESPACE__ . '\ptws_add_settings_link', 10, 2 );*/
@@ -1293,8 +1289,11 @@ if (!is_admin()) {
     add_action('wp_ajax_ptws_cache_clear', __NAMESPACE__ . '\ptws_admin_cache_clear');
 }
 
-add_action( 'plugins_loaded', __NAMESPACE__ . '\register_dynamic_block' );
+add_action('plugins_loaded', __NAMESPACE__ . '\register_dynamic_block' );
 add_action('enqueue_block_editor_assets', __NAMESPACE__ . '\enqueue_block_editor_assets');
 add_action('rest_api_init', __NAMESPACE__ . '\ptws_register_route_management');
+
+add_shortcode( 'ptwsgallery', __NAMESPACE__ . '\ptwsgallery_shortcode' );
+add_shortcode( 'ptwsroute', __NAMESPACE__ . '\ptwsroute_shortcode' );
 
 ?>
