@@ -1,5 +1,5 @@
 
-var iconconditional = wp.element.createElement(
+var iconptwsgallery = wp.element.createElement(
     'svg', 
     { width: '20px', height: '20px', viewBox: '0 0 100 100', xmlns: 'http://www.w3.org/2000/svg' },
     wp.element.createElement('path', { d: 'm50 20c4.1367 0 7.5-3.3633 7.5-7.5s-3.3633-7.5-7.5-7.5-7.5 3.3633-7.5 7.5 3.3633 7.5 7.5 7.5zm0-10c1.3789 0 2.5 1.1211 2.5 2.5s-1.1211 2.5-2.5 2.5-2.5-1.1211-2.5-2.5 1.1211-2.5 2.5-2.5z' }),
@@ -28,10 +28,10 @@ var iconconditional = wp.element.createElement(
 
 wp.blocks.registerBlockType('ptws/gallery', {
     title: 'PTWS Gallery',
-    description: 'A gallery of images with various options.',
+    description: 'A server-side assembled gallery of images with various options.',
     icon: {
         background: 'rgba(224, 243, 254, 0.52)',
-        src: iconconditional
+        src: iconptwsgallery
     },
     category: 'widgets',
     edit: wp.data.withSelect(function (select) {
@@ -74,7 +74,7 @@ wp.blocks.registerBlockType('ptws/gallery', {
     }) // end withAPIData
     , // end edit
     save: function save() {
-        // Rendering in PHP
+        // We are rendering in PHP
         return null;
     }
 });

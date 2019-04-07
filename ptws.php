@@ -27,6 +27,7 @@ global $ptws_db_version;
 $ptws_db_version = '1.91';
 
 require_once('afgFlickr/afgFlickr.php');
+require_once('ptws-api.php');
 include_once('ptws-libs.php');
 
 
@@ -815,152 +816,6 @@ function ptws_admin_html_page() {
 }
 
 
-function ptws_rest_route_get($request) {
-    if (!isset( $request['id'] ) ) {
-        return new \WP_Error( 'rest_invalid', esc_html__( 'The id parameter is required.', 'my-text-domain' ), array( 'status' => 400 ) );
-    }
-    // rest_ensure_response() wraps the data we want to return into a WP_REST_Response, and ensures it will be properly returned.
-    return rest_ensure_response( 'Hello World, this is the PTWS REST API' );
-}
-
-
-function ptws_rest_route_get_arguments() {
-    $args = array();
-    // Here we are registering the schema for the route id argument.
-    $args['id'] = array(
-        // description should be a human readable description of the argument.
-        'description' => esc_html__( 'The id parameter is the unique identifier string for the route', 'my-text-domain' ),
-        // type specifies the type of data that the argument should be.
-        'type'        => 'string',
-        // enum specified what values filter can take on.
-        //'enum'        => array( 'red', 'green', 'blue' ),
-    );
-    return $args;
-}
-
-
-function ptws_rest_route_create_validate( $value, $request, $param ) {
-    // If the 'filter' argument is not a string return an error.
-    if (!is_string($value)) {
-        return new \WP_Error( 'rest_invalid_param', esc_html__( 'The ' . $param . ' argument must be a string.', 'my-text-domain' ), array( 'status' => 400 ) );
-    }
-}
-
-
-function ptws_rest_route_create_arguments() {
-    $args = array();
-    $args['id'] = array(
-        'description' => esc_html__( 'The id parameter is the unique identifier string for the route', 'my-text-domain' ),
-        'type'        => 'string',
-        'validate_callback' => __NAMESPACE__ . '\ptws_rest_route_create_validate',
-    );
-    $args['route'] = array(
-        'description' => esc_html__( 'The contents of the route as JSON', 'my-text-domain' ),
-        'type'        => 'string',
-        'validate_callback' => __NAMESPACE__ . '\ptws_rest_route_create_validate',
-    );
-    $args['key'] = array(
-        'description' => esc_html__( 'The secret API key (set in the plugin admin section)', 'my-text-domain' ),
-        'type'        => 'string',
-        'validate_callback' => __NAMESPACE__ . '\ptws_rest_route_create_validate',
-    );
-    return $args;
-}
-
-
-function ptws_rest_route_create($request) {
-    global $wpdb;
-    if (!isset( $request['id'] ) ) {
-        return new \WP_Error( 'rest_invalid', esc_html__( 'The id parameter is required.', 'my-text-domain' ), array( 'status' => 400 ) );
-    }
-    if (!isset( $request['route'] ) ) {
-        return new \WP_Error( 'rest_invalid', esc_html__( 'The route parameter is required.', 'my-text-domain' ), array( 'status' => 400 ) );
-    }
-    if (!isset( $request['key'] ) ) {
-        return new \WP_Error( 'rest_invalid', esc_html__( 'The key parameter is required.', 'my-text-domain' ), array( 'status' => 400 ) );
-    }
-    if ($request['key'] != get_option('ptws_route_api_secret')) {
-        return new \WP_Error( 'rest_invalid', esc_html__( 'The key parameter is incorrect.', 'my-text-domain' ), array( 'status' => 400 ) );
-    }
-    $routes_table_name = $wpdb->prefix . 'ptwsroutes';
-
-    $one_row = $wpdb->get_row(
-        $wpdb->prepare( 
-            "
-                SELECT * 
-                FROM $routes_table_name 
-                WHERE route_id = %s
-            ",
-            $request['id']
-        ),
-        'ARRAY_A'
-    );
-    if ($one_row == null) {
-        $wpdb->show_errors();
-        $wpdb->insert(
-            $routes_table_name,
-            array(
-                'route_id' => $request['id'],
-                'route_json' => $request['route']
-            ),
-            array( 
-                '%s', 
-                '%s'
-            ) 
-        );
-        $wpdb->hide_errors();
-        return rest_ensure_response( 'Record ' . $request['id'] . ' inserted.' );
-    } else {
-        $wpdb->show_errors();
-        $wpdb->replace(
-            $routes_table_name,
-            array(
-                'route_id'   => $request['id'],
-                'route_json' => $request['route']
-            ),
-            array( 
-                '%s', 
-                '%s'
-            ) 
-        );
-        $wpdb->hide_errors();
-        return rest_ensure_response( 'Record ' . $request['id'] . ' updated.' );
-    }
-}
-
-
-function ptws_rest_route_permissions_check() {
-    // Restrict endpoint to only users who have the edit_posts capability.
-    //if ( ! current_user_can( 'edit_others_posts' ) ) {
-    //    return new \WP_Error( 'rest_forbidden', esc_html__( 'OMG you can not view private data.', 'my-text-domain' ), array( 'status' => 401 ) );
-    //}
-    return true;
-}
-
-
-function ptws_register_route_management() {
-    register_rest_route( 'ptws/v1', '/route', array(
-        array(
-            // By using this constant we ensure that when the WP_REST_Server changes, our readable endpoints will work as intended.
-            'methods'  => \WP_REST_Server::READABLE,
-            // Here we register our callback. The callback is fired when this endpoint is matched by the WP_REST_Server class.
-            'callback' => __NAMESPACE__ . '\ptws_rest_route_get',
-            'args' => ptws_rest_route_get_arguments(),
-        ),
-        array(
-            // By using this constant we ensure that when the WP_REST_Server changes, our create endpoints will work as intended.
-            'methods'  => \WP_REST_Server::CREATABLE,
-            // Here we register our callback. The callback is fired when this endpoint is matched by the WP_REST_Server class.
-            'callback' => __NAMESPACE__ . '\ptws_rest_route_create',
-            // Here we register our permissions callback.
-            // The callback is fired before the main callback to check if the current user can access the endpoint.
-            'permission_callback' => __NAMESPACE__ . '\ptws_rest_route_permissions_check',
-            'args' => ptws_rest_route_create_arguments(),
-        ),
-    ) );
-}
-
-
 // Gets 5 of the most recent public photos in the stream and displays their thumbnails.
 // Uses $pf, a global variable providing access to the afgFlickr flickr library (see ptws-libs).
 // Responds to the "ptws_test" AJAX call, e.g. ".../admin-ajax.php?action=ptws_test".
@@ -1165,7 +1020,7 @@ function ptws_admin_cache_clear() {
 /**
  * Register the dynamic block.
  */
-function register_dynamic_block() {
+function register_dynamic_blocks() {
 
 	// Only load if Gutenberg is available.
 	if ( ! function_exists( 'register_block_type' ) ) {
@@ -1174,7 +1029,10 @@ function register_dynamic_block() {
 
 	// Hook server side rendering into render callback
 	register_block_type( 'ptws/gallery', [
-		'render_callback' => __NAMESPACE__ . '\render_dynamic_block',
+        'name' => 'PTWS Gallery',
+        'description' => 'A server-side assembled gallery of images with various options.',
+		'render_callback' => __NAMESPACE__ . '\render_dynamic_gallery_block',
+        'category' => 'widgets',
 	] );
 
 }
@@ -1183,7 +1041,7 @@ function register_dynamic_block() {
 /**
  * Server rendering for dynamic block
  */
-function render_dynamic_block() {
+function render_dynamic_gallery_block($block) {
 	$recent_posts = wp_get_recent_posts( [
 		'numberposts' => 3,
 		'post_status' => 'publish',
@@ -1204,7 +1062,9 @@ function render_dynamic_block() {
 		);
 	}
 
-	return "{$markup}</ul>";
+    $block_description = print_r($block, true);
+
+	return "{$markup}</ul>{$block_description}";
 }
 
 
@@ -1289,9 +1149,12 @@ if (!is_admin()) {
     add_action('wp_ajax_ptws_cache_clear', __NAMESPACE__ . '\ptws_admin_cache_clear');
 }
 
-add_action('plugins_loaded', __NAMESPACE__ . '\register_dynamic_block' );
+add_action('plugins_loaded', __NAMESPACE__ . '\register_dynamic_blocks' );
 add_action('enqueue_block_editor_assets', __NAMESPACE__ . '\enqueue_block_editor_assets');
-add_action('rest_api_init', __NAMESPACE__ . '\ptws_register_route_management');
+
+//add_action('rest_api_init', __NAMESPACE__ . '\ptws_register_route_management');
+$ptws_api = new PTWS_API();
+$ptws_api->run();
 
 add_shortcode( 'ptwsgallery', __NAMESPACE__ . '\ptwsgallery_shortcode' );
 add_shortcode( 'ptwsroute', __NAMESPACE__ . '\ptwsroute_shortcode' );
