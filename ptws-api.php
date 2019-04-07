@@ -29,23 +29,26 @@ $ptws_db_version = '1.91';
 require_once('afgFlickr/afgFlickr.php');
 include_once('ptws-libs.php');
 
-
+// Using a class structure to encapsulate and organize the API implementation.
 class PTWS_API {
 
     private $api_version;
 	private $api_namespace;
 
+    // Called automatically when the class is instantiated.
 	public function __construct() {
 		$this->api_version   = '1';
 		$this->api_namespace = 'ptws/v' . $this->api_version;
 	}
 
 
+    // Called manually when it's time to register the APIs for initialization
 	public function run() {
 		add_action( 'rest_api_init', array( $this, 'init_route_api' ) );
 	}
 
 
+    // The main function for initializing the "route" APIs.
 	public function init_route_api() {
 		// Register Rest route for map routes
         register_rest_route( $this->api_namespace, '/route', array(
@@ -70,6 +73,7 @@ class PTWS_API {
 	}
 
 
+    // Defining the arguments for the route API 'get' method.
     public function route_get_arguments() {
         $args = array();
         // Here we are registering the schema for the route id argument.
@@ -85,6 +89,7 @@ class PTWS_API {
     }
 
 
+    // Implementing the route API 'get' method.  Currently it just spews a boilerplate message.
 	public function route_get($request) {
         if (!isset( $request['id'] ) ) {
             return new \WP_Error( 'rest_invalid', esc_html__( 'The id parameter is required.', 'my-text-domain' ), array( 'status' => 400 ) );
@@ -94,6 +99,7 @@ class PTWS_API {
     }
 
 
+    // Defining the arguments for the route API 'post' method.
     public function route_create_arguments() {
         $args = array();
         $args['id'] = array(
@@ -115,6 +121,7 @@ class PTWS_API {
     }
 
 
+    // A basic validation function that just checks to see if the given value is defined and is a string.
     public function route_create_validate( $value, $request, $param ) {
         // If the 'filter' argument is not a string return an error.
         if (!is_string($value)) {
@@ -123,6 +130,11 @@ class PTWS_API {
     }
 
 
+    // Implementing the route API 'post' method.
+    // After checking for necessary arguments, it attempts to fetch the route with the given 'id'.
+    // (Typically this is a formatted timstamp of the start of the GPS recording.)
+    // If none exists, it creates the route, using the content in 'route'.  If the record already exists,
+    // it replaces the body of the route with the content in 'route'.
     public function route_create($request) {
         global $wpdb;
         if (!isset( $request['id'] ) ) {
@@ -184,6 +196,9 @@ class PTWS_API {
     }
 
 
+    // Check if the requester has permission to access the API.
+    // Currently there is no check; the API relies on a secret key send via HTTPS.
+    // If we required that the requester be logged in as a current user, it would make the API harder to use in low-bandwidth situations.
     public function route_permissions_check() {
         // Restrict endpoint to only users who have the edit_posts capability.
         //if ( ! current_user_can( 'edit_others_posts' ) ) {
