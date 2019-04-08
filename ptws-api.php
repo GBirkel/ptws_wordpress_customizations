@@ -123,7 +123,6 @@ class PTWS_API {
 
     // A basic validation function that just checks to see if the given value is defined and is a string.
     public function route_create_validate( $value, $request, $param ) {
-        // If the 'filter' argument is not a string return an error.
         if (!is_string($value)) {
             return new \WP_Error( 'rest_invalid_param', esc_html__( 'The ' . $param . ' argument must be a string.', 'my-text-domain' ), array( 'status' => 400 ) );
         }
@@ -151,6 +150,24 @@ class PTWS_API {
         }
         $routes_table_name = $wpdb->prefix . 'ptwsroutes';
 
+        // search and remove line breaks
+        $json_concatenated = str_replace(array("\n","\r"),"",$request['route']); 
+        $decoded_route = json_decode($json_concatenated, TRUE);
+        if (!isset($decoded_route)) {
+            return rest_ensure_response( 'JSON submitted for record ' . $request['id'] . ' appears to be invalid.' );
+        }
+        // Get ahold of the first value in the timestamp series
+        if (!array_key_exists('t', $decoded_route)) {
+            return rest_ensure_response( 'JSON submitted for record ' . $request['id'] . ' does not contain a timestamp array.' );
+        }
+        $start_time = $decoded_route['t'][0];
+        $last_value = array_slice($decoded_route['t'], -1);
+        $end_time = array_pop($last_value);
+
+        // The timestamps we are parsing will look like "2011-10-21T05:44:53+00:00", which is known as SOAP format.
+        $start_time_parsed = strtotime($start_time);
+        $end_time_parsed = strtotime($end_time);
+
         $one_row = $wpdb->get_row(
             $wpdb->prepare( 
                 "
@@ -168,10 +185,14 @@ class PTWS_API {
                 $routes_table_name,
                 array(
                     'route_id' => $request['id'],
-                    'route_json' => $request['route']
+                    'route_json' => $request['route'],
+                    'route_start_time' => $start_time_parsed,
+                    'route_end_time' => $end_time_parsed
                 ),
                 array( 
                     '%s', 
+                    '%s',
+                    '%s',
                     '%s'
                 ) 
             );
@@ -183,10 +204,14 @@ class PTWS_API {
                 $routes_table_name,
                 array(
                     'route_id'   => $request['id'],
-                    'route_json' => $request['route']
+                    'route_json' => $request['route'],
+                    'route_start_time' => $start_time_parsed,
+                    'route_end_time' => $end_time_parsed
                 ),
                 array( 
                     '%s', 
+                    '%s',
+                    '%s',
                     '%s'
                 )
             );
