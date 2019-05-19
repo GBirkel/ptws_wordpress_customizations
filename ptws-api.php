@@ -50,31 +50,44 @@ class PTWS_API {
 
     // The main function for initializing the "route" APIs.
 	public function init_route_api() {
-		// Register Rest route for map routes
-        register_rest_route( $this->api_namespace, '/route', array(
+		// Route for fetching an individual route by ID
+        register_rest_route( $this->api_namespace, '/route/id', array(
             array(
                 // By using this constant we ensure that when the WP_REST_Server changes, our readable endpoints will work as intended.
                 'methods'  => \WP_REST_Server::READABLE,
-                'args' => $this->route_get_arguments(),
+                'args' => $this->route_get_by_id_arguments(),
                 // Here we register our callback. The callback is fired when this endpoint is matched by the WP_REST_Server class.
-                'callback' => array( $this, 'route_get'),
+                'callback' => array( $this, 'route_get_by_id'),
             ),
+        ) );
+		// Route for fetching a list of the most recent 50 routes
+        register_rest_route($this->api_namespace, '/route/recent', array(
+            array(
+                // By using this constant we ensure that when the WP_REST_Server changes, our readable endpoints will work as intended.
+                'methods'  => \WP_REST_Server::READABLE,
+                'args' => array(),
+                // Here we register our callback. The callback is fired when this endpoint is matched by the WP_REST_Server class.
+                'callback' => array($this, 'route_get_recent'),
+            ),
+        ));
+		// Route for adding a new route
+        register_rest_route($this->api_namespace, '/route/create', array(
             array(
                 // By using this constant we ensure that when the WP_REST_Server changes, our create endpoints will work as intended.
                 'methods'  => \WP_REST_Server::CREATABLE,
                 'args' => $this->route_create_arguments(),
                 // Here we register our callback. The callback is fired when this endpoint is matched by the WP_REST_Server class.
-                'callback' => array( $this, 'route_create'),
+                'callback' => array($this, 'route_create'),
                 // Here we register our permissions callback.
                 // The callback is fired before the main callback to check if the current user can access the endpoint.
-                'permission_callback' => array( $this, 'route_permissions_check'),
+                'permission_callback' => array($this, 'route_permissions_check'),
             ),
-        ) );
+        ));
 	}
 
 
     // Defining the arguments for the route API 'get' method.
-    public function route_get_arguments() {
+    public function route_get_by_id_arguments() {
         $args = array();
         // Here we are registering the schema for the route id argument.
         $args['id'] = array(
@@ -82,6 +95,7 @@ class PTWS_API {
             'description' => esc_html__( 'The id parameter is the unique identifier string for the route', 'my-text-domain' ),
             // type specifies the type of data that the argument should be.
             'type'        => 'string',
+            'validate_callback' => array($this, 'route_arg_validate'),
             // enum specified what values filter can take on.
             //'enum'        => array( 'red', 'green', 'blue' ),
         );
@@ -89,13 +103,52 @@ class PTWS_API {
     }
 
 
-    // Implementing the route API 'get' method.  Currently it just spews a boilerplate message.
-	public function route_get($request) {
+    // Implementing the route API 'get by id' method.  Currently it just spews a boilerplate message.
+	public function route_get_by_id($request) {
         if (!isset( $request['id'] ) ) {
             return new \WP_Error( 'rest_invalid', esc_html__( 'The id parameter is required.', 'my-text-domain' ), array( 'status' => 400 ) );
         }
+        $one_row = $wpdb->get_row(
+            $wpdb->prepare(
+                "
+                    SELECT * 
+                    FROM $routes_table_name 
+                    WHERE route_id = %s
+                ",
+                $request['id']
+            ),
+            'ARRAY_A'
+        );
+        if ($one_row == null) {
+            return new \WP_Error('rest_invalid', esc_html__('No route exists with ID ' . $request['id'], 'my-text-domain'), array('status' => 400));
+        }
+        $one_row['route_start_time_epoch'] = strtotime($one_row['route_start_time']);
+        $one_row['route_end_time_epoch'] = strtotime($one_row['route_end_time']);
+        $one_row['cached_time_epoch'] = strtotime($one_row['cached_time']);
+
+        $response = array();
+        $response['id'] = (string)$one_row['route_id'];
+        $response['description'] = (string)$one_row['route_description'];
+        $response['contents'] = (string)$one_row['route_json'];
+        $response['auto_placed'] = (string)$one_row['auto_placed'];
+        $response['last_seen_in_post'] = (string)$one_row['last_seen_in_post'];
+        $response['route_start_time'] = (string)$one_row['route_start_time'];
+        $response['route_end_time'] = (string)$one_row['route_end_time'];
+        $response['cached_time'] = (string)$one_row['cached_time'];
+        $response['route_start_time_epoch'] = (string)strtotime($one_row['route_start_time']);
+        $response['route_end_time_epoch'] = (string)strtotime($one_row['route_end_time']);
+        $response['cached_time_epoch'] = (string)strtotime($one_row['cached_time']);
+
         // rest_ensure_response() wraps the data we want to return into a WP_REST_Response, and ensures it will be properly returned.
-        return rest_ensure_response( 'Hello World, this is the PTWS REST API' );
+        return rest_ensure_response( $response );
+    }
+
+
+    // Implementing the route API 'get latest 50' method.  Currently it just spews a boilerplate message.
+    public function route_get_recent($request)
+    {
+        // rest_ensure_response() wraps the data we want to return into a WP_REST_Response, and ensures it will be properly returned.
+        return rest_ensure_response('Hello World, this is the PTWS REST API');
     }
 
 
@@ -105,24 +158,28 @@ class PTWS_API {
         $args['id'] = array(
             'description' => esc_html__( 'The id parameter is the unique identifier string for the route', 'my-text-domain' ),
             'type'        => 'string',
-            'validate_callback' => array( $this, 'route_create_validate'),
+            'validate_callback' => array( $this, 'route_arg_validate'),
         );
         $args['route'] = array(
             'description' => esc_html__( 'The contents of the route as JSON', 'my-text-domain' ),
             'type'        => 'string',
-            'validate_callback' => array( $this, 'route_create_validate'),
+            'validate_callback' => array( $this, 'route_arg_validate'),
+        );
+        $args['name'] = array(
+            'description' => esc_html__('An optional name to give to the route', 'my-text-domain'),
+            'type'        => 'string',
         );
         $args['key'] = array(
             'description' => esc_html__( 'The secret API key (set in the plugin admin section)', 'my-text-domain' ),
             'type'        => 'string',
-            'validate_callback' => array( $this, 'route_create_validate'),
+            'validate_callback' => array( $this, 'route_arg_validate'),
         );
         return $args;
     }
 
 
     // A basic validation function that just checks to see if the given value is defined and is a string.
-    public function route_create_validate( $value, $request, $param ) {
+    public function route_arg_validate( $value, $request, $param ) {
         if (!is_string($value)) {
             return new \WP_Error( 'rest_invalid_param', esc_html__( 'The ' . $param . ' argument must be a string.', 'my-text-domain' ), array( 'status' => 400 ) );
         }
@@ -130,9 +187,9 @@ class PTWS_API {
 
 
     // Implementing the route API 'post' method.
-    // After checking for necessary arguments, it attempts to fetch the route with the given 'id'.
+    // After checking for necessary arguments, it attempts to fetch the record with the given 'id'.
     // (Typically this is a formatted timstamp of the start of the GPS recording.)
-    // If none exists, it creates the route, using the content in 'route'.  If the record already exists,
+    // If none exists, it creates the record, using the content in 'route'.  If the record already exists,
     // it replaces the body of the route with the content in 'route'.
     public function route_create($request) {
         global $wpdb;

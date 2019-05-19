@@ -91,6 +91,8 @@ var ptws = {
 					't': rawdata['t'][i],
 					// Date parsed as a real JS Date object, for use in further processing.
 					// If we start working with questionable data, this may throw errors.
+					// The strings we are parsing will look like "2011-10-21T05:44:53+00:00",
+					// which is known as SOAP format.
 					't_d': new Date(rawdata['t'][i]),
 					'lat': rawdata['lat'][i],
 					'lon': rawdata['lon'][i],

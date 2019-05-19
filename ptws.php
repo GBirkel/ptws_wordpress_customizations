@@ -29,21 +29,24 @@ $ptws_db_version = '1.92';
 require_once('afgFlickr/afgFlickr.php');
 require_once('ptws-api.php');
 include_once('ptws-libs.php');
+include_once('ptws-lazyload.php');
 
 
-function ptws_activate() {
-    add_option( 'ptws_plugin_activation', 'just-activated' );
+function ptws_activate()
+{
+    add_option('ptws_plugin_activation', 'just-activated');
 }
 
 
-function ptws_install() {
+function ptws_install()
+{
     global $wpdb;
     global $ptws_db_version;
 
     $charset_collate = $wpdb->get_charset_collate();
 
     // http://php.net/manual/en/function.version-compare.php
-    if (version_compare( get_option( "ptws_db_version" ), $ptws_db_version, '<' )) {
+    if (version_compare(get_option("ptws_db_version"), $ptws_db_version, '<')) {
 
         $flickr_table_name = $wpdb->prefix . 'ptwsflickrcache';
 
@@ -881,8 +884,8 @@ function ptws_admin_cache_resolve() {
     echo '<h3>Manually resolve cache entries</h3>';
 
     $uncached_recs = $wpdb->get_results(
-        $wpdb->prepare( 
-            "SELECT * FROM $flickr_table_name WHERE cached_time = %d LIMIT 4", 
+        $wpdb->prepare(
+            "SELECT * FROM $flickr_table_name WHERE cached_time = %d LIMIT 4",
             0
         ),
         'ARRAY_A'
@@ -911,8 +914,8 @@ function ptws_admin_cache_resolve() {
                 echo '<ul><li>id ' . $rid . '</li>';
                 echo '<li>flicker_id ' . $fid . '</li>';
                 echo '<li>title ' . $p['title']['_content'] . '</li>';
-                echo '<li>width ' . $f_sizes['Original']['width'] . '</li>';                
-                echo '<li>height ' . $f_sizes['Original']['height'] . '</li>';                
+                echo '<li>width ' . $f_sizes['Original']['width'] . '</li>';
+                echo '<li>height ' . $f_sizes['Original']['height'] . '</li>';
                 $url = 'https://www.flickr.com/photos/' . $uid . '/' . $fid . '/';
                 echo '<li>link_url ' . $url . '</li>';
 
@@ -966,26 +969,26 @@ function ptws_admin_cache_resolve() {
                         'cached_time'   => $upd_time,
                         'last_seen_in_post' => $uncached_rec['last_seen_in_post']
                     ),
-                    array( 
-                        '%s', 
-                        '%s', 
+                    array(
+                        '%s',
+                        '%s',
                         '%d',
                         '%d',
-                        '%s', 
+                        '%s',
                         '%d',
                         '%d',
-                        '%s', 
+                        '%s',
                         '%d',
                         '%d',
-                        '%s', 
-                        '%d', 
-                        '%s', 
-                        '%s', 
-                        '%s', 
-                        '%s', 
-                        '%s', 
+                        '%s',
+                        '%d',
+                        '%s',
+                        '%s',
+                        '%s',
+                        '%s',
+                        '%s',
                         '%s'
-                    ) 
+                    )
                 );
             }
         }
@@ -998,7 +1001,8 @@ function ptws_admin_cache_resolve() {
 // Clears all records from the Flickr metadata cache.
 // Responds to the "cache_clear" AJAX call, e.g. ".../admin-ajax.php?action=cache_clear".
 //
-function ptws_admin_cache_clear() {
+function ptws_admin_cache_clear()
+{
     session_start();
     global $wpdb;
     $flickr_table_name = $wpdb->prefix . 'ptwsflickrcache';
@@ -1022,109 +1026,52 @@ function ptws_admin_cache_clear() {
 /**
  * Register the dynamic block.
  */
-function register_dynamic_blocks() {
+function register_dynamic_blocks()
+{
 
-	// Only load if Gutenberg is available.
-	if ( ! function_exists( 'register_block_type' ) ) {
-		return;
-	}
+    // Only load if Gutenberg is available.
+    if (!function_exists('register_block_type')) {
+        return;
+    }
 
-	// Hook server side rendering into render callback
-	register_block_type( 'ptws/gallery', [
+    // Hook server side rendering into render callback
+    register_block_type('ptws/gallery', [
         'name' => 'PTWS Gallery',
         'description' => 'A server-side assembled gallery of images with various options.',
-		'render_callback' => __NAMESPACE__ . '\render_dynamic_gallery_block',
+        'render_callback' => __NAMESPACE__ . '\render_dynamic_gallery_block',
         'category' => 'widgets',
-	] );
-
+    ]);
 }
 
 
 /**
  * Server rendering for dynamic block
  */
-function render_dynamic_gallery_block($block) {
-	$recent_posts = wp_get_recent_posts( [
-		'numberposts' => 3,
-		'post_status' => 'publish',
-	] );
+function render_dynamic_gallery_block($block)
+{
+    $recent_posts = wp_get_recent_posts([
+        'numberposts' => 3,
+        'post_status' => 'publish',
+    ]);
 
-	if ( empty( $recent_posts ) ) {
-		return '<p>No posts</p>';
-	}
+    if (empty($recent_posts)) {
+        return '<p>No posts</p>';
+    }
 
-	$markup = '<ul>';
+    $markup = '<ul>';
 
-	foreach ( $recent_posts as $post ) {
-		$post_id  = $post['ID'];
-		$markup  .= sprintf(
-			'<li><a href="%1$s">%2$s</a></li>',
-			esc_url( get_permalink( $post_id ) ),
-			esc_html( get_the_title( $post_id ) )
-		);
-	}
+    foreach ($recent_posts as $post) {
+        $post_id  = $post['ID'];
+        $markup  .= sprintf(
+            '<li><a href="%1$s">%2$s</a></li>',
+            esc_url(get_permalink($post_id)),
+            esc_html(get_the_title($post_id))
+        );
+    }
 
     $block_description = print_r($block, true);
 
-	return "{$markup}</ul>{$block_description}";
-}
-
-
-function ptws_ll_build_attributes_string( $attributes ) {
-    $strs = array();
-    foreach ( $attributes as $name => $attribute ) {
-        $value = $attribute['value'];
-        if ( '' === $value ) {
-            $strs[] = sprintf( '%s', $name );
-        } else {
-            $strs[] = sprintf( '%s="%s"', $name, esc_attr( $value ) );
-        }
-    }
-    return implode( ' ', $strs );
-}
-
-
-function ptws_ll_process_image( $matches ) {
-    // In case you want to change the placeholder image
-    $placeholder_image = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
-
-    $old_attributes_str = $matches[2];
-    $old_attributes = wp_kses_hair( $old_attributes_str, wp_allowed_protocols() );
-
-    if ( empty( $old_attributes['src'] ) ) {
-        return $matches[0];
-    }
-
-    $image_src = $old_attributes['src']['value'];
-
-    // Remove src and lazy-src since we manually add them
-    $new_attributes = $old_attributes;
-    unset( $new_attributes['src'], $new_attributes['data-lazy-src'] );
-
-    $new_attributes_str = ptws_ll_build_attributes_string( $new_attributes );
-
-    return sprintf( '<img src="%1$s" data-lazy-src="%2$s" %3$s><noscript>%4$s</noscript>',
-        $placeholder_image,
-        esc_url( $image_src ),
-        $new_attributes_str,
-        $matches[0] );
-}
-
-
-function ptws_ll_add_image_placeholders( $content ) {
-
-    // Don't lazyload for feeds, previews
-    if( is_feed() || is_preview() )
-        return $content;
-
-    // Don't lazy-load if the content has already been run through previously
-    if ( false !== strpos( $content, 'data-lazy-src' ) )
-        return $content;
-
-    // This is a pretty simple regex, but it works
-    $content = preg_replace_callback( '#<(img)([^>]+?)(>(.*?)</\\1>|[\/]?>)#si', __NAMESPACE__ . '\ptws_ll_process_image', $content );
-
-    return $content;
+    return "{$markup}</ul>{$block_description}";
 }
 
 
@@ -1137,28 +1084,28 @@ if (!is_admin()) {
     remove_filter('the_content', 'wpautop');
     remove_filter('the_excerpt', 'wpautop');
     // run this later, so other content filters have run, including image_add_wh on WP.com
-	add_filter('the_content', __NAMESPACE__ . '\ptws_ll_add_image_placeholders', 99 );
+    add_filter('the_content', 'Poking_Things_With_Sticks_Lazyload\ptws_ll_add_image_placeholders', 99);
 } else {
-    register_activation_hook( __FILE__, 'ptws_activate' );
-/*    add_filter('plugin_action_links', __NAMESPACE__ . '\ptws_add_settings_link', 10, 2 );*/
+    register_activation_hook(__FILE__, 'ptws_activate');
+    /*    add_filter('plugin_action_links', __NAMESPACE__ . '\ptws_add_settings_link', 10, 2 );*/
     add_action('plugins_loaded', __NAMESPACE__ . '\ptws_update_db_check');
-    add_action('admin_print_styles', __NAMESPACE__ . '\ptws_enqueue_admin_styles' );
-	add_action('admin_init', __NAMESPACE__ . '\ptws_admin_init');
-	add_action('admin_menu', __NAMESPACE__ . '\ptws_admin_menu');
-	add_action('wp_ajax_ptws_gallery_auth', __NAMESPACE__ . '\ptws_auth_init');
-	add_action('wp_ajax_ptws_test', __NAMESPACE__ . '\ptws_flickr_connect_test');
+    add_action('admin_print_styles', __NAMESPACE__ . '\ptws_enqueue_admin_styles');
+    add_action('admin_init', __NAMESPACE__ . '\ptws_admin_init');
+    add_action('admin_menu', __NAMESPACE__ . '\ptws_admin_menu');
+    add_action('wp_ajax_ptws_gallery_auth', __NAMESPACE__ . '\ptws_auth_init');
+    add_action('wp_ajax_ptws_test', __NAMESPACE__ . '\ptws_flickr_connect_test');
     add_action('wp_ajax_ptws_resolve', __NAMESPACE__ . '\ptws_admin_cache_resolve');
     add_action('wp_ajax_ptws_cache_clear', __NAMESPACE__ . '\ptws_admin_cache_clear');
 }
 
-add_action('plugins_loaded', __NAMESPACE__ . '\register_dynamic_blocks' );
+add_action('plugins_loaded', __NAMESPACE__ . '\register_dynamic_blocks');
 add_action('enqueue_block_editor_assets', __NAMESPACE__ . '\enqueue_block_editor_assets');
 
 //add_action('rest_api_init', __NAMESPACE__ . '\ptws_register_route_management');
 $ptws_api = new PTWS_API();
 $ptws_api->run();
 
-add_shortcode( 'ptwsgallery', __NAMESPACE__ . '\ptwsgallery_shortcode' );
-add_shortcode( 'ptwsroute', __NAMESPACE__ . '\ptwsroute_shortcode' );
+add_shortcode('ptwsgallery', __NAMESPACE__ . '\ptwsgallery_shortcode');
+add_shortcode('ptwsroute', __NAMESPACE__ . '\ptwsroute_shortcode');
 
 ?>
