@@ -108,37 +108,10 @@ class PTWS_API {
         if (!isset( $request['id'] ) ) {
             return new \WP_Error( 'rest_invalid', esc_html__( 'The id parameter is required.', 'my-text-domain' ), array( 'status' => 400 ) );
         }
-        $one_row = $wpdb->get_row(
-            $wpdb->prepare(
-                "
-                    SELECT * 
-                    FROM $routes_table_name 
-                    WHERE route_id = %s
-                ",
-                $request['id']
-            ),
-            'ARRAY_A'
-        );
-        if ($one_row == null) {
+        $response = ptws_get_route_record($request['id']);
+        if ($response == null) {
             return new \WP_Error('rest_invalid', esc_html__('No route exists with ID ' . $request['id'], 'my-text-domain'), array('status' => 400));
         }
-        $one_row['route_start_time_epoch'] = strtotime($one_row['route_start_time']);
-        $one_row['route_end_time_epoch'] = strtotime($one_row['route_end_time']);
-        $one_row['cached_time_epoch'] = strtotime($one_row['cached_time']);
-
-        $response = array();
-        $response['id'] = (string)$one_row['route_id'];
-        $response['description'] = (string)$one_row['route_description'];
-        $response['contents'] = (string)$one_row['route_json'];
-        $response['auto_placed'] = (string)$one_row['auto_placed'];
-        $response['last_seen_in_post'] = (string)$one_row['last_seen_in_post'];
-        $response['route_start_time'] = (string)$one_row['route_start_time'];
-        $response['route_end_time'] = (string)$one_row['route_end_time'];
-        $response['cached_time'] = (string)$one_row['cached_time'];
-        $response['route_start_time_epoch'] = (string)strtotime($one_row['route_start_time']);
-        $response['route_end_time_epoch'] = (string)strtotime($one_row['route_end_time']);
-        $response['cached_time_epoch'] = (string)strtotime($one_row['cached_time']);
-
         // rest_ensure_response() wraps the data we want to return into a WP_REST_Response, and ensures it will be properly returned.
         return rest_ensure_response( $response );
     }
@@ -192,7 +165,6 @@ class PTWS_API {
     // If none exists, it creates the record, using the content in 'route'.  If the record already exists,
     // it replaces the body of the route with the content in 'route'.
     public function route_create($request) {
-        global $wpdb;
         if (!isset( $request['id'] ) ) {
             return new \WP_Error( 'rest_invalid', esc_html__( 'The id parameter is required.', 'my-text-domain' ), array( 'status' => 400 ) );
         }
@@ -205,7 +177,6 @@ class PTWS_API {
         if ($request['key'] != get_option('ptws_route_api_secret')) {
             return new \WP_Error( 'rest_invalid', esc_html__( 'The key parameter is incorrect.', 'my-text-domain' ), array( 'status' => 400 ) );
         }
-        $routes_table_name = $wpdb->prefix . 'ptwsroutes';
 
         // search and remove line breaks
         $json_concatenated = str_replace(array("\n","\r"),"",$request['route']); 
@@ -225,55 +196,20 @@ class PTWS_API {
         $start_time_parsed = strtotime($start_time);
         $end_time_parsed = strtotime($end_time);
 
-        $one_row = $wpdb->get_row(
-            $wpdb->prepare( 
-                "
-                    SELECT * 
-                    FROM $routes_table_name 
-                    WHERE route_id = %s
-                ",
-                $request['id']
-            ),
-            'ARRAY_A'
-        );
+        $f = array();
+        $f['route_id'] = $request['id'];
+        $f['route_description'] = isset($request['name']) ? $request['name'] : '';
+        $f['route_json'] = $request['route'];
+        $f['route_start_time'] = $start_time_parsed;
+        $f['route_end_time'] = $end_time_parsed;
+
+        $one_row = ptws_get_route_record($f['route_id']);
         if ($one_row == null) {
-            $wpdb->show_errors();
-            $wpdb->insert(
-                $routes_table_name,
-                array(
-                    'route_id' => $request['id'],
-                    'route_json' => $request['route'],
-                    'route_start_time' => $start_time_parsed,
-                    'route_end_time' => $end_time_parsed
-                ),
-                array( 
-                    '%s', 
-                    '%s',
-                    '%s',
-                    '%s'
-                ) 
-            );
-            $wpdb->hide_errors();
-            return rest_ensure_response( 'Record ' . $request['id'] . ' inserted.' );
+            ptws_create_route_record($f);
+            return rest_ensure_response( 'Record ' . $f['route_id'] . ' inserted.' );
         } else {
-            $wpdb->show_errors();
-            $wpdb->replace(
-                $routes_table_name,
-                array(
-                    'route_id'   => $request['id'],
-                    'route_json' => $request['route'],
-                    'route_start_time' => $start_time_parsed,
-                    'route_end_time' => $end_time_parsed
-                ),
-                array( 
-                    '%s', 
-                    '%s',
-                    '%s',
-                    '%s'
-                )
-            );
-            $wpdb->hide_errors();
-            return rest_ensure_response( 'Record ' . $request['id'] . ' updated.' );
+            ptws_update_route_record($f);
+            return rest_ensure_response( 'Record ' . $request['route_id'] . ' updated.' );
         }
     }
 

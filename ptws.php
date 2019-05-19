@@ -175,7 +175,7 @@ function ptwsroute_shortcode( $atts, $content = null ) {
     $record_exists = ptws_get_route_record($atts['routeid']);
     if ($record_exists == null) { return 'ptwsroute shortcode: routeid "' . $atts['routeid'] . '" not in database'; }
     ptws_update_route_record_last_seen($atts['routeid']);
-    $all_out = "<div class='ptws-ride-log' rideid='" . (string)$record_exists['route_id'] . "'><div class='data'>" . (string)$record_exists['route_json'] . "</div></div>";
+    $all_out = "<div class='ptws-ride-log' rideid='" . $record_exists['route_id'] . "'><div class='data'>" . $record_exists['route_json'] . "</div></div>";
     return $all_out;
 }
 

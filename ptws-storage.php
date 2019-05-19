@@ -262,7 +262,7 @@ function ptws_create_flickr_cache_record($f)
             '%s',
             '%s',
             '%s',
-            '%s'
+            '%d'
         )
     );
     $wpdb->hide_errors();
@@ -283,12 +283,12 @@ function ptws_get_route_count()
 function ptws_get_route_record($pid)
 {
     global $wpdb;
-    $table_name = $wpdb->prefix . 'ptwsroutes';
+    $routes_table_name = $wpdb->prefix . 'ptwsroutes';
     $one_row = $wpdb->get_row(
         $wpdb->prepare(
             "
                 SELECT * 
-                FROM $table_name 
+                FROM $routes_table_name 
                 WHERE route_id = %s
             ",
             $pid
@@ -298,11 +298,97 @@ function ptws_get_route_record($pid)
     if ($one_row == null) {
         return null;
     }
+
+    $r = array();
+    $r['route_id'] = (string)$one_row['route_id'];
+    $r['route_description'] = (string)$one_row['route_description'];
+    $r['route_json'] = (string)$one_row['route_json'];
+    $r['auto_placed'] = (string)$one_row['auto_placed'];
+    $r['last_seen_in_post'] = (string)$one_row['last_seen_in_post'];
+    $r['route_start_time'] = (string)$one_row['route_start_time'];
+    $r['route_end_time'] = (string)$one_row['route_end_time'];
+    $r['cached_time'] = (string)$one_row['cached_time'];
     // Use PHP to make epoch conversions since SQL may not properly handle negative epochs.
     // https://www.epochconverter.com/programming/php
     // https://www.epochconverter.com/programming/mysql
-    $one_row['cached_time_epoch'] = strtotime($one_row['cached_time']);
-    return $one_row;
+    $r['route_start_time_epoch'] = (string)strtotime($one_row['route_start_time']);
+    $r['route_end_time_epoch'] = (string)strtotime($one_row['route_end_time']);
+    $r['cached_time_epoch'] = (string)strtotime($one_row['cached_time']);
+    return $r;
+}
+
+
+
+// Given the ID of a GPS route in the database, locate and return it.
+// If no record exists, return null instead.
+function ptws_create_route_record($f)
+{
+    global $wpdb;
+    $routes_table_name = $wpdb->prefix . 'ptwsroutes';
+    $wpdb->show_errors();
+    $wpdb->insert(
+        $routes_table_name,
+        array(
+            'route_id' => $f['route_id'],
+            'route_json' => $f['route'],
+            'route_start_time' => $f['route_start_time'],
+            'route_end_time' => $f['route_end_time']
+        ),
+        array( 
+            '%s', 
+            '%s',
+            '%s',
+            '%s'
+        ) 
+    );
+    $wpdb->hide_errors();
+}
+
+
+// Given a route record, update the record with the corresponding route_id in the database to match.
+// The given route record can have an incomplete set of fields.
+// Any that are left un-set will not be changed in the target record.
+function ptws_update_route_record($f)
+{
+    global $wpdb;
+    $routes_table_name = $wpdb->prefix . 'ptwsroutes';
+    if (!isset( $f['route_id'] ) ) { return; }
+    $g = ptws_get_route_record($f['route_id']);
+
+    // Merge over only the fields that are set in the incoming record
+    if (isset($f['route_description'])) { $g['route_description'] = $f['route_description']; }
+    if (isset($f['route_json'])) { $g['route_json'] = $f['route_json']; }
+    if (isset($f['auto_placed'])) { $g['auto_placed'] = $f['auto_placed']; }
+    if (isset($f['last_seen_in_post'])) { $g['last_seen_in_post'] = $f['last_seen_in_post']; }
+    if (isset($f['route_start_time'])) { $g['route_start_time'] = $f['route_start_time']; }
+    if (isset($f['route_end_time'])) { $g['route_end_time'] = $f['route_end_time']; }
+    if (isset($f['cached_time'])) { $g['cached_time'] = $f['cached_time']; }
+
+    $wpdb->show_errors();
+    $wpdb->replace(
+        $routes_table_name,
+        array(
+            'route_id'   => $f['id'],
+            'route_description' => $f['route_description'],
+            'route_json' => $f['route_json'],
+            'auto_placed' => $f['auto_placed'],
+            'last_seen_in_post' => $f['last_seen_in_post'],
+            'route_start_time' => $f['route_start_time'],
+            'route_end_time' => $f['route_end_time'],
+            'cached_time' => $f['cached_time']
+        ),
+        array( 
+            '%s', 
+            '%s',
+            '%s',
+            '%d',
+            '%d', 
+            '%s',
+            '%s',
+            '%s'
+        )
+    );
+    $wpdb->hide_errors();
 }
 
 
