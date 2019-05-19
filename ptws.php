@@ -78,9 +78,9 @@ function ptws_install()
         ) $charset_collate;";
 
         if (!function_exists('dbDelta')) {
-            require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
+            require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
         }
-        dbDelta( $sql );
+        dbDelta($sql);
 
         $route_table_name = $wpdb->prefix . 'ptwsroutes';
 
@@ -98,15 +98,16 @@ function ptws_install()
             PRIMARY KEY (id)
         ) $charset_collate;";
 
-        dbDelta( $route_sql );
+        dbDelta($route_sql);
 
-        update_option( "ptws_db_version", $ptws_db_version );
+        update_option("ptws_db_version", $ptws_db_version);
     }
 }
 
-function ptws_update_db_check() {
+function ptws_update_db_check()
+{
     global $ptws_db_version;
-    if (version_compare( get_site_option( 'ptws_db_version' ), $ptws_db_version, '<' )) {
+    if (version_compare(get_site_option('ptws_db_version'), $ptws_db_version, '<')) {
         ptws_install();
     }
 }
@@ -150,7 +151,8 @@ if (!function_exists("ptws_add_settings_link")) {
 // $picContainer - An HTML element to append the constructed HTML into as children
 // $commentFlag - If true, append the photo's comment
 //
-function ptws_append_image_and_comments($p, $picContainer, $commentFlag) {
+function ptws_append_image_and_comments($p, $picContainer, $commentFlag)
+{
 
     $objA = $picContainer->addChild('a');
     $objA->addAttribute('href', (string)$p['link_url']);
@@ -231,10 +233,10 @@ function ptwsroute_shortcode( $atts, $content = null ) {
             'route_id'   => $request['id'],
             'last_seen_in_post' => get_the_ID()
         ),
-        array( 
-            '%s', 
+        array(
+            '%s',
             '%d'
-        ) 
+        )
     );
     $all_out = "<div class='ptws-ride-log' rideid='" . (string)$record_exists['route_id'] . "'><div class='data'>" . (string)$record_exists['route_json'] . "</div></div>";
     return $all_out;
@@ -244,21 +246,24 @@ function ptwsroute_shortcode( $atts, $content = null ) {
 // Given the ID of a GPS route in the database, locate and return it.
 // If no record exists, return null instead.
 //
-function ptws_get_route_record($pid) {
+function ptws_get_route_record($pid)
+{
     global $wpdb;
     $table_name = $wpdb->prefix . 'ptwsroutes';
     $one_row = $wpdb->get_row(
-        $wpdb->prepare( 
+        $wpdb->prepare(
             "
                 SELECT * 
                 FROM $table_name 
                 WHERE route_id = %s
-            ", 
+            ",
             $pid
         ),
         'ARRAY_A'
     );
-    if ($one_row == null) { return null; }
+    if ($one_row == null) {
+        return null;
+    }
     // Use PHP to make epoch conversions since SQL may not properly handle negative epochs.
     // https://www.epochconverter.com/programming/php
     // https://www.epochconverter.com/programming/mysql
@@ -272,20 +277,20 @@ function ptws_get_route_record($pid) {
 // $atts - The attributes given inside the brackets (none in our case)
 // $content - A string of the content between the opening and closing (which we will parse as XML)
 //
-function ptwsgallery_shortcode( $atts, $content = null ) {
+function ptwsgallery_shortcode($atts, $content = null)
+{
     global $wpdb;
     $table_name = $wpdb->prefix . 'ptwsflickrcache';
 
-	if ($content == null) {
-		return '';
-	}
-	try {
+    if ($content == null) {
+        return '';
+    }
+    try {
         // Handy PHP builtin to parse XML and provide an iterator
-    	$sxe = simplexml_load_string($content, 'SimpleXMLIterator');
-	}
-	catch(Exception $e) {
-    	return '<p>ptwsgallery shortcode content XML parsing error: ' . $e->getMessage() . '</p>';
-	}
+        $sxe = simplexml_load_string($content, 'SimpleXMLIterator');
+    } catch (Exception $e) {
+        return '<p>ptwsgallery shortcode content XML parsing error: ' . $e->getMessage() . '</p>';
+    }
     $sxe->rewind();
     $encloser = $sxe->getName();
     if ($encloser != 'ptwsgallery') {
@@ -303,7 +308,7 @@ function ptwsgallery_shortcode( $atts, $content = null ) {
             // Ignoring these sections now.
         } elseif ($majorSection == 'swipegallery') {
             if ($sxe->hasChildren()) {
-                foreach ($sxe->getChildren() as $element=>$value) {
+                foreach ($sxe->getChildren() as $element => $value) {
                     if ($element == 'galleryitem') {
                         if (isset($value['id'])) {
                             array_push($swipegalleryIDs, (string)$value['id']);
@@ -314,7 +319,7 @@ function ptwsgallery_shortcode( $atts, $content = null ) {
             }
         } elseif ($majorSection == 'fixedgallery') {
             if ($sxe->hasChildren()) {
-                foreach ($sxe->getChildren() as $element=>$value) {
+                foreach ($sxe->getChildren() as $element => $value) {
                     if ($element == 'galleryitem') {
                         if (isset($value['id'])) {
                             array_push($fixedgalleryIDs, (string)$value['id']);
@@ -329,7 +334,7 @@ function ptwsgallery_shortcode( $atts, $content = null ) {
     }
     if ($photos) {
         //$emit .= "\n<p>Post " . get_the_ID() . ", Photo IDs found: \n";
-        foreach($photos as $pid=>$element) {
+        foreach ($photos as $pid => $element) {
             //$emit .= $pid;
             $record_exists = ptws_get_flickr_cache_record($pid);
             if ($record_exists == null) {
@@ -341,11 +346,11 @@ function ptwsgallery_shortcode( $atts, $content = null ) {
                         'cached_time' => 0,
                         'last_seen_in_post' => get_the_ID()
                     ),
-                    array( 
-                        '%s', 
+                    array(
+                        '%s',
                         '%d',
                         '%s'
-                    ) 
+                    )
                 );
                 $wpdb->hide_errors();
                 //$emit .= "(a)";
@@ -360,7 +365,7 @@ function ptwsgallery_shortcode( $atts, $content = null ) {
 
     if ($swipegalleryIDs) {
         $emit .= "\n<div class='royalSlider heroSlider fullWidth rsMinW'>\n";
-        foreach($swipegalleryIDs as $pid) {
+        foreach ($swipegalleryIDs as $pid) {
             if ($photos[$pid]['cached_time'] > 0) {
                 $p = $photos[$pid];
                 $emit .= "  <div class='rsContent'>\n";
@@ -395,7 +400,7 @@ function ptwsgallery_shortcode( $atts, $content = null ) {
         $itemsNotInPortrait = array();
         $commentFlag = FALSE;
 
-        foreach($fixedgalleryIDs as $pid) {
+        foreach ($fixedgalleryIDs as $pid) {
             if ($photos[$pid]['cached_time'] > 0) {
                 $p = $photos[$pid];
 
@@ -403,7 +408,7 @@ function ptwsgallery_shortcode( $atts, $content = null ) {
                 $hraw = floatval((int)$p['large_thumbnail_height']);
 
                 if ($hraw > 0) {
-                    if ($wraw/$hraw < 0.8) {
+                    if ($wraw / $hraw < 0.8) {
                         array_push($itemsInPortrait, $pid);
                     } else {
                         array_push($itemsNotInPortrait, $pid);
@@ -426,18 +431,18 @@ function ptwsgallery_shortcode( $atts, $content = null ) {
         if ((count($fixedgalleryIDs) == 3) && (count($itemsInPortrait) == 1)) {
             // Append both items that are not in portrait mode to the same first div
             $picContainer = $fixedGalXML->addChild('div');
-            foreach($itemsNotInPortrait as $pid) {
+            foreach ($itemsNotInPortrait as $pid) {
                 $p = $photos[$pid];
                 ptws_append_image_and_comments($p, $picContainer, $commentFlag);
             }
             // Then append the one item that is in portrait mode to the second div by itself
-            foreach($itemsInPortrait as $pid) {
+            foreach ($itemsInPortrait as $pid) {
                 $picContainer = $fixedGalXML->addChild('div');
                 $p = $photos[$pid];
                 ptws_append_image_and_comments($p, $picContainer, $commentFlag);
             }
         } elseif (count($fixedgalleryIDs) == 1) {
-            foreach($fixedgalleryIDs as $pid) {
+            foreach ($fixedgalleryIDs as $pid) {
                 if (isset($photos[$pid])) {
                     $p = $photos[$pid];
                     $picContainer = $fixedGalXML->addChild('div');
@@ -447,24 +452,26 @@ function ptwsgallery_shortcode( $atts, $content = null ) {
         } else {
 
             $galleryItems = array();
-            foreach($fixedgalleryIDs as $pid) {
+            foreach ($fixedgalleryIDs as $pid) {
                 if (isset($photos[$pid])) {
                     array_push($galleryItems, $photos[$pid]);
                 }
             }
             $imgMaxHeight = 0;
             $missingSize = false;
-            foreach($galleryItems as $p) {
+            foreach ($galleryItems as $p) {
                 $hraw = floatval((int)$p['large_thumbnail_height']);
                 $wraw = floatval((int)$p['large_thumbnail_width']);
                 if (($hraw > 0) && ($wraw > 0)) {
-                    if ($imgMaxHeight < $hraw) { $imgMaxHeight = $hraw; }
+                    if ($imgMaxHeight < $hraw) {
+                        $imgMaxHeight = $hraw;
+                    }
                 } else {
                     $missingSize = true;
                 }
             }
             $imgTotalScaledWidth = 0;
-            foreach($galleryItems as $p) {
+            foreach ($galleryItems as $p) {
                 $hraw = floatval((int)$p['large_thumbnail_height']);
                 $wraw = floatval((int)$p['large_thumbnail_width']);
                 if (($hraw > 0) && ($wraw > 0)) {
@@ -473,7 +480,7 @@ function ptwsgallery_shortcode( $atts, $content = null ) {
                 }
             }
             $galleryCount = floatval(count($galleryItems));
-            foreach($galleryItems as $p) {
+            foreach ($galleryItems as $p) {
                 $picContainer = $fixedGalXML->addChild('div');
 
                 if (($imgMaxHeight > 0) && ($imgTotalScaledWidth > 0) && ($missingSize == false)) {
@@ -481,30 +488,31 @@ function ptwsgallery_shortcode( $atts, $content = null ) {
                     $hraw = floatval((int)$p['large_thumbnail_height']);
                     $imgScaledWidth = ($imgMaxHeight / $hraw) * $wraw;
                     $flexProportion = ($galleryCount / $imgTotalScaledWidth) * $imgScaledWidth;
-                    $picContainer->addAttribute('style', sprintf( 'flex:%01.4f', $flexProportion ));
+                    $picContainer->addAttribute('style', sprintf('flex:%01.4f', $flexProportion));
                 }
                 ptws_append_image_and_comments($p, $picContainer, $commentFlag);
             }
         }
         $emit .= $fixedGalXML->asXML() . "\n";
     }
-	return $emit;
+    return $emit;
 }
 
 
 // Given the Flickr ID of a photo, seek its record in the database, and return it.
 // If no record exists, return null instead.
 //
-function ptws_get_flickr_cache_record($pid) {
+function ptws_get_flickr_cache_record($pid)
+{
     global $wpdb;
     $table_name = $wpdb->prefix . 'ptwsflickrcache';
     $one_row = $wpdb->get_row(
-        $wpdb->prepare( 
+        $wpdb->prepare(
             "
-                SELECT * 
-                FROM $table_name 
-                WHERE flickr_id = %s
-            ", 
+    SELECT *
+    FROM $table_name
+    WHERE flickr_id = %s
+    ",
             $pid
         ),
         'ARRAY_A'
@@ -523,49 +531,54 @@ function ptws_get_flickr_cache_record($pid) {
 }
 
 
-function ptws_enqueue_scripts() {
+function ptws_enqueue_scripts()
+{
     wp_enqueue_script('jquery');
     // For lazy-loading images
-	wp_enqueue_script('jquery-sonar', PTWS_PLUGIN_URL . '/js/jquery.sonar.min.js', array( 'jquery' ));
+    wp_enqueue_script('jquery-sonar', PTWS_PLUGIN_URL . '/js/jquery.sonar.min.js', array('jquery'));
     // For route and elevation lines
-    wp_enqueue_script('ptws_chart_js', PTWS_PLUGIN_URL . "/js/Chart.bundle.min.js" , array('jquery'));
+    wp_enqueue_script('ptws_chart_js', PTWS_PLUGIN_URL . "/js/Chart.bundle.min.js", array('jquery'));
     // For placing routes on maps
-    wp_enqueue_script('ptws_leaflet_js', PTWS_PLUGIN_URL . "/js/leaflet.js" , array('jquery'));
+    wp_enqueue_script('ptws_leaflet_js', PTWS_PLUGIN_URL . "/js/leaflet.js", array('jquery'));
     // Everything else
-    wp_enqueue_script('ptws_js', PTWS_PLUGIN_URL . "/js/ptws.js" , array('jquery'));
+    wp_enqueue_script('ptws_js', PTWS_PLUGIN_URL . "/js/ptws.js", array('jquery'));
 }
 
 
 /**
  * Enqueue block editor only JavaScript
  */
-function enqueue_block_editor_assets() {
-	$block_path = '/js/editor.blocks.js';
-	wp_enqueue_script(
-		'ptws-blocks-js',
-		PTWS_PLUGIN_URL . $block_path,
-		[ 'wp-i18n', 'wp-element', 'wp-blocks', 'wp-components' ],
-		filemtime( PTWS_PLUGIN_DIRECTORY . $block_path )
-	);
+function enqueue_block_editor_assets()
+{
+    $block_path = '/js/editor.blocks.js';
+    wp_enqueue_script(
+        'ptws-blocks-js',
+        PTWS_PLUGIN_URL . $block_path,
+        ['wp-i18n', 'wp-element', 'wp-blocks', 'wp-components'],
+        filemtime(PTWS_PLUGIN_DIRECTORY . $block_path)
+    );
 }
 
 
-function ptws_enqueue_styles() {
+function ptws_enqueue_styles()
+{
     wp_enqueue_style('ptws_leaflet_css', PTWS_PLUGIN_URL . "/css/leaflet.css");
     wp_enqueue_style('ptws_css', PTWS_PLUGIN_URL . "/css/ptws.css");
     wp_enqueue_style('ptws_royalsider_custom_css', PTWS_PLUGIN_URL . "/css/rscustom.css");
 }
 
 
-function ptws_enqueue_admin_styles() {
+function ptws_enqueue_admin_styles()
+{
     wp_enqueue_style('ptws_admin_css', PTWS_PLUGIN_URL . "/css/ptws-admin.css");
 }
 
 
-function ptws_admin_init() {
+function ptws_admin_init()
+{
 
-    if (is_admin() && get_option( 'ptws_plugin_activation' ) == 'just-activated' ) {
-        delete_option( 'ptws_plugin_activation' );
+    if (is_admin() && get_option('ptws_plugin_activation') == 'just-activated') {
+        delete_option('ptws_plugin_activation');
         ptws_install();
     }
 
@@ -580,17 +593,19 @@ function ptws_admin_init() {
 }
 
 
-function ptws_admin_menu() {
+function ptws_admin_menu()
+{
     add_menu_page('PTWS Custom', 'PTWS Custom', 'publish_pages', 'ptws_plugin_page', __NAMESPACE__ . '\ptws_admin_html_page', PTWS_PLUGIN_URL . "/images/ptws_logo.png", 898);
 
     // adds "Settings" link to the plugin action page
-/*    add_filter( 'plugin_action_links', __NAMESPACE__ . '\ptws_add_settings_links', 10, 2);*/
+    /* add_filter( 'plugin_action_links', __NAMESPACE__ . '\ptws_add_settings_links', 10, 2);*/
 
-/*    ptws_setup_options();*/
+    /* ptws_setup_options();*/
 }
 
 
-function ptws_auth_init() {
+function ptws_auth_init()
+{
     session_start();
     global $pf;
     unset($_SESSION['afgFlickr_auth_token']);
@@ -600,8 +615,9 @@ function ptws_auth_init() {
 }
 
 
-function ptws_auth_read() {
-    if ( isset($_GET['frob']) ) {
+function ptws_auth_read()
+{
+    if (isset($_GET['frob'])) {
         global $pf;
         $auth = $pf->auth_getToken($_GET['frob']);
         update_option('afg_flickr_token', $auth['token']['_content']);
@@ -612,10 +628,11 @@ function ptws_auth_read() {
 }
 
 
-function ptws_admin_html_page() {
+function ptws_admin_html_page()
+{
     global $pf;
 
-	if ($_POST) {
+    if ($_POST) {
 
         if (isset($_POST['submit']) && $_POST['submit'] == 'Save Changes') {
             update_option('ptws_route_api_secret', $_POST['ptws_route_api_secret']);
@@ -627,189 +644,186 @@ function ptws_admin_html_page() {
             update_option('ptws_user_id', $_POST['ptws_user_id']);
 
             echo "<div class='updated'>
-            	<p>
-            		<strong>
-            			Settings updated successfully.
-            			<br /><br />
-            			<font style='color:red'>
-            				Important Note:
-            			</font>
-            			If you have installed a caching plugin (like WP Super Cache or W3 Total Cache etc.),
-            			you may have to delete your cached pages for the settings to take effect.
-            		</strong>
-            	</p>
-            </div>";
+        <p>
+            <strong>
+                Settings updated successfully.
+                <br /><br />
+                <font style='color:red'>
+                    Important Note:
+                </font>
+                If you have installed a caching plugin (like WP Super Cache or W3 Total Cache etc.),
+                you may have to delete your cached pages for the settings to take effect.
+            </strong>
+        </p>
+    </div>";
             if (get_option('ptws_api_secret') && !get_option('ptws_flickr_token')) {
-                echo "<div class='updated'><p><strong>Click \"Grant Access\" button to authorize Awesome Flickr Gallery to access your private photos from Flickr.</strong></p></div>";
+                echo "<div class='updated'>
+        <p><strong>Click \"Grant Access\" button to authorize Awesome Flickr Gallery to access your private photos from Flickr.</strong></p>
+    </div>";
             }
         }
         ptws_create_afgFlickr_obj();
     }
-    $url=$_SERVER['REQUEST_URI'];
-?>
+    $url = $_SERVER['REQUEST_URI'];
+    ?>
 
-    <form method='post' action='<?php echo $url ?>'>
-		<div id='afg-wrap'>
-	        <h2>PTWS Custom Settings</h2>
-            <div id="afg-main-box">
-            	<h3>Flickr User Settings</h3>
-                <table class='ptws-admin-settings'>
-                    <tr>
-                    	<td>Flickr User ID</td>
-                    	<td><input class='afg-input' type='text' name='ptws_user_id' value="<?php echo get_option('ptws_user_id'); ?>" /></td>
-                    	<td><div>Don't know your Flickr User ID?  Get it from <a href="http://idgettr.com/" target='blank'>here.</a></div></td>
-                    </tr>
-                    <tr>
-                    	<td>Flickr API Key</td>
-                    	<td><input class='afg-input' type='text' name='ptws_api_key' value="<?php echo get_option('ptws_api_key'); ?>" /></td>
-                    	<td>
-                    		<div class='afg-help'>
-                    			Don't have a Flickr API Key?  Get it from <a href="http://www.flickr.com/services/api/keys/" target='blank'>here.</a>
-                    			Go through the <a href='http://www.flickr.com/services/api/tos/'>Flickr API Terms of Service.</a>
-                    		</div>
-                    	</td>
-                    </tr>
-                    <tr>
-                        <td>Flickr API Secret</td>
-                        <td>
-                        	<input class='afg-input' type='text' name='ptws_api_secret' id='ptws_api_secret' value="<?php echo get_option('ptws_api_secret'); ?>"/>
-                    		<br /><br />
-<?php
-							if (get_option('ptws_api_secret')) {
-    							if (get_option('ptws_flickr_token')) {
-    								echo "<input type='button' class='button-secondary' value='Access Granted' disabled='' />";
-    							} else {
-?>
-    								<input type="button" class="button-primary"
-    									value="Grant Access"
-    									onClick="document.location.href='<?php echo get_admin_url() .  'admin-ajax.php?action=ptws_gallery_auth'; ?>';" />
-<?php
-								}
-							} else {
-								echo "<input type='button' class='button-secondary' value='Grant Access' disabled='' />";
-							}
-?>
-                        </td>
-                        <td>
-                        	<b>ONLY</b> If you want to include your <b>Private Photos</b> in your galleries, enter your Flickr API Secret here and click Save Changes.
-                        </td>
-                    </tr>
-    			</table>
-<?php
+        <form method='post' action='<?php echo $url ?>'>
+            <div id='afg-wrap'>
+                <h2>PTWS Custom Settings</h2>
+                <div id="afg-main-box">
+                    <h3>Flickr User Settings</h3>
+                    <table class='ptws-admin-settings'>
+                        <tr>
+                            <td>Flickr User ID</td>
+                            <td><input class='afg-input' type='text' name='ptws_user_id' value="<?php echo get_option('ptws_user_id'); ?>" /></td>
+                            <td>
+                                <div>Don't know your Flickr User ID? Get it from <a href="http://idgettr.com/" target='blank'>here.</a></div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Flickr API Key</td>
+                            <td><input class='afg-input' type='text' name='ptws_api_key' value="<?php echo get_option('ptws_api_key'); ?>" /></td>
+                            <td>
+                                <div class='afg-help'>
+                                    Don't have a Flickr API Key? Get it from <a href="http://www.flickr.com/services/api/keys/" target='blank'>here.</a>
+                                    Go through the <a href='http://www.flickr.com/services/api/tos/'>Flickr API Terms of Service.</a>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Flickr API Secret</td>
+                            <td>
+                                <input class='afg-input' type='text' name='ptws_api_secret' id='ptws_api_secret' value="<?php echo get_option('ptws_api_secret'); ?>" />
+                                <br /><br />
+                                <?php
+                                if (get_option('ptws_api_secret')) {
+                                    if (get_option('ptws_flickr_token')) {
+                                        echo "<input type='button' class='button-secondary' value='Access Granted' disabled='' />";
+                                    } else {
+                                        ?>
+                                        <input type="button" class="button-primary" value="Grant Access" onClick="document.location.href='<?php echo get_admin_url() .  'admin-ajax.php?action=ptws_gallery_auth'; ?>';" />
+                                    <?php
+                                }
+                            } else {
+                                echo "<input type='button' class='button-secondary' value='Grant Access' disabled='' />";
+                            }
+                            ?>
+                            </td>
+                            <td>
+                                <b>ONLY</b> If you want to include your <b>Private Photos</b> in your galleries, enter your Flickr API Secret here and click Save Changes.
+                            </td>
+                        </tr>
+                    </table>
+                    <?php
 
-    global $wpdb;
+                    global $wpdb;
 
-    $flickr_table_name = $wpdb->prefix . 'ptwsflickrcache';
-    $route_table_name = $wpdb->prefix . 'ptwsroutes';
+                    $flickr_table_name = $wpdb->prefix . 'ptwsflickrcache';
+                    $route_table_name = $wpdb->prefix . 'ptwsroutes';
 
-	if ($_POST) {
-        if (isset($_POST['submit']) && $_POST['submit'] == 'Clear Photo') {
+                    if ($_POST) {
+                        if (isset($_POST['submit']) && $_POST['submit'] == 'Clear Photo') {
 
-            if (!$_POST['ptws_photo_id_to_clear']) {
-                echo '<p>No photo ID to clear entered.</p>';
-            } else {
-                $wpdb->show_errors();
+                            if (!$_POST['ptws_photo_id_to_clear']) {
+                                echo '<p>No photo ID to clear entered.</p>';
+                            } else {
+                                $wpdb->show_errors();
 
-                $pid = $_POST['ptws_photo_id_to_clear'];
-                $wpdb->query(
-                    $wpdb->prepare(
-                        "DELETE FROM $flickr_table_name WHERE flickr_id = %s", $pid
-                    )
-                );
-                echo '<p>Photo cleared from cache.</p>';
-                $wpdb->hide_errors();
-            }
-        }
-    }
+                                $pid = $_POST['ptws_photo_id_to_clear'];
+                                $wpdb->query(
+                                    $wpdb->prepare(
+                                        "DELETE FROM $flickr_table_name WHERE flickr_id = %s",
+                                        $pid
+                                    )
+                                );
+                                echo '<p>Photo cleared from cache.</p>';
+                                $wpdb->hide_errors();
+                            }
+                        }
+                    }
 
-    $wpdb->show_errors();
-    $cache_count = $wpdb->get_var( "SELECT COUNT(*) FROM $flickr_table_name" );
-    $cache_unresolved_count = $wpdb->get_var("SELECT COUNT(*) FROM $flickr_table_name WHERE cached_time = 0");
-    $route_count = $wpdb->get_var( "SELECT COUNT(*) FROM $route_table_name" );
+                    $wpdb->show_errors();
+                    $cache_count = $wpdb->get_var("SELECT COUNT(*) FROM $flickr_table_name");
+                    $cache_unresolved_count = $wpdb->get_var("SELECT COUNT(*) FROM $flickr_table_name WHERE cached_time = 0");
+                    $route_count = $wpdb->get_var("SELECT COUNT(*) FROM $route_table_name");
 
-    if ($cache_count > 0) {
-?>
-            	<h3>Photo Cache</h3>
+                    if ($cache_count > 0) {
+                        ?>
+                        <h3>Photo Cache</h3>
 
-                <table class='ptws-admin-settings'>
+                        <table class='ptws-admin-settings'>
 
-                    <tr>
-                        <td colspan="2">
-                            <input type="button" class="button-secondary"
-                                value="Clear All Cache"
-                                onClick="document.location.href='<?php echo get_admin_url() .  'admin-ajax.php?action=ptws_cache_clear'; ?>';" />
-                        </td>
-                        <td>
-                        	Wipes the entire cache.
-                        </td>
-                    </tr>
-<?php
-        if ($cache_unresolved_count > 0) {
-?>
+                            <tr>
+                                <td colspan="2">
+                                    <input type="button" class="button-secondary" value="Clear All Cache" onClick="document.location.href='<?php echo get_admin_url() .  'admin-ajax.php?action=ptws_cache_clear'; ?>';" />
+                                </td>
+                                <td>
+                                    Wipes the entire cache.
+                                </td>
+                            </tr>
+                            <?php
+                            if ($cache_unresolved_count > 0) {
+                                ?>
 
-                    <tr>
-                        <td colspan="2">
-                            <input type="button" class="button-secondary"
-                                value="Resolve Entries"
-                                onClick="document.location.href='<?php echo get_admin_url() .  'admin-ajax.php?action=ptws_resolve'; ?>';" />
-                        </td>
-                        <td>
-                        	Resolves 4 of the most recently added unresolved cache entries.
-                        </td>
-                    </tr>
+                                <tr>
+                                    <td colspan="2">
+                                        <input type="button" class="button-secondary" value="Resolve Entries" onClick="document.location.href='<?php echo get_admin_url() .  'admin-ajax.php?action=ptws_resolve'; ?>';" />
+                                    </td>
+                                    <td>
+                                        Resolves 4 of the most recently added unresolved cache entries.
+                                    </td>
+                                </tr>
 
-<?php
-        }
-?>
-    			</table>
+                            <?php
+                        }
+                        ?>
+                        </table>
 
-                <table class='ptws-admin-settings'>
-                    <tr>
-                        <td>Flickr Photo ID</td>
-                        <td>
-                        	<input class='afg-input' type='text' name='ptws_photo_id_to_clear' id='ptws_photo_id_to_clear' value=""/>
-                            <input type="submit" name="submit" id="ptws_clear_single_photo" class="button-primary" value="Clear Photo" />
-                        </td>
-                        <td>
-                        	Clear a single photo from the cache.
-                        </td>
-                    </tr>
-    			</table>
-<?php
-        echo "<p>Flickr cache contains {$cache_count} entries, with {$cache_unresolved_count} unresolved.</p>";
-    }
+                        <table class='ptws-admin-settings'>
+                            <tr>
+                                <td>Flickr Photo ID</td>
+                                <td>
+                                    <input class='afg-input' type='text' name='ptws_photo_id_to_clear' id='ptws_photo_id_to_clear' value="" />
+                                    <input type="submit" name="submit" id="ptws_clear_single_photo" class="button-primary" value="Clear Photo" />
+                                </td>
+                                <td>
+                                    Clear a single photo from the cache.
+                                </td>
+                            </tr>
+                        </table>
+                        <?php
+                        echo "<p>Flickr cache contains {$cache_count} entries, with {$cache_unresolved_count} unresolved.</p>";
+                    }
 
-?>
-            	<h3>Route Database</h3>
+                    ?>
+                    <h3>Route Database</h3>
 
-                <table class='ptws-admin-settings'>
-                    <tr>
-                        <td>Route upload API Secret</td>
-                        <td>
-                        	<input class='afg-input' type='text' name='ptws_route_api_secret' id='ptws_route_api_secret' value="<?php echo get_option('ptws_route_api_secret'); ?>"/>
-                        </td>
-                        <td>
-                        	A unique string to authorize submitting routes to this PTWS Wordpress plugin.  Embed this in the client-side GPS importer.
-                        </td>
-                    </tr>
-    			</table>
-<?php
-    echo "<p>Route database contains {$route_count} entries.</p>";
-?>
+                    <table class='ptws-admin-settings'>
+                        <tr>
+                            <td>Route upload API Secret</td>
+                            <td>
+                                <input class='afg-input' type='text' name='ptws_route_api_secret' id='ptws_route_api_secret' value="<?php echo get_option('ptws_route_api_secret'); ?>" />
+                            </td>
+                            <td>
+                                A unique string to authorize submitting routes to this PTWS Wordpress plugin. Embed this in the client-side GPS importer.
+                            </td>
+                        </tr>
+                    </table>
+                    <?php
+                    echo "<p>Route database contains {$route_count} entries.</p>";
+                    ?>
 
-                <br />
-                <input type="submit" name="submit" id="ptws_save_changes" class="button-primary" value="Save Changes" />
-                <br />
-                <br />
-				<input type="button" class="button-secondary"
-					value="Test Flickr Credentials"
-					onClick="document.location.href='<?php echo get_admin_url() .  'admin-ajax.php?action=ptws_test'; ?>';" />
+                    <br />
+                    <input type="submit" name="submit" id="ptws_save_changes" class="button-primary" value="Save Changes" />
+                    <br />
+                    <br />
+                    <input type="button" class="button-secondary" value="Test Flickr Credentials" onClick="document.location.href='<?php echo get_admin_url() .  'admin-ajax.php?action=ptws_test'; ?>';" />
 
-			</div>
-		</div>
-    </form>
+                </div>
+            </div>
+        </form>
 
-<?php
+    <?php
 
     //$result = $wpdb->get_results('SELECT * FROM ' . $flickr_table_name . ' LIMIT 10');
 
@@ -825,45 +839,46 @@ function ptws_admin_html_page() {
 // Uses $pf, a global variable providing access to the afgFlickr flickr library (see ptws-libs).
 // Responds to the "ptws_test" AJAX call, e.g. ".../admin-ajax.php?action=ptws_test".
 //
-function ptws_flickr_connect_test() {
+function ptws_flickr_connect_test()
+{
     session_start();
     global $pf;
 
     echo '<h3>Your Photostream Preview</h3>';
 
     if (get_option('ptws_flickr_token')) {
-    	$rsp_obj = $pf->people_getPhotos(get_option('ptws_user_id'), array('per_page' => 5, 'page' => 1));
+        $rsp_obj = $pf->people_getPhotos(get_option('ptws_user_id'), array('per_page' => 5, 'page' => 1));
     } else {
-    	$rsp_obj = $pf->people_getPublicPhotos(get_option('ptws_user_id'), NULL, NULL, 5, 1);
+        $rsp_obj = $pf->people_getPublicPhotos(get_option('ptws_user_id'), NULL, NULL, 5, 1);
     }
     if (!$rsp_obj) {
-    	echo ptws_error('Flickr connectivity error');
+        echo ptws_error('Flickr connectivity error');
     } else {
-?>
+        ?>
         <table style='border-spacing:0;border:1px solid #e5e5e5;box-shadow: 0 1px 1px rgba(0, 0, 0, .04)'>
             <tr>
                 <th style='text-align: left;line-height: 1.3em;font-size: 14px;padding:10px;'>If your Flickr Settings are correct, 5 of your recent photos from your Flickr photostream should appear here.</th>
             </tr>
             <tr>
                 <td style='padding: 8px 10px;color: #555;'>
-<?php
+                    <?php
 
-        foreach($rsp_obj['photos']['photo'] as $photo) {
-            $photo_url = "http://farm{$photo['farm']}.static.flickr.com/{$photo['server']}/{$photo['id']}_{$photo['secret']}_s.jpg";
-            echo "<img src=\"$photo_url\" />&nbsp;&nbsp;&nbsp;";
-        }
+                    foreach ($rsp_obj['photos']['photo'] as $photo) {
+                        $photo_url = "http://farm{$photo['farm']}.static.flickr.com/{$photo['server']}/{$photo['id']}_{$photo['secret']}_s.jpg";
+                        echo "<img src=\"$photo_url\" />&nbsp;&nbsp;&nbsp;";
+                    }
 
-?>
+                    ?>
                     <br />
                     <span style="margin-top:15px">
-                        Note:  This preview is based on the Flickr Settings only.  Gallery Settings
-                        have no effect on this preview.  You will need to insert gallery code to a post
+                        Note: This preview is based on the Flickr Settings only. Gallery Settings
+                        have no effect on this preview. You will need to insert gallery code to a post
                         or page to actually see the Gallery.
                     </span>
                 </td>
             </tr>
         </table>
-<?php
+    <?php
 
     }
     exit;
@@ -874,7 +889,8 @@ function ptws_flickr_connect_test() {
 // and uses the Flickr library via $pf to resolve them.
 // Responds to the "cache_resolve" AJAX call, e.g. ".../admin-ajax.php?action=cache_resolve".
 //
-function ptws_admin_cache_resolve() {
+function ptws_admin_cache_resolve()
+{
     session_start();
     global $pf;
     global $wpdb;
@@ -906,7 +922,7 @@ function ptws_admin_cache_resolve() {
                 echo ptws_error('Flickr connectivity error getting photo ' . $fid);
             } else {
                 $f_sizes = array();
-                foreach ($f_sizes_obj as $a=>$b) {
+                foreach ($f_sizes_obj as $a => $b) {
                     $f_sizes[$b['label']] = $b;
                 }
 
