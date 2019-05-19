@@ -27,8 +27,9 @@ global $ptws_db_version;
 $ptws_db_version = '1.92';
 
 require_once('afgFlickr/afgFlickr.php');
-require_once('ptws-api.php');
 include_once('ptws-libs.php');
+include_once('ptws-storage.php');
+require_once('ptws-api.php');
 include_once('ptws-lazyload.php');
 
 
@@ -48,57 +49,8 @@ function ptws_install()
     // http://php.net/manual/en/function.version-compare.php
     if (version_compare(get_option("ptws_db_version"), $ptws_db_version, '<')) {
 
-        $flickr_table_name = $wpdb->prefix . 'ptwsflickrcache';
-
-        // last_seen_in_post references a field in the Wordpress posts table
-        // https://codex.wordpress.org/Database_Description#Table:_wp_posts
-        $sql = "CREATE TABLE $flickr_table_name (
-            id mediumint(9) NOT NULL AUTO_INCREMENT,
-            flickr_id varchar(32) NOT NULL,
-            title text,
-            width int UNSIGNED,
-            height int UNSIGNED,
-            link_url text,
-            large_thumbnail_width int UNSIGNED,
-            large_thumbnail_height int UNSIGNED,
-            large_thumbnail_url text,
-            square_thumbnail_width int UNSIGNED,
-            square_thumbnail_height int UNSIGNED,
-            square_thumbnail_url text,
-            comments int UNSIGNED DEFAULT 0 NOT NULL,
-            description text,
-            taken_time datetime DEFAULT 0 NOT NULL,
-            uploaded_time datetime DEFAULT 0 NOT NULL,
-            updated_time datetime DEFAULT 0 NOT NULL,
-            cached_time datetime DEFAULT CURRENT_TIMESTAMP NOT NULL,
-            auto_placed tinyint(1) DEFAULT 0,
-            last_seen_in_post bigint(20) unsigned,
-            CONSTRAINT unique_flickr_id UNIQUE (flickr_id),
-            PRIMARY KEY (id)
-        ) $charset_collate;";
-
-        if (!function_exists('dbDelta')) {
-            require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
-        }
-        dbDelta($sql);
-
-        $route_table_name = $wpdb->prefix . 'ptwsroutes';
-
-        $route_sql = "CREATE TABLE $route_table_name (
-            id mediumint(9) NOT NULL AUTO_INCREMENT,
-            route_id varchar(32) NOT NULL,
-            route_json LONGTEXT,
-            route_description text DEFAULT '',
-            route_start_time datetime DEFAULT 0 NOT NULL,
-            route_end_time datetime DEFAULT 0 NOT NULL,
-            cached_time datetime DEFAULT CURRENT_TIMESTAMP NOT NULL,
-            auto_placed tinyint(1) DEFAULT 0,
-            last_seen_in_post bigint(20) unsigned,
-            CONSTRAINT unique_route_id UNIQUE (route_id),
-            PRIMARY KEY (id)
-        ) $charset_collate;";
-
-        dbDelta($route_sql);
+        ptws_create_photo_tables();
+        ptws_create_route_tables();
 
         update_option("ptws_db_version", $ptws_db_version);
     }
@@ -226,49 +178,9 @@ function ptwsroute_shortcode( $atts, $content = null ) {
     if ($atts['routeid'] == '') { return 'ptwsroute shortcode: routeid is blank'; }
     $record_exists = ptws_get_route_record($atts['routeid']);
     if ($record_exists == null) { return 'ptwsroute shortcode: routeid "' . $atts['routeid'] . '" not in database'; }
-    $table_name = $wpdb->prefix . 'ptwsroutes';
-    $wpdb->replace(
-        $table_name,
-        array(
-            'route_id'   => $request['id'],
-            'last_seen_in_post' => get_the_ID()
-        ),
-        array(
-            '%s',
-            '%d'
-        )
-    );
+    ptws_update_route_record_last_seen($atts['routeid']);
     $all_out = "<div class='ptws-ride-log' rideid='" . (string)$record_exists['route_id'] . "'><div class='data'>" . (string)$record_exists['route_json'] . "</div></div>";
     return $all_out;
-}
-
-
-// Given the ID of a GPS route in the database, locate and return it.
-// If no record exists, return null instead.
-//
-function ptws_get_route_record($pid)
-{
-    global $wpdb;
-    $table_name = $wpdb->prefix . 'ptwsroutes';
-    $one_row = $wpdb->get_row(
-        $wpdb->prepare(
-            "
-                SELECT * 
-                FROM $table_name 
-                WHERE route_id = %s
-            ",
-            $pid
-        ),
-        'ARRAY_A'
-    );
-    if ($one_row == null) {
-        return null;
-    }
-    // Use PHP to make epoch conversions since SQL may not properly handle negative epochs.
-    // https://www.epochconverter.com/programming/php
-    // https://www.epochconverter.com/programming/mysql
-    $one_row['cached_time_epoch'] = strtotime($one_row['cached_time']);
-    return $one_row;
 }
 
 
@@ -499,38 +411,6 @@ function ptwsgallery_shortcode($atts, $content = null)
 }
 
 
-// Given the Flickr ID of a photo, seek its record in the database, and return it.
-// If no record exists, return null instead.
-//
-function ptws_get_flickr_cache_record($pid)
-{
-    global $wpdb;
-    $table_name = $wpdb->prefix . 'ptwsflickrcache';
-    $one_row = $wpdb->get_row(
-        $wpdb->prepare(
-            "
-    SELECT *
-    FROM $table_name
-    WHERE flickr_id = %s
-    ",
-            $pid
-        ),
-        'ARRAY_A'
-    );
-    if ($one_row == null) {
-        return null;
-    }
-    // Use PHP to make epoch conversions since SQL may not properly handle negative epochs.
-    // https://www.epochconverter.com/programming/php
-    // https://www.epochconverter.com/programming/mysql
-    $one_row['taken_time_epoch'] = strtotime($one_row['taken_time']);
-    $one_row['uploaded_time_epoch'] = strtotime($one_row['uploaded_time']);
-    $one_row['updated_time_epoch'] = strtotime($one_row['updated_time']);
-    $one_row['cached_time_epoch'] = strtotime($one_row['cached_time']);
-    return $one_row;
-}
-
-
 function ptws_enqueue_scripts()
 {
     wp_enqueue_script('jquery');
@@ -727,17 +607,8 @@ function ptws_admin_html_page()
                             if (!$_POST['ptws_photo_id_to_clear']) {
                                 echo '<p>No photo ID to clear entered.</p>';
                             } else {
-                                $wpdb->show_errors();
-
-                                $pid = $_POST['ptws_photo_id_to_clear'];
-                                $wpdb->query(
-                                    $wpdb->prepare(
-                                        "DELETE FROM $flickr_table_name WHERE flickr_id = %s",
-                                        $pid
-                                    )
-                                );
+                                ptws_clear_one_photo($_POST['ptws_photo_id_to_clear']);
                                 echo '<p>Photo cleared from cache.</p>';
-                                $wpdb->hide_errors();
                             }
                         }
                     }
@@ -899,13 +770,7 @@ function ptws_admin_cache_resolve()
 
     echo '<h3>Manually resolve cache entries</h3>';
 
-    $uncached_recs = $wpdb->get_results(
-        $wpdb->prepare(
-            "SELECT * FROM $flickr_table_name WHERE cached_time = %d LIMIT 4",
-            0
-        ),
-        'ARRAY_A'
-    );
+    $uncached_recs = ptws_get_unresolved_photos(4);
 
     $uid = get_option('ptws_user_id');
 
@@ -1020,21 +885,11 @@ function ptws_admin_cache_resolve()
 function ptws_admin_cache_clear()
 {
     session_start();
-    global $wpdb;
-    $flickr_table_name = $wpdb->prefix . 'ptwsflickrcache';
-    $wpdb->show_errors();
 
     echo '<h3>Clear cache</h3>';
-
-    $wpdb->query(
-        $wpdb->prepare(
-            "DELETE FROM $flickr_table_name"
-        )
-    );
-
+    ptws_clear_photo_cache();
     echo '<p>Done.</p>';
 
-    $wpdb->hide_errors();
     exit;
 }
 
