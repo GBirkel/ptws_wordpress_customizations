@@ -41,10 +41,7 @@ function ptws_activate()
 
 function ptws_install()
 {
-    global $wpdb;
     global $ptws_db_version;
-
-    $charset_collate = $wpdb->get_charset_collate();
 
     // http://php.net/manual/en/function.version-compare.php
     if (version_compare(get_option("ptws_db_version"), $ptws_db_version, '<')) {
@@ -169,7 +166,6 @@ function ptws_append_image_and_comments($p, $picContainer, $commentFlag)
 // $content - A string of the content between the opening and closing
 //
 function ptwsroute_shortcode( $atts, $content = null ) {
-    global $wpdb;
 	$atts = shortcode_atts(
 		array(
 			'routeid' => ''
@@ -191,9 +187,6 @@ function ptwsroute_shortcode( $atts, $content = null ) {
 //
 function ptwsgallery_shortcode($atts, $content = null)
 {
-    global $wpdb;
-    $table_name = $wpdb->prefix . 'ptwsflickrcache';
-
     if ($content == null) {
         return '';
     }
@@ -250,22 +243,7 @@ function ptwsgallery_shortcode($atts, $content = null)
             //$emit .= $pid;
             $record_exists = ptws_get_flickr_cache_record($pid);
             if ($record_exists == null) {
-                $wpdb->show_errors();
-                $wpdb->insert(
-                    $table_name,
-                    array(
-                        'flickr_id' => $pid,
-                        'cached_time' => 0,
-                        'last_seen_in_post' => get_the_ID()
-                    ),
-                    array(
-                        '%s',
-                        '%d',
-                        '%s'
-                    )
-                );
-                $wpdb->hide_errors();
-                //$emit .= "(a)";
+                ptws_add_uncached_photo($pid);
                 $photos[$pid] = ptws_get_flickr_cache_record($pid);
             } else {
                 $photos[$pid] = $record_exists;
@@ -596,11 +574,6 @@ function ptws_admin_html_page()
                     </table>
                     <?php
 
-                    global $wpdb;
-
-                    $flickr_table_name = $wpdb->prefix . 'ptwsflickrcache';
-                    $route_table_name = $wpdb->prefix . 'ptwsroutes';
-
                     if ($_POST) {
                         if (isset($_POST['submit']) && $_POST['submit'] == 'Clear Photo') {
 
@@ -613,11 +586,7 @@ function ptws_admin_html_page()
                         }
                     }
 
-                    $wpdb->show_errors();
-                    $cache_count = $wpdb->get_var("SELECT COUNT(*) FROM $flickr_table_name");
-                    $cache_unresolved_count = $wpdb->get_var("SELECT COUNT(*) FROM $flickr_table_name WHERE cached_time = 0");
-                    $route_count = $wpdb->get_var("SELECT COUNT(*) FROM $route_table_name");
-
+                    $cache_count = ptws_get_photos_count();
                     if ($cache_count > 0) {
                         ?>
                         <h3>Photo Cache</h3>
@@ -633,6 +602,7 @@ function ptws_admin_html_page()
                                 </td>
                             </tr>
                             <?php
+                            $cache_unresolved_count = ptws_get_unresolved_photos_count();
                             if ($cache_unresolved_count > 0) {
                                 ?>
 
@@ -681,6 +651,7 @@ function ptws_admin_html_page()
                         </tr>
                     </table>
                     <?php
+                    $route_count = ptws_get_route_count();
                     echo "<p>Route database contains {$route_count} entries.</p>";
                     ?>
 
@@ -701,8 +672,6 @@ function ptws_admin_html_page()
     // https://codex.wordpress.org/Database_Description#Table:_wp_posts
     //$ten_posts = $wpdb->get_results('SELECT * FROM ' . $wpdb->posts . ' LIMIT 10');
     // post_modified, post_modified_gmt DATETIME
-
-    $wpdb->hide_errors();
 }
 
 
@@ -764,9 +733,6 @@ function ptws_admin_cache_resolve()
 {
     session_start();
     global $pf;
-    global $wpdb;
-    $flickr_table_name = $wpdb->prefix . 'ptwsflickrcache';
-    $wpdb->show_errors();
 
     echo '<h3>Manually resolve cache entries</h3>';
 
@@ -828,53 +794,29 @@ function ptws_admin_cache_resolve()
                     $large_src = $f_sizes['Original']['source'];
                 }
 
-                $wpdb->replace(
-                    $flickr_table_name,
-                    array(
-                        'flickr_id'     => $fid,
-                        'title'         => $p['title']['_content'],
-                        'width'     => intval($f_sizes['Original']['width']),
-                        'height'     => intval($f_sizes['Original']['height']),
-                        'link_url'     => $url,
-                        'large_thumbnail_width'     => $large_w,
-                        'large_thumbnail_height'     => $large_h,
-                        'large_thumbnail_url'     => $large_src,
-                        'square_thumbnail_width'     => intval($f_sizes['Square']['width']),
-                        'square_thumbnail_height'     => intval($f_sizes['Square']['height']),
-                        'square_thumbnail_url'     => $f_sizes['Square']['source'],
-                        'comments'     => intval($p['comments']['_content']),
-                        'description'     => $p['description']['_content'],
-                        'taken_time'     => $p['dates']['taken'],
-                        'uploaded_time'     => $upl_time,
-                        'updated_time'    => $upd_time,
-                        'cached_time'   => $upd_time,
-                        'last_seen_in_post' => $uncached_rec['last_seen_in_post']
-                    ),
-                    array(
-                        '%s',
-                        '%s',
-                        '%d',
-                        '%d',
-                        '%s',
-                        '%d',
-                        '%d',
-                        '%s',
-                        '%d',
-                        '%d',
-                        '%s',
-                        '%d',
-                        '%s',
-                        '%s',
-                        '%s',
-                        '%s',
-                        '%s',
-                        '%s'
-                    )
-                );
+                $f = array();
+                $f['flickr_id'] = $fid;
+                $f['title'] = $p['title']['_content'];
+                $f['width'] = intval($f_sizes['Original']['width']);
+                $f['height'] = intval($f_sizes['Original']['height']);
+                $f['link_url'] = $url;
+                $f['large_thumbnail_width'] = $large_w;
+                $f['large_thumbnail_height'] = $large_h;
+                $f['large_thumbnail_url'] = $large_src;
+                $f['square_thumbnail_width'] = intval($f_sizes['Square']['width']);
+                $f['square_thumbnail_height'] = intval($f_sizes['Square']['height']);
+                $f['square_thumbnail_url'] = $f_sizes['Square']['source'];
+                $f['comments'] = intval($p['comments']['_content']);
+                $f['description'] = $p['description']['_content'];
+                $f['taken_time'] = $p['dates']['taken'];
+                $f['uploaded_time'] = $upl_time;
+                $f['updated_time'] = $upd_time;
+                $f['cached_time'] = $upd_time;
+                $f['last_seen_in_post'] = $uncached_rec['last_seen_in_post'];
+                ptws_create_flickr_cache_record($f);
             }
         }
     }
-    $wpdb->hide_errors();
     exit;
 }
 

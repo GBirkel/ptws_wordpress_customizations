@@ -93,8 +93,30 @@ function ptws_create_route_tables()
 }
 
 
+// Adds an unresolved entry to the photo cache
+function ptws_add_uncached_photo($pid)
+{
+    global $wpdb;
+    $flickr_table_name = $wpdb->prefix . 'ptwsflickrcache';
+    $wpdb->show_errors();
+    $wpdb->insert(
+        $flickr_table_name,
+        array(
+            'flickr_id' => $pid,
+            'cached_time' => 0,
+            'last_seen_in_post' => get_the_ID()
+        ),
+        array(
+            '%s',
+            '%d',
+            '%s'
+        )
+    );
+    $wpdb->hide_errors();
+}
+
+
 // Removes all entries from the photo cache
-//
 function ptws_clear_photo_cache()
 {
     global $wpdb;
@@ -111,7 +133,6 @@ function ptws_clear_photo_cache()
 
 
 // Removes the entry with the given ID from the photo cache
-//
 function ptws_clear_one_photo($pid)
 {
     global $wpdb;
@@ -129,7 +150,6 @@ function ptws_clear_one_photo($pid)
 
 
 // Gets up to n unresolved entries from the photo cache
-//
 function ptws_get_unresolved_photos($n)
 {
     global $wpdb;
@@ -147,9 +167,26 @@ function ptws_get_unresolved_photos($n)
 }
 
 
+// Gets the count of photos in the cache
+function ptws_get_photos_count()
+{
+    global $wpdb;
+    $flickr_table_name = $wpdb->prefix . 'ptwsflickrcache';
+    return $wpdb->get_var("SELECT COUNT(*) FROM $flickr_table_name");
+}
+
+
+// Gets the count of unresolved photos in the cache
+function ptws_get_unresolved_photos_count()
+{
+    global $wpdb;
+    $flickr_table_name = $wpdb->prefix . 'ptwsflickrcache';
+    return $wpdb->get_var("SELECT COUNT(*) FROM $flickr_table_name WHERE cached_time = 0");
+}
+
+
 // Given the Flickr ID of a photo, seek its record in the database, and return it.
 // If no record exists, return null instead.
-//
 function ptws_get_flickr_cache_record($pid)
 {
     global $wpdb;
@@ -179,9 +216,70 @@ function ptws_get_flickr_cache_record($pid)
 }
 
 
+// Create a fully-resolved record in the cache with the given fields.
+function ptws_create_flickr_cache_record($f)
+{
+    global $wpdb;
+    $flickr_table_name = $wpdb->prefix . 'ptwsflickrcache';
+    $wpdb->show_errors();
+    $wpdb->replace(
+        $flickr_table_name,
+        array(
+            'flickr_id'             => $f['flickr_id'],
+            'title'                 => $f['title'],
+            'width'                 => $f['width'],
+            'height'                => $f['height'],
+            'link_url'              => $f['link_url'],
+            'large_thumbnail_width'     => $f['large_thumbnail_width'],
+            'large_thumbnail_height'    => $f['large_thumbnail_height'],
+            'large_thumbnail_url'       => $f['large_thumbnail_url'],
+            'square_thumbnail_width'    => $f['square_thumbnail_width'],
+            'square_thumbnail_height'   => $f['square_thumbnail_height'],
+            'square_thumbnail_url'      => $f['square_thumbnail_url'],
+            'comments'              => $f['comments'],
+            'description'           => $f['description'],
+            'taken_time'            => $f['taken_time'],
+            'uploaded_time'         => $f['uploaded_time'],
+            'updated_time'          => $f['updated_time'],
+            'cached_time'           => $f['cached_time'],
+            'last_seen_in_post'     => $f['last_seen_in_post']
+        ),
+        array(
+            '%s',
+            '%s',
+            '%d',
+            '%d',
+            '%s',
+            '%d',
+            '%d',
+            '%s',
+            '%d',
+            '%d',
+            '%s',
+            '%d',
+            '%s',
+            '%s',
+            '%s',
+            '%s',
+            '%s',
+            '%s'
+        )
+    );
+    $wpdb->hide_errors();
+}
+
+
+// Gets the count of routes
+function ptws_get_route_count()
+{
+    global $wpdb;
+    $route_table_name = $wpdb->prefix . 'ptwsroutes';
+    return $wpdb->get_var("SELECT COUNT(*) FROM $route_table_name");
+}
+
+
 // Given the ID of a GPS route in the database, locate and return it.
 // If no record exists, return null instead.
-//
 function ptws_get_route_record($pid)
 {
     global $wpdb;
@@ -208,9 +306,8 @@ function ptws_get_route_record($pid)
 }
 
 
-// Given the ID of a GPS route in the database, locate and return it.
-// If no record exists, return null instead.
-//
+// Given the ID of a GPS route in the database, set the 'last seen' value for it
+// to the currently viewed post.
 function ptws_update_route_record_last_seen($pid)
 {
     global $wpdb;
