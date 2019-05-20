@@ -97,7 +97,6 @@ if (!function_exists("ptws_add_settings_link")) {
 //
 function ptws_append_image_and_comments($p, $picContainer, $commentFlag)
 {
-
     $objA = $picContainer->addChild('a');
     $objA->addAttribute('href', (string)$p['link_url']);
     $objA->addAttribute('title', (string)$p['title']);
@@ -384,35 +383,6 @@ function ptwsgallery_shortcode($atts, $content = null)
 }
 
 
-function ptws_enqueue_scripts()
-{
-    wp_enqueue_script('jquery');
-    // For lazy-loading images
-    wp_enqueue_script('jquery-sonar', PTWS_PLUGIN_URL . '/js/jquery.sonar.min.js', array('jquery'));
-    // For route and elevation lines
-    wp_enqueue_script('ptws_chart_js', PTWS_PLUGIN_URL . "/js/Chart.bundle.min.js", array('jquery'));
-    // For placing routes on maps
-    wp_enqueue_script('ptws_leaflet_js', PTWS_PLUGIN_URL . "/js/leaflet.js", array('jquery'));
-    // Everything else
-    wp_enqueue_script('ptws_js', PTWS_PLUGIN_URL . "/js/ptws.js", array('jquery'));
-}
-
-
-/**
- * Enqueue block editor only JavaScript
- */
-function enqueue_block_editor_assets()
-{
-    $block_path = '/js/editor.blocks.js';
-    wp_enqueue_script(
-        'ptws-blocks-js',
-        PTWS_PLUGIN_URL . $block_path,
-        ['wp-i18n', 'wp-element', 'wp-blocks', 'wp-components'],
-        filemtime(PTWS_PLUGIN_DIRECTORY . $block_path)
-    );
-}
-
-
 function ptws_enqueue_styles()
 {
     wp_enqueue_style('ptws_leaflet_css', PTWS_PLUGIN_URL . "/css/leaflet.css");
@@ -434,16 +404,42 @@ function ptws_auth_read()
 }
 
 
+function ptws_enqueue_scripts()
+{
+    wp_enqueue_script('jquery');
+    // jQuery extension used by the image lazy-loader
+    wp_enqueue_script('jquery-sonar', PTWS_PLUGIN_URL . '/js/jquery.sonar.min.js', array('jquery'));
+    // For route and elevation lines
+    wp_enqueue_script('ptws_chart_js', PTWS_PLUGIN_URL . "/js/Chart.bundle.min.js", array('jquery'));
+    // For placing routes on maps
+    wp_enqueue_script('ptws_leaflet_js', PTWS_PLUGIN_URL . "/js/leaflet.js", array('jquery'));
+    // Everything else
+    wp_enqueue_script('ptws_js', PTWS_PLUGIN_URL . "/js/ptws.js", array('jquery'));
+}
+
+
+/**
+ * Enqueue block editor JavaScript
+ */
+function enqueue_block_editor_assets()
+{
+    $block_path = '/js/editor.blocks.js';
+    wp_enqueue_script(
+        'ptws-blocks-js',
+        PTWS_PLUGIN_URL . $block_path,
+        ['wp-i18n', 'wp-element', 'wp-blocks', 'wp-components'],
+        filemtime(PTWS_PLUGIN_DIRECTORY . $block_path)
+    );
+}
+
+
 /**
  * Register the dynamic block.
  */
 function register_dynamic_blocks()
 {
-
     // Only load if Gutenberg is available.
-    if (!function_exists('register_block_type')) {
-        return;
-    }
+    if (!function_exists('register_block_type')) { return; }
 
     // Hook server side rendering into render callback
     register_block_type('ptws/gallery', [
@@ -477,7 +473,7 @@ function render_dynamic_gallery_block($block)
         );
     }
     $block_description = print_r($block, true);
-    return "{$markup}</ul>{$block_description}";
+    return "{$markup}</ul>{$block_description}<p>poop</p>";
 }
 
 
