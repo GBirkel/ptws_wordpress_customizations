@@ -440,11 +440,11 @@ function ptwsFilterButton(e) {
 	// so the lazy-load images actually appear
 	if (filters.length > 0) {
 		var selectors = filters.map(function (a) { return "[" + n + "~='" + a + "']" }).join("");
-		jQuery("div." + n + selectors).slideDown(
+		jQuery("." + n + selectors).slideDown(
 			null, function() {ptws.fakeScroll()});
-		jQuery("div." + n + ":not(" + selectors + ")").slideUp();
+		jQuery("." + n + ":not(" + selectors + ")").slideUp();
 	} else {
-		jQuery("div." + n).slideDown(
+		jQuery("." + n).slideDown(
 			null, function() {ptws.fakeScroll()});
 	}
 }

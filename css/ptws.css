@@ -90,14 +90,13 @@ iframe.wikiloc {
 }
 
 .entry > p {
-	margin: 1em 1.4em 1em 1.5em;
+	margin: 1em 1.4em 1em 25px;
 	padding: 0 0 0 0;
 	text-indent:1.6em;
 }
 
-.entry ul ul {
-	margin: 0;
-	padding: 0 0 0 0;
+.entry ul {
+	margin-left: 0.8em;
 }
 
 .entry ol {
@@ -648,7 +647,7 @@ ul.children > li > a {
 .content h1, .content h4, .content h5, .content h6 {
 	color: #333333;
 	text-decoration: none;
-	margin: 0 1em 5px 1em;
+	margin: 0 1em 5px 25px;
 	padding: 0;
 }
 
@@ -883,14 +882,9 @@ div.qaq {
 	padding:0em 0em 0em 0em;
 }
 
-ul.qa {
-	margin: 0.8em 1.5em 0.8em 2em;
-	padding-left: 1.2em;
-}
-
-ul.qa > li.qaq {
+ul > li.qaq {
 	list-style: none;
-	text-indent: -1.3em;
+	text-indent: -1.2em;
 }
 
 li.qaq::before, div.qaq::before, h4.qaq::before { 
@@ -908,7 +902,7 @@ li.qaq.disclosed::before, div.qaq.disclosed::before, h4.qaq.disclosed::before {
 }
 
 /* Without the span.qaq to isolate the hover, it underlines the whole branch */
-ul.qa > li.qaq span.qaq:first-child:hover, div.qaq:hover, h4.qaq:hover {
+ul > li.qaq span.qaq:first-child:hover, div.qaq:hover, h4.qaq:hover {
 	text-decoration:underline;
 	cursor:pointer;
 }
@@ -928,6 +922,13 @@ ul.qa > li.qaq span.qaq:first-child:hover, div.qaq:hover, h4.qaq:hover {
 	margin:0em;
 	padding:0.5em 1em 0.5em 0em;
 }
+
+.entry ul li:not(.qaq) {
+	list-style-type: square;
+	text-indent: initial;
+	padding: 0;
+}
+
 
 /* End of project presentation customizations, e.g. USB charger */
 
@@ -951,17 +952,3 @@ ul.qa > li.qaq span.qaq:first-child:hover, div.qaq:hover, h4.qaq:hover {
 	border-radius: 3px;
 	text-indent:0;
 }
-
-.entry ul:not(.qa) {
-	list-style-type: square;
-	margin: 0.8em 1.5em 0.8em 2em;
-	padding: 0;
-}
-
-.entry ul li:not(.qaq) {
-	list-style-type: square;
-	margin: 0 0 0 20px;
-	text-indent: initial;
-	padding: 0;
-}
-
