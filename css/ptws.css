@@ -395,14 +395,25 @@ table.musicplaylist tr td:first-child {
 }
 
 
+/* WP Quote with citation */
+
+.content blockquote.wp-block-quote p {
+	font-size: 1.05rem;
+}
+
+.content blockquote.wp-block-quote cite {
+	color: rgba(0, 151, 26, 1);
+}
+
+
 /* Question-And-Answer sequences */
 
 .content blockquote {
-	background-color: rgb(254, 255, 244);
+	background-color: rgba(80, 255, 50, 0.06);
 	margin: 1.2em 2em 1.2em 2em;
 	padding: 0.8em 1.2em 0.8em 1.2em;
 	border-radius: 9px;
-	border: 1px solid rgba(160, 196, 71, 0.6);
+	border: 1px solid rgba(161, 225, 156, 0.6);
 }
 
 .content blockquote.q {
