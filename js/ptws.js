@@ -425,20 +425,26 @@ function QAList(e) {
 // For the buttons on the 'Gear' page
 
 function showGear(e) {
-	var b = jQuery(e.target).closest('span');
-	var f = b.attr('filter');
+	// Walk up to the container for only this set of buttons,
+	// and remove every 'active' class from the buttons within.
+	jQuery(e.target).closest('div.gearFilterButtons').children().removeClass('active');
+	// Add an 'active' class to the specific button pressed.
+	jQuery(e.target).closest('span').addClass('active');
+
+	var activeFilters = jQuery("div.gearFilterButtons").children().filter(".active").filter("[filter]");
+	var filters = activeFilters.map(function () { return jQuery(this).attr('filter'); }).get();
+
 	// After the slide we trigger a fake scroll event,
 	// so the lazy-load images actually appear
-	if (f) {
-		jQuery("div.gear[trips~='" + f + "']").slideDown(
+	if (filters.length > 0) {
+		var selectors = filters.map(function (a) { return "[trips~='" + a + "']" }).join("");
+		jQuery("div.gear" + selectors).slideDown(
 			null, function() {ptws.fakeScroll()});
-		jQuery("div.gear:not([trips~='" + f + "'])").slideUp();
+		jQuery("div.gear:not(" + selectors + ")").slideUp();
 	} else {
 		jQuery("div.gear").slideDown(
 			null, function() {ptws.fakeScroll()});
 	}
-	jQuery("div.gearFilterButtons").children().removeClass('active');
-	b.addClass('active');	
 }
 
 
