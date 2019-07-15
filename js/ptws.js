@@ -422,27 +422,29 @@ function QAList(e) {
 }
 
 
-// For the buttons on the 'Gear' page
+// Sectional filter buttons used on the 'Gear' page and elsewhere
 
-function showGear(e) {
-	// Walk up to the container for only this set of buttons,
-	// and remove every 'active' class from the buttons within.
-	jQuery(e.target).closest('div.gearFilterButtons').children().removeClass('active');
+function ptwsFilterButton(e) {
+	// Walk up to the container for only this set of buttons.
+	var filterContainer = jQuery(e.target).closest('div.ptwsFilterButtons');
+	var n = filterContainer.attr('ptwsFilterName');
+	// Remove every 'active' class from the buttons within.
+	filterContainer.children().removeClass('active');
 	// Add an 'active' class to the specific button pressed.
 	jQuery(e.target).closest('span').addClass('active');
 
-	var activeFilters = jQuery("div.gearFilterButtons").children().filter(".active").filter("[filter]");
+	var activeFilters = jQuery("div.ptwsFilterButtons[ptwsFilterName='" + n + "']").children().filter(".active").filter("[filter]");
 	var filters = activeFilters.map(function () { return jQuery(this).attr('filter'); }).get();
 
 	// After the slide we trigger a fake scroll event,
 	// so the lazy-load images actually appear
 	if (filters.length > 0) {
-		var selectors = filters.map(function (a) { return "[trips~='" + a + "']" }).join("");
-		jQuery("div.gear" + selectors).slideDown(
+		var selectors = filters.map(function (a) { return "[" + n + "~='" + a + "']" }).join("");
+		jQuery("div." + n + selectors).slideDown(
 			null, function() {ptws.fakeScroll()});
-		jQuery("div.gear:not(" + selectors + ")").slideUp();
+		jQuery("div." + n + ":not(" + selectors + ")").slideUp();
 	} else {
-		jQuery("div.gear").slideDown(
+		jQuery("div." + n).slideDown(
 			null, function() {ptws.fakeScroll()});
 	}
 }
