@@ -191,6 +191,14 @@ span.ui-icon-triangle-1-s::before {
 	content: "▼";
 }
 
+/******** Modifying built in image figure embeds to give them a margin *******/
+
+figure.wp-block-image > img {
+	margin-left: 1.2em;
+	margin-right: 1.2em;
+}
+
+
 
 /******** Images and "image strips" (grids of image thumbnails) *******/
 
