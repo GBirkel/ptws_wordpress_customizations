@@ -145,30 +145,45 @@ class PTWS_API {
     // it replaces the body of the route with the content in 'route'.
     public function route_create($request) {
         if (!isset( $request['id'] ) ) {
-            return new \WP_Error( 'rest_invalid', esc_html__( 'The id parameter is required.', 'my-text-domain' ), array( 'status' => 400 ) );
+            $response = new \WP_Error( 'rest_invalid', esc_html__( 'The id parameter is required.', 'my-text-domain' ), array( 'status' => 400 ) );
+            $response->header( 'Access-Control-Allow-Origin', '*');
+            return $response;
         }
         if (!isset( $request['route'] ) ) {
-            return new \WP_Error( 'rest_invalid', esc_html__( 'The route parameter is required.', 'my-text-domain' ), array( 'status' => 400 ) );
+            $response = new \WP_Error( 'rest_invalid', esc_html__( 'The route parameter is required.', 'my-text-domain' ), array( 'status' => 400 ) );
+            $response->header( 'Access-Control-Allow-Origin', '*');
+            return $response;
         }
         if (!isset( $request['key'] ) ) {
-            return new \WP_Error( 'rest_invalid', esc_html__( 'The key parameter is required.', 'my-text-domain' ), array( 'status' => 400 ) );
+            $response = new \WP_Error( 'rest_invalid', esc_html__( 'The key parameter is required.', 'my-text-domain' ), array( 'status' => 400 ) );
+            $response->header( 'Access-Control-Allow-Origin', '*');
+            return $response;
         }
         if (!get_option('ptws_route_api_secret')) {
-            return new \WP_Error( 'rest_invalid', esc_html__( 'Route API secret is not set.', 'my-text-domain' ), array( 'status' => 400 ) );
+            $response = new \WP_Error( 'rest_invalid', esc_html__( 'Route API secret is not set.', 'my-text-domain' ), array( 'status' => 400 ) );
+            $response->header( 'Access-Control-Allow-Origin', '*');
+            return $response;
         }
         if ($request['key'] != get_option('ptws_route_api_secret')) {
-            return new \WP_Error( 'rest_invalid', esc_html__( 'The key parameter is incorrect.', 'my-text-domain' ), array( 'status' => 400 ) );
+            $response = new \WP_Error( 'rest_invalid', esc_html__( 'The key parameter is incorrect.', 'my-text-domain' ), array( 'status' => 400 ) );
+            $response->header( 'Access-Control-Allow-Origin', '*');
+            return $response;
         }
 
         // search and remove line breaks
         $json_concatenated = str_replace(array("\n","\r"),"",$request['route']); 
         $decoded_route = json_decode($json_concatenated, TRUE);
         if (!isset($decoded_route)) {
-            return rest_ensure_response( 'JSON submitted for record ' . $request['id'] . ' appears to be invalid.' );
+            $response = rest_ensure_response( 'JSON submitted for record ' . $request['id'] . ' appears to be invalid.' );
+            $response->header( 'Access-Control-Allow-Origin', '*');
+            return $response;
+
         }
         // Get ahold of the first value in the timestamp series
         if (!array_key_exists('t', $decoded_route)) {
-            return rest_ensure_response( 'JSON submitted for record ' . $request['id'] . ' does not contain a timestamp array.' );
+            $response = rest_ensure_response( 'JSON submitted for record ' . $request['id'] . ' does not contain a timestamp array.' );
+            $response->header( 'Access-Control-Allow-Origin', '*');
+            return $response;
         }
         $start_time = $decoded_route['t'][0];
         $last_value = array_slice($decoded_route['t'], -1);
@@ -193,7 +208,8 @@ class PTWS_API {
             ptws_update_route_record($f);
             $response = rest_ensure_response( 'Record ' . $f['route_id'] . ' updated.' );
         }
-        $response->header( 'Access-Control-Allow-Origin', apply_filters( 'ptws_access_control_allow_origin','*' ));
+        $response->header( 'Access-Control-Allow-Origin', '*');
+        return $response;
     }
 
 
