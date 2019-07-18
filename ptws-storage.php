@@ -81,7 +81,7 @@ function ptws_create_route_tables()
         route_end_time datetime DEFAULT 0 NOT NULL,
         cached_time datetime DEFAULT CURRENT_TIMESTAMP NOT NULL,
         auto_placed tinyint(1) DEFAULT 0,
-        last_seen_in_post bigint(20) unsigned,
+        last_seen_in_post bigint(20) UNSIGNED,
         CONSTRAINT unique_route_id UNIQUE (route_id),
         PRIMARY KEY (id)
     ) $charset_collate;";
@@ -330,7 +330,7 @@ function ptws_create_route_record($f)
         $routes_table_name,
         array(
             'route_id' => $f['route_id'],
-            'route_json' => $f['route'],
+            'route_json' => $f['route_json'],
             'route_start_time' => $f['route_start_time'],
             'route_end_time' => $f['route_end_time']
         ),
@@ -354,6 +354,7 @@ function ptws_update_route_record($f)
     $routes_table_name = $wpdb->prefix . 'ptwsroutes';
     if (!isset( $f['route_id'] ) ) { return; }
     $g = ptws_get_route_record($f['route_id']);
+    if (!g) { return; }
 
     // Merge over only the fields that are set in the incoming record
     if (isset($f['route_description'])) { $g['route_description'] = $f['route_description']; }
@@ -368,17 +369,17 @@ function ptws_update_route_record($f)
     $wpdb->replace(
         $routes_table_name,
         array(
-            'route_id'   => $f['id'],
-            'route_description' => $f['route_description'],
-            'route_json' => $f['route_json'],
-            'auto_placed' => $f['auto_placed'],
-            'last_seen_in_post' => $f['last_seen_in_post'],
-            'route_start_time' => $f['route_start_time'],
-            'route_end_time' => $f['route_end_time'],
-            'cached_time' => $f['cached_time']
+            'id'   => $g['id'],
+            'route_description' => $g['route_description'],
+            'route_json' => $g['route_json'],
+            'auto_placed' => $g['auto_placed'],
+            'last_seen_in_post' => $g['last_seen_in_post'],
+            'route_start_time' => $g['route_start_time'],
+            'route_end_time' => $g['route_end_time'],
+            'cached_time' => $g['cached_time']
         ),
         array( 
-            '%s', 
+            '%d', 
             '%s',
             '%s',
             '%d',

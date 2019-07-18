@@ -174,6 +174,9 @@ class PTWS_API {
         if (!isset( $request['key'] ) ) {
             return new \WP_Error( 'rest_invalid', esc_html__( 'The key parameter is required.', 'my-text-domain' ), array( 'status' => 400 ) );
         }
+        if (!get_option('ptws_route_api_secret')) {
+            return new \WP_Error( 'rest_invalid', esc_html__( 'Route API secret is not set.', 'my-text-domain' ), array( 'status' => 400 ) );
+        }
         if ($request['key'] != get_option('ptws_route_api_secret')) {
             return new \WP_Error( 'rest_invalid', esc_html__( 'The key parameter is incorrect.', 'my-text-domain' ), array( 'status' => 400 ) );
         }
@@ -209,7 +212,7 @@ class PTWS_API {
             return rest_ensure_response( 'Record ' . $f['route_id'] . ' inserted.' );
         } else {
             ptws_update_route_record($f);
-            return rest_ensure_response( 'Record ' . $request['route_id'] . ' updated.' );
+            return rest_ensure_response( 'Record ' . $f['route_id'] . ' updated.' );
         }
     }
 
