@@ -335,6 +335,7 @@ function ptws_update_route_record($f)
     if (!isset( $f['route_id'] ) ) { return; }
     $g = ptws_get_route_record($f['route_id']);
     if (!g) { return; }
+    if (!g['id']) { return; }
 
     // Merge over only the fields that are set in the incoming record
     if (isset($f['route_description'])) { $g['route_description'] = $f['route_description']; }
@@ -346,10 +347,9 @@ function ptws_update_route_record($f)
     if (isset($f['cached_time'])) { $g['cached_time'] = $f['cached_time']; }
 
     $wpdb->show_errors();
-    $wpdb->replace(
+    $wpdb->update(
         $routes_table_name,
         array(
-            'id'   => $g['id'],
             'route_description' => $g['route_description'],
             'route_json' => $g['route_json'],
             'auto_placed' => $g['auto_placed'],
@@ -358,15 +358,20 @@ function ptws_update_route_record($f)
             'route_end_time' => $g['route_end_time'],
             'cached_time' => $g['cached_time']
         ),
+        array(
+            'id' => $g['id']
+        ),
         array( 
-            '%d', 
             '%s',
             '%s',
             '%d',
-            '%d', 
+            '%d',
             '%s',
             '%s',
             '%s'
+        ),
+        array(
+            '%d'
         )
     );
     $wpdb->hide_errors();
