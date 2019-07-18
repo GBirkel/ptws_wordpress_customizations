@@ -96,11 +96,14 @@ class PTWS_API {
     }
 
 
-    // Implementing the route API 'get latest 50' method.  Currently it just spews a boilerplate message.
+    // Implementing the route API 'get latest 50' method.
     public function route_get_recent($request)
     {
-        // rest_ensure_response() wraps the data we want to return into a WP_REST_Response, and ensures it will be properly returned.
-        return rest_ensure_response('Hello World, this is the PTWS REST API');
+        $response = ptws_get_recent_routes(50);
+        if ($response == null) {
+            return new \WP_Error('rest_invalid', esc_html__('Problem getting latest routes', 'my-text-domain'), array('status' => 400));
+        }
+        return rest_ensure_response( $response );
     }
 
 

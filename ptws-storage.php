@@ -298,6 +298,46 @@ function ptws_get_route_record($pid)
 }
 
 
+// Get the latest 50 uploaded routes.
+// If no record exists, return null instead.
+function ptws_get_recent_routes($n)
+{
+    global $wpdb;
+    $routes_table_name = $wpdb->prefix . 'ptwsroutes';
+    $results = $wpdb->get_results(
+        $wpdb->prepare(
+            "
+                SELECT id, route_id, route_description, auto_placed, last_seen_in_post, route_start_time, route_end_time, cached_time
+                FROM $routes_table_name 
+                ORDER BY route_start_time DESC LIMIT %d
+            ",
+            array($n)
+        ),
+        'ARRAY_A'
+    );
+
+    $s = array();
+    foreach ($results as $one_row) {
+        $r = array();
+        $r['id'] = (string)$one_row['id'];
+        $r['route_id'] = (string)$one_row['route_id'];
+        $r['route_description'] = (string)$one_row['route_description'];
+        $r['auto_placed'] = (string)$one_row['auto_placed'];
+        $r['last_seen_in_post'] = (string)$one_row['last_seen_in_post'];
+        $r['route_start_time'] = (string)$one_row['route_start_time'];
+        $r['route_end_time'] = (string)$one_row['route_end_time'];
+        $r['cached_time'] = (string)$one_row['cached_time'];
+        // Use PHP to make epoch conversions since SQL may not properly handle negative epochs.
+        // https://www.epochconverter.com/programming/php
+        // https://www.epochconverter.com/programming/mysql
+        $r['route_start_time_epoch'] = (string)strtotime($one_row['route_start_time']);
+        $r['route_end_time_epoch'] = (string)strtotime($one_row['route_end_time']);
+        $r['cached_time_epoch'] = (string)strtotime($one_row['cached_time']);
+        array_push($s, $r);
+    }
+    return $s;
+}
+
 
 // Given the ID of a GPS route in the database, locate and return it.
 // If no record exists, return null instead.
