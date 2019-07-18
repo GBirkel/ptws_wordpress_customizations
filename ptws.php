@@ -24,7 +24,7 @@ which uses jQuery.sonar by Dave Artz (AOL): http://www.artzstudio.com/files/jque
 namespace Poking_Things_With_Sticks;
 
 global $ptws_db_version;
-$ptws_db_version = '1.93';
+$ptws_db_version = '2.01';
 
 require_once('afgFlickr/afgFlickr.php');
 include_once('ptws-libs.php');
@@ -41,8 +41,8 @@ function ptws_install()
     // http://php.net/manual/en/function.version-compare.php
     if (version_compare(get_option("ptws_db_version"), $ptws_db_version, '<')) {
 
-        ptws_create_photo_tables();
         ptws_create_route_tables();
+        ptws_create_photo_tables();
 
         update_option("ptws_db_version", $ptws_db_version);
     }

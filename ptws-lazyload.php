@@ -1,25 +1,4 @@
 <?php
-/*
-Plugin Name: Poking Things With Sticks Extensions
-Plugin URI:  http://www.mile42.net
-Description: This plugin supports all the non-standard WP stuff I do on PTWS.  Among other things, it finds recent posted pictures on my Flickr feed and integrates them with recent WP posts in a fancypants way
-Version:     2.00b1
-Author:      Pokingthingswithsticks
-Author URI:  http://www.pokingthingswithsticks.com
-License:     GPL2
-License URI: https://Icantbebothered.tolook.thisup.right.now
-
-Written 2018 Mile42 (email : gbirkel@gmail.com)
-This is free software: you can redistribute it and/or modify
-it under the terms of the GPL2 License.
-
-It is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-Uses LazyLoad Code by the WordPress.com VIP team, TechCrunch 2011 Redesign team, and Jake Goldman (10up LLC),
-which uses jQuery.sonar by Dave Artz (AOL): http://www.artzstudio.com/files/jquery-boston-2010/jquery.sonar/
-*/
 
 namespace Poking_Things_With_Sticks_Lazyload;
 
