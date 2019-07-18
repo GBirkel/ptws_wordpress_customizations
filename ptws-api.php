@@ -144,7 +144,6 @@ class PTWS_API {
     // If none exists, it creates the record, using the content in 'route'.  If the record already exists,
     // it replaces the body of the route with the content in 'route'.
     public function route_create($request) {
-		@ini_set( 'post_max_size', '16M' ); // Some of this JSON can be quite large.
         if (!isset( $request['id'] ) ) {
             $response = new \WP_Error( 'rest_invalid', esc_html__( 'The id parameter is required.', 'my-text-domain' ), array( 'status' => 400 ) );
             $response->header( 'Access-Control-Allow-Origin', '*');
