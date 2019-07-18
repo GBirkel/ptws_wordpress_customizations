@@ -143,35 +143,55 @@ class PTWS_API {
     // (Typically this is a formatted timstamp of the start of the GPS recording.)
     // If none exists, it creates the record, using the content in 'route'.  If the record already exists,
     // it replaces the body of the route with the content in 'route'.
+    //
+    // We used to accept all the JSON as a regular multipart form element,
+    // But that ran afoul of mod_secrurity's SecRequestBodyInMemoryLimit value,
+    // which was set in /dh/apache2/template/etc/mod_sec2/10_modsecurity_crs_10_config.conf
+    // with the line
+    // SecRequestBodyInMemoryLimit 131072
+    // and caused the submission to be rejected no matter what the settings were for PHP or Wordpress.
+    // The following had no effect, because they were actually already set within tolerances:
+    // In the plugin, or in functions.php:
+    // @ini_set( 'post_max_size', '64M');
+    // in .htaccess:
+    // php_value post_max_size 64M
     public function route_create($request) {
         if (!isset( $request['id'] ) ) {
-            $response = new \WP_Error( 'rest_invalid', esc_html__( 'The id parameter is required.', 'my-text-domain' ), array( 'status' => 400 ) );
-            $response->header( 'Access-Control-Allow-Origin', '*');
-            return $response;
-        }
-        if (!isset( $request['route'] ) ) {
-            $response = new \WP_Error( 'rest_invalid', esc_html__( 'The route parameter is required.', 'my-text-domain' ), array( 'status' => 400 ) );
-            $response->header( 'Access-Control-Allow-Origin', '*');
-            return $response;
-        }
-        if (!isset( $request['key'] ) ) {
-            $response = new \WP_Error( 'rest_invalid', esc_html__( 'The key parameter is required.', 'my-text-domain' ), array( 'status' => 400 ) );
-            $response->header( 'Access-Control-Allow-Origin', '*');
-            return $response;
-        }
-        if (!get_option('ptws_route_api_secret')) {
-            $response = new \WP_Error( 'rest_invalid', esc_html__( 'Route API secret is not set.', 'my-text-domain' ), array( 'status' => 400 ) );
-            $response->header( 'Access-Control-Allow-Origin', '*');
-            return $response;
-        }
-        if ($request['key'] != get_option('ptws_route_api_secret')) {
-            $response = new \WP_Error( 'rest_invalid', esc_html__( 'The key parameter is incorrect.', 'my-text-domain' ), array( 'status' => 400 ) );
-            $response->header( 'Access-Control-Allow-Origin', '*');
-            return $response;
+            return new \WP_Error( 'rest_invalid', esc_html__( 'The id parameter is required.', 'my-text-domain' ), array( 'status' => 400 ) );
         }
 
+        if (!isset( $request['key'] ) ) {
+            return new \WP_Error( 'rest_invalid', esc_html__( 'The key parameter is required.', 'my-text-domain' ), array( 'status' => 400 ) );
+        }
+        if (!get_option('ptws_route_api_secret')) {
+            return new \WP_Error( 'rest_invalid', esc_html__( 'Route API secret is not set.', 'my-text-domain' ), array( 'status' => 400 ) );
+        }
+        if ($request['key'] != get_option('ptws_route_api_secret')) {
+            return new \WP_Error( 'rest_invalid', esc_html__( 'The key parameter is incorrect.', 'my-text-domain' ), array( 'status' => 400 ) );
+        }
+
+        if ( !function_exists( 'wp_handle_upload' ) ) {
+            require_once( ABSPATH . 'wp-admin/includes/file.php' );
+        }
+
+        $uploadedfile = $_FILES['route'];
+        $upload_overrides = array( 'test_form' => false );
+
+        $movefile = wp_handle_upload( $uploadedfile, $upload_overrides );
+
+        if (!$movefile) {
+            return new \WP_Error( 'rest_invalid', esc_html__( 'Could not create temporary file', 'my-text-domain' ), array( 'status' => 400 ) );
+        }
+        
+        if (isset($movefile['error'])) {
+            return new \WP_Error( 'rest_invalid', esc_html__( 'Temporary upload error: ' . $movefile['error'], 'my-text-domain' ), array( 'status' => 400 ) );
+        }
+
+        $raw_json = file_get_contents($movefile['file']);
+        wp_delete_file($movefile['file']);
+
         // search and remove line breaks
-        $json_concatenated = str_replace(array("\n","\r"),"",$request['route']); 
+        $json_concatenated = str_replace(array("\n","\r"),"",$raw_json); 
         $decoded_route = json_decode($json_concatenated, TRUE);
         if (!isset($decoded_route)) {
             $response = rest_ensure_response( 'JSON submitted for record ' . $request['id'] . ' appears to be invalid.' );
@@ -201,6 +221,7 @@ class PTWS_API {
         $f['route_end_time'] = $end_time_parsed;
 
         $one_row = ptws_get_route_record($f['route_id']);
+
         if ($one_row == null) {
             ptws_create_route_record($f);
             $response = rest_ensure_response( 'Record ' . $f['route_id'] . ' inserted.' );

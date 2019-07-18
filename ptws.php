@@ -26,8 +26,6 @@ namespace Poking_Things_With_Sticks;
 global $ptws_db_version;
 $ptws_db_version = '2.01';
 
-@ini_set( 'post_max_size', '8M' ); // Some JSON route uploads can be quite large.
-
 require_once('afgFlickr/afgFlickr.php');
 include_once('ptws-libs.php');
 include_once('ptws-storage.php');

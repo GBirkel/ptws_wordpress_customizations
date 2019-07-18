@@ -12,7 +12,7 @@ function ptws_create_photo_tables()
 
     // last_seen_in_post references a field in the Wordpress posts table
     // https://codex.wordpress.org/Database_Description#Table:_wp_posts
-    $sql = "CREATE TABLE $flickr_table_name (
+    $sql = "CREATE TABLE " . $flickr_table_name . " (
         id mediumint(9) NOT NULL AUTO_INCREMENT,
         flickr_id varchar(32) NOT NULL,
         title text,
@@ -34,7 +34,7 @@ function ptws_create_photo_tables()
         auto_placed tinyint(1) DEFAULT 0,
         last_seen_in_post bigint(20) unsigned,
         CONSTRAINT unique_flickr_id UNIQUE (flickr_id),
-        PRIMARY KEY (id)
+        PRIMARY KEY  (id)
     ) $charset_collate;";
 
     if (!function_exists('dbDelta')) {
@@ -51,7 +51,7 @@ function ptws_create_route_tables()
     $route_table_name = $wpdb->prefix . 'ptwsroutes';
     $charset_collate = $wpdb->get_charset_collate();
 
-    $route_sql = "CREATE TABLE $route_table_name (
+    $route_sql = "CREATE TABLE " . $route_table_name . " (
         id mediumint(9) NOT NULL AUTO_INCREMENT,
         route_id varchar(32) NOT NULL,
         route_json LONGTEXT,
@@ -62,7 +62,7 @@ function ptws_create_route_tables()
         auto_placed tinyint(1) DEFAULT 0,
         last_seen_in_post bigint(20) UNSIGNED,
         CONSTRAINT unique_route_id UNIQUE (route_id),
-        PRIMARY KEY (id)
+        PRIMARY KEY  (id)
     ) $charset_collate;";
 
     if (!function_exists('dbDelta')) {
@@ -279,6 +279,7 @@ function ptws_get_route_record($pid)
     }
 
     $r = array();
+    $r['id'] = (string)$one_row['id'];
     $r['route_id'] = (string)$one_row['route_id'];
     $r['route_description'] = (string)$one_row['route_description'];
     $r['route_json'] = (string)$one_row['route_json'];
