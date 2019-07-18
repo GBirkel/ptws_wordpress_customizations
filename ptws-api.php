@@ -188,11 +188,12 @@ class PTWS_API {
         $one_row = ptws_get_route_record($f['route_id']);
         if ($one_row == null) {
             ptws_create_route_record($f);
-            return rest_ensure_response( 'Record ' . $f['route_id'] . ' inserted.' );
+            $response = rest_ensure_response( 'Record ' . $f['route_id'] . ' inserted.' );
         } else {
             ptws_update_route_record($f);
-            return rest_ensure_response( 'Record ' . $f['route_id'] . ' updated.' );
+            $response = rest_ensure_response( 'Record ' . $f['route_id'] . ' updated.' );
         }
+        $response->header( 'Access-Control-Allow-Origin', apply_filters( 'ptws_access_control_allow_origin','*' ));
     }
 
 
