@@ -209,16 +209,14 @@ class PTWS_API {
         $last_value = array_slice($decoded_route['t'], -1);
         $end_time = array_pop($last_value);
 
-        // The timestamps we are parsing will look like "2011-10-21T05:44:53+00:00", which is known as SOAP format.
-        $start_time_parsed = strtotime($start_time);
-        $end_time_parsed = strtotime($end_time);
-
         $f = array();
         $f['route_id'] = $request['id'];
         $f['route_description'] = isset($request['name']) ? $request['name'] : '';
-        $f['route_json'] = $request['route'];
-        $f['route_start_time'] = $start_time_parsed;
-        $f['route_end_time'] = $end_time_parsed;
+        $f['route_json'] = $json_concatenated;
+        $f['route_start_time'] = $start_time;
+        $f['route_end_time'] = $end_time;
+
+        //return new \WP_Error( 'rest_invalid', esc_html__( 'Assembled route: ' . print_r($f, true), 'my-text-domain' ), array( 'status' => 400 ) );
 
         $one_row = ptws_get_route_record($f['route_id']);
 
