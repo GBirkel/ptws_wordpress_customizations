@@ -6,13 +6,13 @@ var dir = 'js/dist';
 
 module.exports = {
 	entry: {
-    	'ptws': './js/src/ptws.js'
+    	'ptws': './js/src/ptws.ts'
    	},
 	output: {
    		path: path.join(__dirname, dir),
-      	filename: "js/[name].js",
+      	filename: "[name].js",
       	library: 'ptws',
-      	libraryTarget: 'var'
+      	libraryTarget: 'window'
    	},
 	devtool: "source-map",
 	module: {
@@ -86,8 +86,16 @@ module.exports = {
 		]
 	},
     externals: {
-        "react": "React",
-        "react-dom": "ReactDOM"
+		"react": "React",
+        "jquery": "jQuery",
+		"@wordpress/components": { this: [ 'wp', 'components' ]},
+		"@wordpress/element": { this: [ 'wp', 'element' ]},
+		"@wordpress/blocks": { this: [ 'wp', 'blocks' ]},
+		"@wordpress/editor": { this: [ 'wp', 'editor' ]},
+		"@wordpress/utils": { this: [ 'wp', 'utils' ]},
+		"@wordpress/date": { this: [ 'wp', 'date' ]},
+		"@wordpress/data": { this: [ 'wp', 'data' ]},
+		"@wordpress/compose": { this: [ 'wp', 'compose' ]}
     },
 	plugins: [
 		new ExtractTextPlugin({ filename: 'css/[name].css' }),

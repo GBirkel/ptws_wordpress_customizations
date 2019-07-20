@@ -1,3 +1,11 @@
+import * as jQuery from "jquery";
+import * as L from 'leaflet';
+import { Chart } from "chart.js";
+//import "./editor.blocks.ts";
+import "./jquery.sonar.min.js";
+
+console.log("fuck a duck.");
+
 var ptws = {
 
 	fakeScroll: function() {
@@ -22,11 +30,11 @@ var ptws = {
 		var sDiv = jQuery(item);
 		if (sDiv.attr('ptwsinitialized')) { return; }
 		sDiv.attr('ptwsinitialized', 1);
-		if (sDiv.royalSlider === undefined) {
+		if ((<any>sDiv).royalSlider === undefined) {
 			console.log("PTWS: Royalslider plugin is not present/activated.");
 			return;
 		}
-		sDiv.royalSlider({
+		(<any>sDiv).royalSlider({
 			addActiveClass: true,
 			arrowsNav: true,
 			arrowsNavAutoHide: false,
@@ -67,6 +75,17 @@ var ptws = {
 
 	// Seek out and init GPS log data chunks on the page, marking them as inited as we go.
 	findAndInitGPSLogDisplays: function () {
+
+		interface SmoothedPoint {
+			't': any;
+			't_d': any;
+			'lat': number;
+			'lon': number;
+			'el': number;
+			'spd': number;
+		};
+
+
 		jQuery('div.ptws-ride-log').each(function (index, item) {
 			var jqRideLogDiv = jQuery(item);
 			var rideLogId = jqRideLogDiv.attr('rideid');
@@ -106,7 +125,7 @@ var ptws = {
 			// Smooth points using their predecessors within a 7 second range.
 			// (Helps to prevent GPS hairballs from poor signal.)
 
-			var smoothedPoints = [];
+			var smoothedPoints:SmoothedPoint[] = [];
 			// A pool of all previously seen points that are within 6.01 seconds
 			// of the current point (including the current point).
 			var pointPool = [];
@@ -182,10 +201,10 @@ var ptws = {
 				attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
 					'<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
 					'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
-				id: 'mapbox.outdoors'
+				//id: 'mapbox.outdoors'
 			}).addTo(map);
 
-			var routeLeafletPoints = smoothedPoints.map(function (pt) { return [pt['lat'], pt['lon']]; });
+			var routeLeafletPoints = smoothedPoints.map(function (pt) { return <L.LatLngExpression>[pt['lat'], pt['lon']]; });
 			var routeInnerStyle = {
 				weight: 4,
 				opacity: 1,
@@ -236,7 +255,7 @@ var ptws = {
 			var spdData = sparsifiedPoints.map(function (pt) { return { x: pt['t'], y: pt['spd'] }; });
 
 			var chartContainerEl = chartContainer.get(0);
-			var ctx = chartContainerEl.getContext('2d');
+			var ctx = (<any>chartContainerEl).getContext('2d');
 			// A vertical gradient with two color stops, to fill in the
 			// background underneath the elevation line.
 			var bgGradient = ctx.createLinearGradient(0, 0, 0, 140);
@@ -274,13 +293,15 @@ var ptws = {
 				}]
 			};
 
-			var newChart = Chart.Line(ctx, {
+			var newChart = new Chart(ctx, {
+				type: 'line',
 				data: lineChartData,
 				options: {
 					responsive: true,
 					// Display all values that fall on the hovered vertical index
-					hoverMode: 'index',
-					stacked: false,
+					hover: {
+						mode: 'index'
+					},
 					// No title, no legend.
 					title: { display: false },
 					legend: { display: false },
@@ -299,7 +320,7 @@ var ptws = {
 								var val = tooltipItems.yLabel;
 								var m = val.toString().match(re);
 								if (m) { val = m[0]; }
-								return data.datasets[tooltipItems.datasetIndex].label + ': ' + val + ' ' + data.datasets[tooltipItems.datasetIndex].units;
+								return data.datasets[tooltipItems.datasetIndex].label + ': ' + val + ' ' + (<any>data.datasets[tooltipItems.datasetIndex]).units;
 							}
 						}
 					},
@@ -307,7 +328,7 @@ var ptws = {
 						xAxes: [{
 							type: 'time',
 							time: {
-								distribution: 'linear',
+								//distribution: 'linear',
 								tooltipFormat: 'h:mm a'
 							},
 							scaleLabel: { display: false },
@@ -461,7 +482,7 @@ jQuery(document).ready(function($) {
 	 * so our captions can have a height independent of the slides.
 	 * Risky but effective.
 	 */
-	$.extend($.rsProto, {
+	jQuery.extend((<any>jQuery).rsProto, {
 		_initGlobalCaption: function () {
 			var self = this;
 			if (self.st.globalCaption) {
@@ -512,8 +533,8 @@ jQuery(document).ready(function($) {
 			}
 		}
 	});
-	if ($.rsModules) {
-		$.rsModules.globalCaption = $.rsProto._initGlobalCaption;
+	if ((<any>jQuery).rsModules) {
+		(<any>jQuery).rsModules.globalCaption = (<any>jQuery).rsProto._initGlobalCaption;
 	}
 
 	//ptws.findAndInitRoyalsliders();
@@ -521,7 +542,10 @@ jQuery(document).ready(function($) {
 
 	ptws.lazyLoadInit();
 	// Work with WP.com infinite scroll
-	$('body').bind('post-load', ptws.lazyLoadInit);
-	$('body').bind('post-load', ptws.findAndInitRoyalsliders);
-	$('body').bind('post-load', ptws.findAndInitGPSLogDisplays);
+	jQuery('body').bind('post-load', ptws.lazyLoadInit);
+	jQuery('body').bind('post-load', ptws.findAndInitRoyalsliders);
+	jQuery('body').bind('post-load', ptws.findAndInitGPSLogDisplays);
 });
+
+
+1;

@@ -407,11 +407,10 @@ function ptws_auth_read()
 function ptws_enqueue_scripts()
 {
     wp_enqueue_script('jquery');
-    // jQuery extension used by the image lazy-loader
-    // For route and elevation lines
-    // For placing routes on maps
-    // Everything else
-    wp_enqueue_script('ptws_js', PTWS_PLUGIN_URL . '/js/dist/ptws.js', array('jquery'));
+    wp_enqueue_script('ptws_js', PTWS_PLUGIN_URL . '/js/dist/ptws.js', array(
+            'jquery'
+        )
+    );
 }
 
 
@@ -481,8 +480,6 @@ function ptws_activate()
 
 
 if (!is_admin()) {
-    add_action('wp_print_scripts', __NAMESPACE__ . '\ptws_enqueue_scripts');
-    add_action('wp_print_styles', __NAMESPACE__ . '\ptws_enqueue_styles');
     // Turn off auto-formatting of entries, to prevent corruption of XML by the auto-processor
     // http://wordpress.stackexchange.com/questions/46894/why-is-wordpress-changing-my-html-code
     // https://wordpress.org/plugins/wpautop-control/
@@ -496,8 +493,11 @@ if (!is_admin()) {
     /*    add_filter('plugin_action_links', __NAMESPACE__ . '\ptws_add_settings_link', 10, 2 );*/
 }
 
+add_action('wp_print_scripts', __NAMESPACE__ . '\ptws_enqueue_scripts');
+add_action('wp_print_styles', __NAMESPACE__ . '\ptws_enqueue_styles');
+
 add_action('plugins_loaded', __NAMESPACE__ . '\register_dynamic_blocks');
-add_action('enqueue_block_editor_assets', __NAMESPACE__ . '\enqueue_block_editor_assets');
+//add_action('enqueue_block_editor_assets', __NAMESPACE__ . '\enqueue_block_editor_assets');
 
 add_shortcode('ptwsgallery', __NAMESPACE__ . '\ptwsgallery_shortcode');
 add_shortcode('ptwsroute', __NAMESPACE__ . '\ptwsroute_shortcode');

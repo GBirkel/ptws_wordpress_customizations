@@ -3,7 +3,7 @@ const config = require('../webpack.config.js');
 
 config.watch = false;
 config.entry = {
-	'ptws.min': './js/src/ptws.js'
+	'ptws.min': './js/src/ptws.ts'
 };
 
 config.plugins.push(

@@ -424,15 +424,19 @@ function ptws_update_route_record_last_seen($pid)
 {
     global $wpdb;
     $table_name = $wpdb->prefix . 'ptwsroutes';
-    $wpdb->replace(
+    $wpdb->update(
         $table_name,
         array(
-            'route_id'   => $pid,
             'last_seen_in_post' => get_the_ID()
         ),
         array(
-            '%s',
+            'route_id'   => $pid,
+        ),
+        array(
             '%d'
+        ),
+        array(
+            '%s'
         )
     );
 }
