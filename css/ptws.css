@@ -416,7 +416,8 @@ table.musicplaylist tr td:first-child {
 .content blockquote.wp-block-quote.poem p {
 	font-family: "Noto Serif";
 	font-style: italic;
-	font-size: 1.3em;
+	color: rgba(0, 94, 17, 1);
+	font-size: 1.25em;
 }
 
 
@@ -424,9 +425,9 @@ table.musicplaylist tr td:first-child {
 
 .content blockquote {
 	background-color: rgba(80, 255, 50, 0.06);
-	margin: 1.2em 2em 1.2em 2em;
+	margin: 1.2em 45px 1.2em 45px;
 	padding: 0.8em 1.2em 0.8em 1.2em;
-	border-radius: 9px;
+	border-radius: 5px;
 	border: 1px solid rgba(161, 225, 156, 0.6);
 }
 
@@ -741,10 +742,10 @@ ul.children > li > a {
 	font-size: 0.72em;
 	text-transform: uppercase;
 	margin: 0 0 5px 0;
-	padding: 1px 0 9px 0;
+	padding: 1px 20px 16px 20px;
 	border-bottom: 1px dotted #CCCCCC;
 }
-	
+
 .post-meta p {
 	margin: 0;
 	padding: 0;
