@@ -520,5 +520,8 @@ jQuery(document).ready(function($) {
 	ptws.findAndInitGPSLogDisplays();
 
 	ptws.lazyLoadInit();
-	$('body').bind('post-load', ptws.lazyLoadInit); // Work with WP.com infinite scroll
+	// Work with WP.com infinite scroll
+	$('body').bind('post-load', ptws.lazyLoadInit);
+	$('body').bind('post-load', ptws.findAndInitRoyalsliders);
+	$('body').bind('post-load', ptws.findAndInitGPSLogDisplays);
 });
