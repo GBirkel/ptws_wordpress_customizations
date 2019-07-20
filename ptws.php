@@ -408,13 +408,10 @@ function ptws_enqueue_scripts()
 {
     wp_enqueue_script('jquery');
     // jQuery extension used by the image lazy-loader
-    wp_enqueue_script('jquery-sonar', PTWS_PLUGIN_URL . '/js/jquery.sonar.min.js', array('jquery'));
     // For route and elevation lines
-    wp_enqueue_script('ptws_chart_js', PTWS_PLUGIN_URL . "/js/Chart.bundle.min.js", array('jquery'));
     // For placing routes on maps
-    wp_enqueue_script('ptws_leaflet_js', PTWS_PLUGIN_URL . "/js/leaflet.js", array('jquery'));
     // Everything else
-    wp_enqueue_script('ptws_js', PTWS_PLUGIN_URL . "/js/ptws.js", array('jquery'));
+    wp_enqueue_script('ptws_js', PTWS_PLUGIN_URL . '/js/dist/ptws.js', array('jquery'));
 }
 
 
