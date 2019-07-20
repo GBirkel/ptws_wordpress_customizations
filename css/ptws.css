@@ -78,13 +78,6 @@ iframe.wikiloc {
 	padding: 0 0 10px 0;
 }
 
-.content blockquote.poem p {
-	font-family: "Noto Serif";
-	font-style: italic;
-	font-size: 1.2em;
-	color: rgba(0, 62, 11, 1);
-}
-
 .post {
 	margin: 0 0 9px 0;
 	padding: 0 0 1px 0;
@@ -413,10 +406,17 @@ table.musicplaylist tr td:first-child {
 
 .content blockquote.wp-block-quote p {
 	font-size: 1.05rem;
+	color: rgba(0, 62, 11, 1);
 }
 
 .content blockquote.wp-block-quote cite {
 	color: rgba(0, 151, 26, 1);
+}
+
+.content blockquote.wp-block-quote.poem p {
+	font-family: "Noto Serif";
+	font-style: italic;
+	font-size: 1.3em;
 }
 
 
