@@ -194,7 +194,7 @@ function ptwsgallery_shortcode($atts, $content = null)
             $gIds = explode(',', $atts['fixed']);
             foreach ($gIds as $gId) {
                 array_push($fixedgalleryIDs, $gId);
-                $photos[$gId] = intval($gId);
+                $photos[$gId] = $gId;
             }
         } elseif (isset($atts['swipe'])) {
             $gIds = explode(',', $atts['swipe']);
