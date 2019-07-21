@@ -428,7 +428,7 @@ table.musicplaylist tr td:first-child {
 	margin: 1.2em 45px 1.2em 45px;
 	padding: 0.8em 1.2em 0.8em 1.2em;
 	border-radius: 5px;
-	border: 1px solid rgba(161, 225, 156, 0.6);
+	border: 2px solid rgba(161, 225, 156, 0.21);
 }
 
 .content blockquote.q {

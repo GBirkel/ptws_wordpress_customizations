@@ -4,8 +4,6 @@ import { Chart } from "chart.js";
 //import "./editor.blocks.ts";
 import "./jquery.sonar.min.js";
 
-console.log("fuck a duck.");
-
 
 export function	fakeScroll() {
 	var x = window.scrollX;
@@ -535,6 +533,11 @@ jQuery(document).ready(function($) {
 
 	//ptws.findAndInitRoyalsliders();
 	findAndInitGPSLogDisplays();
+
+	// https://connekthq.com/plugins/ajax-load-more/docs/callback-functions/
+	(<any>window).almComplete = function(alm){
+		console.log("Ajax Load More Complete!");
+	};
 
 	lazyLoadInit();
 	// Work with WP.com infinite scroll

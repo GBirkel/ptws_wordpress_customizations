@@ -188,7 +188,6 @@ var L = __webpack_require__(/*! leaflet */ "./node_modules/leaflet/dist/leaflet-
 var chart_js_1 = __webpack_require__(/*! chart.js */ "./node_modules/chart.js/dist/Chart.js");
 //import "./editor.blocks.ts";
 __webpack_require__(/*! ./jquery.sonar.min.js */ "./js/src/jquery.sonar.min.js");
-console.log("fuck a duck.");
 function fakeScroll() {
     var x = window.scrollX;
     var y = window.scrollY;
@@ -675,6 +674,9 @@ jQuery(document).ready(function ($) {
     }
     //ptws.findAndInitRoyalsliders();
     findAndInitGPSLogDisplays();
+    window.almComplete = function (alm) {
+        console.log("Ajax Load More Complete!");
+    };
     lazyLoadInit();
     // Work with WP.com infinite scroll
     jQuery('body').bind('post-load', lazyLoadInit);
