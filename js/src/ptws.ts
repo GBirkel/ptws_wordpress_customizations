@@ -536,7 +536,8 @@ jQuery(document).ready(function($) {
 
 	// https://connekthq.com/plugins/ajax-load-more/docs/callback-functions/
 	(<any>window).almComplete = function(alm){
-		console.log("Ajax Load More Complete!");
+		findAndInitRoyalsliders();
+		findAndInitGPSLogDisplays();
 	};
 
 	lazyLoadInit();

@@ -674,8 +674,10 @@ jQuery(document).ready(function ($) {
     }
     //ptws.findAndInitRoyalsliders();
     findAndInitGPSLogDisplays();
+    // https://connekthq.com/plugins/ajax-load-more/docs/callback-functions/
     window.almComplete = function (alm) {
-        console.log("Ajax Load More Complete!");
+        findAndInitRoyalsliders();
+        findAndInitGPSLogDisplays();
     };
     lazyLoadInit();
     // Work with WP.com infinite scroll
