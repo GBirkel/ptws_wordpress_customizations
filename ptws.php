@@ -176,64 +176,89 @@ function ptwsroute_shortcode( $atts, $content = null ) {
 
 // Called when the [ptwsgallery] shortcode is encountered in an entry.
 //
-// $atts - The attributes given inside the brackets (none in our case)
+// $atts - The attributes given inside the brackets
+//         (photos can be specified in this way now that we're not reliant on in-place content, and thus XML.)
 // $content - A string of the content between the opening and closing (which we will parse as XML)
 //
 function ptwsgallery_shortcode($atts, $content = null)
 {
-    if ($content == null) {
-        return '';
-    }
-    try {
-        // Handy PHP builtin to parse XML and provide an iterator
-        $sxe = simplexml_load_string($content, 'SimpleXMLIterator');
-    } catch (Exception $e) {
-        return '<p>ptwsgallery shortcode content XML parsing error: ' . $e->getMessage() . '</p>';
-    }
-    $sxe->rewind();
-    $encloser = $sxe->getName();
-    if ($encloser != 'ptwsgallery') {
-        return '<p>ptwsgallery shortcode must contain a single ptwsgallery element</p>';
-    }
-
     $emit = '';
     $photos = array();
     $fixedgalleryIDs = array();
     $swipegalleryIDs = array();
+    $autoplay = false;
 
-    for (; $sxe->valid(); $sxe->next()) {
-        $majorSection = $sxe->key();
-        if ($majorSection == 'photos') {
-            // Ignoring these sections now.
-        } elseif ($majorSection == 'swipegallery') {
-            if ($sxe->hasChildren()) {
-                foreach ($sxe->getChildren() as $element => $value) {
-                    if ($element == 'galleryitem') {
-                        if (isset($value['id'])) {
-                            array_push($swipegalleryIDs, (string)$value['id']);
-                            $photos[(string)$value['id']] = $value;
+    // Only use the attributes if there is no content inside the shortcode to parse.
+    if ($content == null) {
+        if (isset($atts['fixed'])) {
+            $gIds = explode(',', $atts['fixed']);
+            foreach ($gIds as $gId) {
+                array_push($fixedgalleryIDs, $gId);
+                $photos[$gId] = intval($gId);
+            }
+        } elseif (isset($atts['swipe'])) {
+            $gIds = explode(',', $atts['swipe']);
+            foreach ($gIds as $gId) {
+                array_push($swipegalleryIDs, $gId);
+                $photos[$gId] = $gId;
+            }
+        } elseif (isset($atts['latest'])) {
+            $gIds = ptws_get_latest_flickr_cache_ids(intval($atts['latest']));
+            foreach ($gIds as $gId) {
+                array_push($swipegalleryIDs, $gId);
+                $photos[$gId] = $gId;
+            }
+            $autoplay = true;
+        }
+    // Try old XML parsing method, from when we embedded all slide data in XML inside the shortcode
+    } else {
+        try {
+            // Handy PHP builtin to parse XML and provide an iterator
+            $sxe = simplexml_load_string($content, 'SimpleXMLIterator');
+        } catch (Exception $e) {
+            return '<p>ptwsgallery shortcode content XML parsing error: ' . $e->getMessage() . '</p>';
+        }
+        $sxe->rewind();
+        $encloser = $sxe->getName();
+        if ($encloser != 'ptwsgallery') {
+            return '<p>ptwsgallery shortcode must contain a single ptwsgallery element</p>';
+        }
+
+        for (; $sxe->valid(); $sxe->next()) {
+            $majorSection = $sxe->key();
+            if ($majorSection == 'photos') {
+                // Ignoring these sections now.
+            } elseif ($majorSection == 'swipegallery') {
+                if ($sxe->hasChildren()) {
+                    foreach ($sxe->getChildren() as $element => $value) {
+                        if ($element == 'galleryitem') {
+                            if (isset($value['id'])) {
+                                array_push($swipegalleryIDs, (string)$value['id']);
+                                $photos[(string)$value['id']] = (string)$value['id'];
+                            }
                         }
                     }
                 }
-            }
-        } elseif ($majorSection == 'fixedgallery') {
-            if ($sxe->hasChildren()) {
-                foreach ($sxe->getChildren() as $element => $value) {
-                    if ($element == 'galleryitem') {
-                        if (isset($value['id'])) {
-                            array_push($fixedgalleryIDs, (string)$value['id']);
-                            $photos[(string)$value['id']] = $value;
+            } elseif ($majorSection == 'fixedgallery') {
+                if ($sxe->hasChildren()) {
+                    foreach ($sxe->getChildren() as $element => $value) {
+                        if ($element == 'galleryitem') {
+                            if (isset($value['id'])) {
+                                array_push($fixedgalleryIDs, (string)$value['id']);
+                                $photos[(string)$value['id']] = (string)$value['id'];
+                            }
                         }
                     }
                 }
+            } else {
+                $emit .= '<p>Unrecognized major section ' . $majorSection . '. Must be fixedgallery, or swipegallery.</p>';
             }
-        } else {
-            $emit .= '<p>Unrecognized major section ' . $majorSection . '. Must be fixedgallery, or swipegallery.</p>';
         }
     }
+
     if ($photos) {
         //$emit .= "\n<p>Post " . get_the_ID() . ", Photo IDs found: \n";
-        foreach ($photos as $pid => $element) {
+        foreach ($photos as $pid) {
             //$emit .= $pid;
             $record_exists = ptws_get_flickr_cache_record($pid);
             if ($record_exists == null) {
@@ -246,9 +271,9 @@ function ptwsgallery_shortcode($atts, $content = null)
         }
         //$emit .= "</p>\n";
     }
-
     if ($swipegalleryIDs) {
-        $emit .= "\n<div class='royalSlider heroSlider fullWidth rsMinW'>\n";
+        $autoplayAttr = $autoplay ? " ptwsautoplay" : "";
+        $emit .= "\n<div class='royalSlider heroSlider fullWidth rsMinW" . $autoplayAttr . "'>\n";
         foreach ($swipegalleryIDs as $pid) {
             if ($photos[$pid]['cached_time'] > 0) {
                 $p = $photos[$pid];

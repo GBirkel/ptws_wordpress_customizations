@@ -207,7 +207,7 @@ function initRoyalslider(item) {
         console.log("PTWS: Royalslider plugin is not present/activated.");
         return;
     }
-    sDiv.royalSlider({
+    var rsOptions = {
         addActiveClass: true,
         arrowsNav: true,
         arrowsNavAutoHide: false,
@@ -242,7 +242,17 @@ function initRoyalslider(item) {
         /* size of all images http://help.dimsemenov.com/kb/royalslider-jquery-plugin-faq/adding-width-and-height-properties-to-images */
         /* imgWidth: 1400, */
         /* imgHeight: 680 */
-    });
+    };
+    if (sDiv.hasClass('ptwsautoplay')) {
+        rsOptions.autoPlay = {
+            enabled: true,
+            delay: 2500,
+            stopAtAction: true,
+            pauseOnHover: true
+        };
+        rsOptions.loop = true;
+    }
+    sDiv.royalSlider(rsOptions);
 }
 exports.initRoyalslider = initRoyalslider;
 // Seek out and init RoyalSlider instances on the page, marking them as inited as we go.

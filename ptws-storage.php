@@ -164,6 +164,30 @@ function ptws_get_unresolved_photos_count()
 }
 
 
+// Fetch the n most recent photo Flickr IDs.
+function ptws_get_latest_flickr_cache_ids($limit)
+{
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'ptwsflickrcache';
+    $results = $wpdb->get_results(
+        $wpdb->prepare(
+            "
+                SELECT flickr_id
+                FROM $table_name
+                ORDER BY taken_time DESC LIMIT %d
+            ",
+            array($limit)
+        ),
+        'ARRAY_A'
+    );
+    $s = array();
+    foreach ($results as $one_row) {
+        array_push($s, (string)$one_row['flickr_id']);
+    }
+    return $s;
+}
+
+
 // Given the Flickr ID of a photo, seek its record in the database, and return it.
 // If no record exists, return null instead.
 function ptws_get_flickr_cache_record($pid)

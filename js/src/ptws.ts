@@ -23,7 +23,7 @@ export function initRoyalslider(item) {
 		console.log("PTWS: Royalslider plugin is not present/activated.");
 		return;
 	}
-	(<any>sDiv).royalSlider({
+	var rsOptions = {
 		addActiveClass: true,
 		arrowsNav: true,
 		arrowsNavAutoHide: false,
@@ -58,7 +58,17 @@ export function initRoyalslider(item) {
 		/* size of all images http://help.dimsemenov.com/kb/royalslider-jquery-plugin-faq/adding-width-and-height-properties-to-images */
 		/* imgWidth: 1400, */
 		/* imgHeight: 680 */
-	});
+	};
+	if (sDiv.hasClass('ptwsautoplay')) {
+		(<any>rsOptions).autoPlay = {
+			enabled: true,
+			delay: 2500,
+			stopAtAction: true,
+    		pauseOnHover: true
+		};
+		(<any>rsOptions).loop = true;
+	}
+	(<any>sDiv).royalSlider(rsOptions);
 }
 
 
