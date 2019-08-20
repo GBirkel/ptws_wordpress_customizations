@@ -536,6 +536,13 @@ div.ptws-wikiloc-frame {
 }
 
 
+/* Flickr videos */
+
+div.slide.slide-video {
+	margin: 1em 1.4em 1em 25px;
+}
+
+
 /* General CSS */
 
 .content table.pictable {
