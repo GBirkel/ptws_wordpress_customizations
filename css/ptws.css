@@ -10,6 +10,8 @@
 	--ptws-body-background: #FFFFFF;
 	--ptws-body-color: #000000;
     --ptws-content-font-size: 1em;
+	--ptws-content-quote-p-font-size: 1.05em;
+	--ptws-content-poem-p-font-size: 1.25em;
 	--ptws-menu-main-container-ul-li-font-size: 1.2em;
 
 	--ptws-gearFilterButtons-span-font-size: 0.75em;
@@ -24,6 +26,8 @@
 	    --ptws-body-color: #111111;
 		/* On mobile devices but not in portrait mode, boost entry text size a bit */
 	    --ptws-content-font-size: 1.3em;
+		--ptws-content-quote-p-font-size: 1.35em;
+		--ptws-content-poem-p-font-size: 1.45em;
 		--ptws-menu-main-container-ul-li-font-size: 1.6em;
 
 		--ptws-gearFilterButtons-span-font-size: 1.1em;
@@ -405,7 +409,7 @@ table.musicplaylist tr td:first-child {
 /* WP Quote with citation */
 
 .content blockquote.wp-block-quote p {
-	font-size: 1.05rem;
+	font-size: var(--ptws-content-quote-p-font-size);
 	color: rgba(0, 62, 11, 1);
 }
 
@@ -416,8 +420,8 @@ table.musicplaylist tr td:first-child {
 .content blockquote.wp-block-quote.poem p {
 	font-family: "Noto Serif";
 	font-style: italic;
+	font-size: var(--ptws-content-poem-p-font-size);
 	color: rgba(0, 94, 17, 1);
-	font-size: 1.25em;
 }
 
 /* WP Pull Quote */

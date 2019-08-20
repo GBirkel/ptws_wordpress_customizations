@@ -303,7 +303,7 @@ function ptwsgallery_shortcode($atts, $content = null)
         }
         $emit .= '</div>';
     }
-    if ($fixedgalleryIDs) {
+    elseif ($fixedgalleryIDs) {
 
         $itemsInPortrait = array();
         $itemsNotInPortrait = array();

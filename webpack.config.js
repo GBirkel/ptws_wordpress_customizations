@@ -89,13 +89,13 @@ module.exports = {
 		"react": "React",
         "jquery": "jQuery",
 		"@wordpress/components": { this: [ 'wp', 'components' ]},
-		"@wordpress/element": { this: [ 'wp', 'element' ]},
+//		"@wordpress/element": { this: [ 'wp', 'element' ]},
 		"@wordpress/blocks": { this: [ 'wp', 'blocks' ]},
 		"@wordpress/editor": { this: [ 'wp', 'editor' ]},
-		"@wordpress/utils": { this: [ 'wp', 'utils' ]},
-		"@wordpress/date": { this: [ 'wp', 'date' ]},
-		"@wordpress/data": { this: [ 'wp', 'data' ]},
-		"@wordpress/compose": { this: [ 'wp', 'compose' ]}
+//		"@wordpress/utils": { this: [ 'wp', 'utils' ]},
+//		"@wordpress/date": { this: [ 'wp', 'date' ]},
+//		"@wordpress/data": { this: [ 'wp', 'data' ]},
+//		"@wordpress/compose": { this: [ 'wp', 'compose' ]}
     },
 	plugins: [
 		new ExtractTextPlugin({ filename: 'css/[name].css' }),
