@@ -628,7 +628,7 @@ div.slide.slide-video {
 	margin: 0.1em 0.2em 0 0.2em;
 	white-space: nowrap;
 	text-transform: uppercase;
-	padding: 0.3em 0.5em 0.3em 0.5em;
+	padding: 0 0.5em 0 0.5em;
 	border-radius: 8px;
 	-webkit-border-radius: 8px;
 	-moz-border-radius: 8px;
