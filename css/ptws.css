@@ -616,7 +616,7 @@ div.slide.slide-video {
 /***** Nav Menu  ********************/
 
 .menu-main-container ul {
-	margin: 0;
+	margin: 0 0 0 0.3em;
 	padding: 0;
 	list-style-type: none;
 	display:flex;
@@ -625,20 +625,20 @@ div.slide.slide-video {
 .menu-main-container > ul > li {
 	font-size: var(--ptws-menu-main-container-ul-li-font-size);
 	font-family: 'DIN Web Pro Black', sans-serif;
-	margin: 0.1em 0.2em 0 0.2em;
+	margin: 0 0.2em 0 0.2em;
 	white-space: nowrap;
 	text-transform: uppercase;
-	padding: 0 0.5em 0 0.5em;
-	border-radius: 8px;
-	-webkit-border-radius: 8px;
-	-moz-border-radius: 8px;
+	padding: 0.1em 0.5em 0.1em 0.5em;
+	border-radius: 7px;
+	-webkit-border-radius: 7px;
+	-moz-border-radius: 7px;
 	border-style: solid;
 	border-width: 2px;
 	border-color: white;
 }
 
 .menu-main-container > ul > li > a {
-	color: white;
+	color: rgb(243, 249, 247);
 	text-shadow: 0px 2.5px 5px rgba(0, 108, 39, 1);
 	display: block;
 	border: none;
@@ -671,8 +671,8 @@ div.slide.slide-video {
 .menu-main-container > ul > li.current_page_item,
 .menu-main-container > ul > li.current_page_ancestor {
 	box-shadow: inset 0px 0px 1px 3px rgba(255,255,255,1);
-	border-color: rgb(221, 238, 225);
-	background-color: rgb(223, 238, 233);
+	border-color: rgb(102, 176, 139);
+	background-color: rgb(102, 176, 139);
 }
 
 ul.children {
