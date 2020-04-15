@@ -14,8 +14,8 @@
 	},
 	"dependencies": {
 		"@wordpress/browserslist-config": "^2.1.1",
-		"leaflet": "^1.5.1",
-		"chart.js": "^2.8.0"
+		"chart.js": "^2.8.0",
+		"leaflet": "^1.5.1"
 	},
 	"devDependencies": {
 		"@types/chart.js": "^2.7.55",
