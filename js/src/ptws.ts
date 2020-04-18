@@ -3,6 +3,7 @@ import * as L from 'leaflet';
 import { Chart } from "chart.js";
 //import "./editor.blocks.ts";
 import "./jquery.sonar.min.js";
+//import "./block-itinerary.jsx";
 
 
 export function	fakeScroll() {
@@ -107,7 +108,12 @@ export function findAndInitGPSLogDisplays() {
 		// making a full set of data for graphing.
 		var classesToCheck = ['lat', 'lon', 'el', 't', 'spd'];
 		var hasAll = classesToCheck.filter(function (a) { return rawdata[a]; });
-		if (hasAll.length != classesToCheck.length) { return; } // Can't use incomplete data sets
+		if (hasAll.length != classesToCheck.length) {
+ 			// Can't use incomplete data sets
+ 			console.log("PTWS: Cannot init ride log with incomplete data sets:");
+ 			console.log(item);
+			return;
+		}
 
 		// Convert the arrays into a series of point objects, like a minimal version of GPX.
 
@@ -370,7 +376,11 @@ export function handleLazyLoadImage(img) {
 	var jqImg = jQuery(img);
 	var src = jqImg.attr('data-lazy-src');
 
-	if (!src || 'undefined' === typeof (src)) { return; }
+	if (!src || 'undefined' === typeof (src)) {
+		console.log("PTWS: Asked to lazyload image with no data-lazy-src:");
+		console.log(img);
+		return;
+	}
 
 	jqImg.unbind('scrollin') // remove event binding
 		.hide()
@@ -407,6 +417,8 @@ export function lazyLoadImage(img) {
 
 export function lazyLoadInit() {
 	jQuery('img[data-lazy-src]').bind('scrollin', { distance: 200 }, function () {
+		console.log("PTWS: Scrollin-triggered lazyLoad for image:");
+		console.log(this);
 		lazyLoadImage(this);
 	});
 
