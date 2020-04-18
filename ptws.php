@@ -511,7 +511,7 @@ if (!is_admin()) {
     remove_filter('the_content', 'wpautop');
     remove_filter('the_excerpt', 'wpautop');
     // run this later, so other content filters have run, including image_add_wh on WP.com
-    add_filter('the_content', 'Poking_Things_With_Sticks_Lazyload\ptws_ll_add_image_placeholders', 99);
+    add_filter('the_content', 'Poking_Things_With_Sticks_Lazyload\ptws_ll_add_image_placeholders', 9999);
 } else {
     ptws_init_actions_for_admin();
     register_activation_hook(__FILE__, 'ptws_activate');
