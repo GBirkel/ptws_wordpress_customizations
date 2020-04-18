@@ -32,6 +32,7 @@ include_once('ptws-storage.php');
 require_once('ptws-api.php');
 include_once('ptws-lazyload.php');
 include_once('ptws-admin.php');
+//include_once('ptws-blocks.php');
 
 
 function ptws_install()
@@ -503,6 +504,14 @@ function ptws_activate()
     add_option('ptws_plugin_activation', 'just-activated');
 }
 
+add_action('wp_print_scripts', __NAMESPACE__ . '\ptws_enqueue_scripts');
+add_action('wp_print_styles', __NAMESPACE__ . '\ptws_enqueue_styles');
+
+add_action('plugins_loaded', __NAMESPACE__ . '\register_dynamic_blocks');
+//add_action('enqueue_block_editor_assets', __NAMESPACE__ . '\enqueue_block_editor_assets');
+
+add_shortcode('ptwsgallery', __NAMESPACE__ . '\ptwsgallery_shortcode');
+add_shortcode('ptwsroute', __NAMESPACE__ . '\ptwsroute_shortcode');
 
 if (!is_admin()) {
     // Turn off auto-formatting of entries, to prevent corruption of XML by the auto-processor
@@ -517,15 +526,6 @@ if (!is_admin()) {
     register_activation_hook(__FILE__, 'ptws_activate');
     /*    add_filter('plugin_action_links', __NAMESPACE__ . '\ptws_add_settings_link', 10, 2 );*/
 }
-
-add_action('wp_print_scripts', __NAMESPACE__ . '\ptws_enqueue_scripts');
-add_action('wp_print_styles', __NAMESPACE__ . '\ptws_enqueue_styles');
-
-add_action('plugins_loaded', __NAMESPACE__ . '\register_dynamic_blocks');
-//add_action('enqueue_block_editor_assets', __NAMESPACE__ . '\enqueue_block_editor_assets');
-
-add_shortcode('ptwsgallery', __NAMESPACE__ . '\ptwsgallery_shortcode');
-add_shortcode('ptwsroute', __NAMESPACE__ . '\ptwsroute_shortcode');
 
 // Initilize the API endpoints class
 $ptws_api = new PTWS_API();
