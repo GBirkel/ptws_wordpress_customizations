@@ -416,13 +416,7 @@ export function lazyLoadImage(img) {
 
 
 export function lazyLoadInit() {
-	jQuery('img[data-lazy-src]').each( function () {
-		console.log("PTWS: Adding scrollin trigger for lazyLoad image:");
-		console.log(this);
-	});
 	jQuery('img[data-lazy-src]').bind('scrollin', { distance: 200 }, function () {
-		console.log("PTWS: Handling scrollin triggered for lazyLoad image:");
-		console.log(this);
 		lazyLoadImage(this);
 	});
 
