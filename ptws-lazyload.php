@@ -50,12 +50,16 @@ function ptws_ll_process_image( $matches ) {
 function ptws_ll_add_image_placeholders( $content ) {
 
     // Don't lazyload for feeds, previews
-    if( is_feed() || is_preview() )
+    if ( is_feed() || is_preview() )
         return $content;
 
     // Don't lazy-load if the content has already been run through previously
     if ( false !== strpos( $content, 'data-lazy-src' ) )
         return $content;
+
+    // Make sure we execute all shortcodes before we do this process.
+    // This allows, for example, ptwsgallery_shortcode to be run, inserting its images
+    $content = do_shortcode($content);
 
     // This is a pretty simple regex, but it works
     $content = preg_replace_callback( '#<(img)([^>]+?)(>(.*?)</\\1>|[\/]?>)#si', __NAMESPACE__ . '\ptws_ll_process_image', $content );
