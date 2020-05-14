@@ -210,12 +210,14 @@ export function findAndInitGPSLogDisplays() {
 
 		var map = L.map(mapContainer.get(0));
 
-		(<any>L).tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWlsZTQyIiwiYSI6ImNqbGgyY2l0NDFkcm8zcWxxMWJrd2RvaXEifQ.uMQoOnrPBsLbLV2v4COFjA', {
+		(<any>L).tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoibWlsZTQyIiwiYSI6ImNqbGgyY2l0NDFkcm8zcWxxMWJrd2RvaXEifQ.uMQoOnrPBsLbLV2v4COFjA', {
 			maxZoom: 18,
-			attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
-				'<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
-				'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
-			id: 'mapbox.outdoors'
+			attribution: '&copy; <a href="https://www.mapbox.com/about/maps/">Mapbox</a> ' +
+						 '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> ' +
+						 '<strong><a href="https://www.mapbox.com/map-feedback/" target="_blank">Improve this map</a></strong>',
+			tileSize: 512,
+			zoomOffset: -1,
+			id: 'mapbox/outdoors-v11'
 		}).addTo(map);
 
 		var routeLeafletPoints = smoothedPoints.map(function (pt) { return <L.LatLngExpression>[pt['lat'], pt['lon']]; });
