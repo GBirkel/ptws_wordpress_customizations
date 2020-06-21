@@ -487,6 +487,14 @@ export function ptwsFilterButton(e) {
 }
 
 
+// Seek out and init GPS log data chunks on the page, marking them as inited as we go.
+export function runPostBodyLoad() {
+	lazyLoadInit();
+	findAndInitRoyalsliders();
+	findAndInitGPSLogDisplays();
+}
+
+
 // http://learn.jquery.com/using-jquery-core/document-ready/
 jQuery(document).ready(function($) {
 
@@ -553,8 +561,9 @@ jQuery(document).ready(function($) {
 		(<any>jQuery).rsModules.globalCaption = (<any>jQuery).rsProto._initGlobalCaption;
 	}
 
-	//ptws.findAndInitRoyalsliders();
+	lazyLoadInit();
 	findAndInitGPSLogDisplays();
+	findAndInitRoyalsliders();
 
 	// https://connekthq.com/plugins/ajax-load-more/docs/callback-functions/
 	(<any>window).almComplete = function(alm){
@@ -562,9 +571,6 @@ jQuery(document).ready(function($) {
 		findAndInitGPSLogDisplays();
 	};
 
-	lazyLoadInit();
 	// Work with WP.com infinite scroll
-	jQuery('body').bind('post-load', lazyLoadInit);
-	jQuery('body').bind('post-load', findAndInitRoyalsliders);
-	jQuery('body').bind('post-load', findAndInitGPSLogDisplays);
+	jQuery('body').bind('post-load', runPostBodyLoad);
 });
