@@ -25,7 +25,8 @@ var loadMorePending = false;
 var showingOnlyVideos = false;
 var largeThumbnails = true;
 var comments = true;
-var shortcode = true;
+// 0 = PTWS shortcode 1 = HTML with PTWS CSS 2 = HTML with inline CSS
+var codeMode = 0;
 
 var loadingMoreSpan = null;
 
@@ -49,11 +50,11 @@ $(document).ready(function() {
 	$('#largeThumbnailsCheckbox').click(function () {
 		largeThumbnailsFn();
 	});
-	$('#shortcodeCheckbox').click(function () {
-		shortcodeFn();
-	});
 	$('#commentsCheckbox').click(function () {
 		commentsFn();
+	});
+	$('select#codeModeSelection').on('change', function (e) {
+		codeModeFn();
 	});
 
 	$(document).on('keydown', keyHandler);
@@ -287,7 +288,8 @@ function redrawSelection() {
 		var centerDiv = $("<center/>").appendTo("#entry");
 
         var href = $("<a data-flickr-embed='true' href='" + imgFlickrURL + "' title='" +  item.title + "'></a>").appendTo(centerDiv);
-    	$('<script async="async" src="//embedr.flickr.com/assets/client-code.js" charset="utf-8"></sc'+'ript>').appendTo(centerDiv);
+		// Breaking up 'script' so this isn't immediately loaded and inlined!
+    	$('<scr'+'ipt async="async" src="//embedr.flickr.com/assets/client-code.js" charset="utf-8"></sc'+'ript>').appendTo(centerDiv);
 		var newImg = document.createElement("img");
        	$(newImg).attr("src", item.url_m).attr("style", "width:800px;height:450px;").attr("width", "800").attr("height", "450").appendTo(href);
 		if (item.hasDescription && comments) {
@@ -383,13 +385,32 @@ function redrawSelection() {
 
 	sgt += ']\n\n';
 
-	var entry = document.getElementById("entry");
-	var astext = document.getElementById("astext");
+	$("#entryInlinedStyles").empty();
+	$("#entry").clone().children().appendTo("#entryInlinedStyles");
 
-	if (shortcode) {
+	var entry = document.getElementById("entry");
+	var inlineStyledEntry = document.getElementById("entryInlinedStyles");
+
+	// https://stackoverflow.com/questions/2712136/how-do-i-make-this-loop-all-children-recursively
+	var all = inlineStyledEntry.getElementsByTagName('*');
+	for (var i = -1, l = all.length; ++i < l;) {
+		var el = all[i];
+		// https://stackoverflow.com/questions/25097566/css-style-to-inline-style-via-javascript
+		// https://stackoverflow.com/questions/22907735/get-the-computed-style-and-omit-defaults
+		var s = StyleInliner.getUserStyles(el)
+		for (let key in s) {
+				let prop = key.replace(/\-([a-z])/g, v => v[1].toUpperCase());
+				el.style[prop] = s[key];
+		}
+	}
+
+	var astext = document.getElementById("astext");
+	if (codeMode == 0) {
 		astext.value = sgt;
-	} else {
+	} else if (codeMode == 1) {
 		astext.value = entry.innerHTML;
+	} else {
+		astext.value = inlineStyledEntry.innerHTML;
 	}
 
   	astext.select();
@@ -483,9 +504,8 @@ function commentsFn() {
 }
 
 
-function shortcodeFn() {
-	var cb = document.getElementById("shortcodeCheckbox");
-	shortcode = cb.checked;
+function codeModeFn() {
+    codeMode = $('select#codeModeSelection').val();	// Global
 	redrawSelection();
 }
 
@@ -501,6 +521,65 @@ function clearTemplate() {
 	astext.value = '';
 	selectedItems = [];
 }
+
+
+// https://stackoverflow.com/questions/22907735/get-the-computed-style-and-omit-defaults
+class StyleInliner {
+    // Returns a dummy iframe with no styles or content
+    // This allows us to get default styles from the browser for an element
+    static getStylesIframe() {
+        if (typeof window.blankIframe != 'undefined') {
+            return window.blankIframe;
+        }
+
+        window.blankIframe = document.createElement('iframe');
+        document.body.appendChild(window.blankIframe);
+
+        return window.blankIframe;
+    }
+
+    // Turns a CSSStyleDeclaration into a regular object, as all values become "" after a node is removed
+    static getStylesObject(node, parentWindow) {
+        const styles = parentWindow.getComputedStyle(node);
+        let stylesObject = {};
+
+        for (let i = 0; i < styles.length; i++) {
+            const property = styles[i];
+            stylesObject[property] = styles[property];
+        }
+
+        return stylesObject;
+    }
+
+    // Returns a styles object with the browser's default styles for the provided node
+    static getDefaultStyles(node) {
+        const iframe = StyleInliner.getStylesIframe();
+        const iframeDocument = iframe.contentDocument;
+        const targetElement = iframeDocument.createElement(node.tagName);
+
+        iframeDocument.body.appendChild(targetElement);
+        const defaultStyles = StyleInliner.getStylesObject(targetElement, iframe.contentWindow);
+
+        targetElement.remove();
+
+        return defaultStyles;
+    }
+
+    // Returns a styles object with only the styles applied by the user's CSS that differ from the browser's default styles
+    static getUserStyles(node) {
+        const defaultStyles = StyleInliner.getDefaultStyles(node);
+        const styles = StyleInliner.getStylesObject(node, window);
+        let userStyles = {};
+
+        for (let property in defaultStyles) {
+            if (styles[property] != defaultStyles[property]) {
+                userStyles[property] = styles[property];
+            }
+        }
+
+        return userStyles;
+    }
+};
 
 
 </script>
@@ -565,13 +644,17 @@ function clearTemplate() {
 
 <input type=button value="Add Page" name="addPage" id="addPageButton" />
 
-<input type=checkbox value="1" name="showOnlyVideos" id="showOnlyVideosCheckbox" /> <label for="showOnlyVideosCheckbox">Show Videos Only</label>
+<input type=checkbox value="1" name="showOnlyVideos" id="showOnlyVideosCheckbox" /> <label for="showOnlyVideosCheckbox">Videos Only</label>
 
 <input type=checkbox value="1" name="largeThumbnails" id="largeThumbnailsCheckbox" checked="checked" /> <label for="largeThumbnailsCheckbox">Large Thumbnails</label>
 
 <input type=checkbox value="1" name="comments" id="commentsCheckbox" checked="checked" /> <label for="commentsCheckbox">Comments</label>
 
-<input type=checkbox value="1" name="shortcode" id="shortcodeCheckbox" checked="checked" /> <label for="shortcodeCheckbox">Shortcode</label>
+<select id="codeModeSelection">
+	<option value=0>Shortcode</option>
+	<option value=1>HTML + Classes</option>
+	<option value=2>HTML + Inline Styles</option>
+</select>
 
 <div id="flickrThumbnailContainer"><div id="flickrThumbnails"></div></div>
 
@@ -581,19 +664,22 @@ function clearTemplate() {
 	<div class="post">
 		<div class="entry" id="entry">
 		</div>
+		<div class="entry" style="display:none;" id="entryInlinedStyles">
+		</div>
 	</div>
 </div>
 
-<textarea rows="2" style="width:100%;" id="astext">
+<div id="standardDiv">
+</div>
 
-</textarea>
+<div style="padding:10px;"><textarea rows="6" style="width:100%;" id="astext">
+</textarea></div>
 
 <input type=button value="Mark As Used, Then Log (ESC)" name="markUsed" id="useButton" />
 <input type=button value="Clear (Shift-ESC)" name="clearTemplate" id="clearButton" />
 
-<textarea rows="6" style="width:100%;" id="history">
-
-</textarea>
+<div style="padding:10px;"><textarea rows="6" style="width:100%;" id="history">
+</textarea></div>
 
 <form>
 
