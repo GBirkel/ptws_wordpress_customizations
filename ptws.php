@@ -203,12 +203,16 @@ function ptwsgallery_shortcode($atts, $content = null)
                 array_push($swipegalleryIDs, $gId);
                 $photos[$gId] = $gId;
             }
+            if (isset($atts['autoplay'])) {
+                $autoplay = true;
+            }
         } elseif (isset($atts['latest'])) {
             $gIds = ptws_get_latest_flickr_cache_ids(intval($atts['latest']));
             foreach ($gIds as $gId) {
                 array_push($swipegalleryIDs, $gId);
                 $photos[$gId] = $gId;
             }
+            // The "latest" reel always autoplays
             $autoplay = true;
         }
     // Try old XML parsing method, from when we embedded all slide data in XML inside the shortcode
