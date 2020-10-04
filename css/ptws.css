@@ -34,8 +34,9 @@
     --ptws-content-font-size: 1em;
 	--ptws-content-quote-p-font-size: 1.05em;
 	--ptws-content-poem-p-font-size: 1.25em;
+	--ptws-content-pullquote-p-font-size: 2rem;
+	--ptws-content-pullquote-giant-p-font-size: 3rem;
 	--ptws-menu-main-container-ul-li-font-size: 1.5em;
-
 	--ptws-gearFilterButtons-span-font-size: 0.75em;
 	--ptws-gearFilterButtons-span-padding: 2px 7px 2px 7px;
 	--ptws-gearFilterButtons-span-margin: 5px 5px;
@@ -50,8 +51,9 @@
 	    --ptws-content-font-size: 1.3em;
 		--ptws-content-quote-p-font-size: 1.35em;
 		--ptws-content-poem-p-font-size: 1.45em;
+		--ptws-content-pullquote-p-font-size: 2.5rem;
+		--ptws-content-pullquote-giant-p-font-size: 3.4rem;
 		--ptws-menu-main-container-ul-li-font-size: 1.6em;
-
 		--ptws-gearFilterButtons-span-font-size: 1.1em;
 		--ptws-gearFilterButtons-span-padding: 8px 12px 8px 12px;
 		--ptws-gearFilterButtons-span-margin: 8px 8px;
@@ -223,7 +225,6 @@ figure.wp-block-image > img {
 	margin-left: 1.2em;
 	margin-right: 1.2em;
 }
-
 
 
 /******** Images and "image strips" (grids of image thumbnails) *******/
@@ -446,6 +447,7 @@ table.musicplaylist tr td:first-child {
 	color: rgba(0, 94, 17, 1);
 }
 
+
 /* WP Pull Quote */
 
 .content figure.wp-block-pullquote {
@@ -454,10 +456,10 @@ table.musicplaylist tr td:first-child {
 }
 
 .content figure.wp-block-pullquote p {
-	font-size: 2rem;
+	font-size: var(--ptws-content-pullquote-p-font-size);
 }
 .content figure.wp-block-pullquote.giant p {
-	font-size: 3rem;
+	font-size: var(--ptws-content-pullquote-giant-p-font-size);
 	font-family: 'DIN Web Pro Black';
 }
 
@@ -638,7 +640,7 @@ div.slide.slide-video {
 	-moz-border-radius: 7px;
 	border-style: solid;
 	border-width: 2px;
-	border-color: white;
+	border-color: var(--ptws-body-background);
 }
 
 .menu-main-container > ul > li > a {
