@@ -456,6 +456,10 @@ table.musicplaylist tr td:first-child {
 .content figure.wp-block-pullquote p {
 	font-size: 2rem;
 }
+.content figure.wp-block-pullquote.giant p {
+	font-size: 3rem;
+	font-family: 'DIN Web Pro Black';
+}
 
 .content figure.wp-block-pullquote blockquote {
 	border: none;

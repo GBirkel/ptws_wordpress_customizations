@@ -6,6 +6,7 @@ import "./jquery.sonar.min.js";
 //import "./block-itinerary.jsx";
 
 
+// Force a window scrolling event, to trigger handlers
 export function	fakeScroll() {
 	var x = window.scrollX;
 	var y = window.scrollY;
@@ -14,7 +15,7 @@ export function	fakeScroll() {
 }
 
 
-// Init the RoyalSlider instance, marking it inited afterwards.
+// Init a RoyalSlider instance on the page, marking it inited afterwards.
 // (Should be called only when we've finished overloading the global caption module.)
 export function initRoyalslider(item) {
 	var sDiv = jQuery(item);
@@ -60,14 +61,16 @@ export function initRoyalslider(item) {
 		/* imgWidth: 1400, */
 		/* imgHeight: 680 */
 	};
+	// If it has a "ptwsautoplay" class, add auto-play options. 
 	if (sDiv.hasClass('ptwsautoplay')) {
 		(<any>rsOptions).autoPlay = {
 			enabled: true,
 			delay: 2500,
 			stopAtAction: true,
-    		pauseOnHover: true
+    		pauseOnHover: false
 		};
 		(<any>rsOptions).loop = true;
+		(<any>rsOptions).controlNavigation = 'none';
 	}
 	(<any>sDiv).royalSlider(rsOptions);
 }
