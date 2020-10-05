@@ -618,6 +618,11 @@ div.slide.slide-video {
 	font-size: 0.75em;
 }
 
+/* Overriding dumb Wordpress default. Items internal to columns MANAGE THEIR OWN bottom margin. */
+.entry .wp-block-columns .wp-block-column {
+	margin-bottom: 0;
+}
+
 
 /***** Nav Menu  ********************/
 
