@@ -645,7 +645,7 @@ div.slide.slide-video {
 	-moz-border-radius: 7px;
 	border-style: solid;
 	border-width: 2px;
-	border-color: var(--ptws-body-background);
+	border-color: rgb(255,255,255,0);
 }
 
 .menu-main-container > ul > li > a {
