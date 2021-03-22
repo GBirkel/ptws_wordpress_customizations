@@ -441,6 +441,11 @@ table.musicplaylist tr td:first-child {
 	font-style: normal;
 	font-size: calc(0.4em + var(--ptws-content-quote-p-font-size));
 }
+/* More pointless over-specification because otherwise WP's in-house styles screw us */
+.content blockquote.wp-block-quote.is-style-large {
+	margin: 1.2em 45px 1.2em 45px;
+	padding: 0.8em 1.2em 0.8em 1.2em;
+}
 
 .content blockquote.wp-block-quote cite {
 	color: rgba(0, 151, 26, 1);
