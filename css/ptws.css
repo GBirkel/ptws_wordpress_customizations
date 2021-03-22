@@ -433,16 +433,21 @@ table.musicplaylist tr td:first-child {
 
 .content blockquote.wp-block-quote p {
 	font-size: var(--ptws-content-quote-p-font-size);
+	font-style: normal;
 	color: rgba(0, 62, 11, 1);
 }
-
+/* WP official styles override this and make it italic, which is infuriating */
 .content blockquote.wp-block-quote.is-style-large p {
-	font-size: calc(0.5em + var(--ptws-content-quote-p-font-size));
-	color: rgba(0, 62, 11, 1);
+	font-style: normal;
+	font-size: calc(0.4em + var(--ptws-content-quote-p-font-size));
 }
 
 .content blockquote.wp-block-quote cite {
 	color: rgba(0, 151, 26, 1);
+	font-size: calc(var(--ptws-content-font-size) - 0.1em);
+}
+.content blockquote.wp-block-quote.is-style-large cite {
+	font-size: var(--ptws-content-font-size);
 }
 
 .content blockquote.wp-block-quote.poem p {
