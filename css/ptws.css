@@ -436,6 +436,11 @@ table.musicplaylist tr td:first-child {
 	color: rgba(0, 62, 11, 1);
 }
 
+.content blockquote.wp-block-quote.is-style-large p {
+	font-size: calc(0.5em + var(--ptws-content-quote-p-font-size));
+	color: rgba(0, 62, 11, 1);
+}
+
 .content blockquote.wp-block-quote cite {
 	color: rgba(0, 151, 26, 1);
 }
