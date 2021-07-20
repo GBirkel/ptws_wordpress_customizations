@@ -74,8 +74,6 @@ function ptws_admin_html_log_comment_page()
     $log_count = ptws_get_comments_count();
     $log_unresolved_count = ptws_get_unresolved_comments_count();
 
-    echo "<p>Comment contains {$log_count} entries, with {$log_unresolved_count} unresolved.</p>";
-
     ?>
         <form method='post' action='<?php echo $url ?>'>
             <div id='afg-wrap'>
@@ -94,7 +92,7 @@ function ptws_admin_html_log_comment_page()
                     </table>
                     <h4>Comment</h4>
                     <div>
-                        <textarea style="margin:8px;" name='ptws_log_comment_text' rows='5' cols='40'></textarea>
+                        <textarea style="margin:8px;" name='ptws_log_comment_text' rows='8' cols='32'></textarea>
                     </div>
                     <input type="submit" name="submit" id="ptws_log_comment_submit" class="button-primary" value="Submit Comment" />
                 </div>
@@ -108,27 +106,26 @@ function ptws_admin_html_log_comment_page()
 
         echo "<p>{$latest_unresolved_count} most recent unresolved comments:</p>";
 
-        ?>
-            <table style='border-spacing:0;border:none;'>
-                <tr>
-                    <th style='text-align: left;line-height: 1.3em;font-size: 14px;padding:10px;'>Date</th>
-                    <th style='text-align: left;line-height: 1.3em;font-size: 14px;padding:10px;'>Content</th>
-                    <th></td>
-                </tr>
-        <?php
-
+        echo "<table style='border-spacing:0;border:none;'>";
+        $stripe = 0;
         foreach ($latest_unresolved as $lu) {
+            $stripe = 1 - $stripe;
             ?>
-                <tr>
-                    <td><?php echo $lu['composition_time']; ?></td>
-                    <td style='padding-left:15px;'><?php echo $lu['content']; ?></td>
-                    <td style='padding-left:15px;'><?php echo $lu['id']; ?></td>
+                <tr style="background-color:rgba(230,230,230,<?php echo $stripe; ?>);">
+                    <td style='padding:10px;white-space:nowrap;'><b><?php echo $lu['composition_time']; ?></b></td>
+                    <td style='padding:10px;text-align:right;'>
+                        <input type="button" class="button-secondary" value="Delete" onClick="document.location.href='<?php echo get_admin_url() . 'admin-ajax.php?action=ptws_delete_comment&comment_id=' . $lu['id']; ?>';" />
+                    </td>
+                </tr>
+                <tr style="background-color:rgba(230,230,230,<?php echo $stripe; ?>);">
+                    <td style='padding:10px;' colspan='2'><?php echo $lu['content']; ?></td>
                 </tr>
             <?php
-
         }
 
         echo "</table>";
+
+        echo "<p>Comment log contains {$log_count} entries total, with {$log_unresolved_count} unresolved.</p>";
     }
 }
 
@@ -485,6 +482,29 @@ function ptws_admin_cache_clear()
 }
 
 
+// Deleted the given comment from the comment log.
+// Responds to the "ptws_delete_comment" AJAX call, e.g. ".../admin-ajax.php?action=ptws_delete_comment".
+//
+function ptws_admin_comment_delete()
+{
+    session_start();
+
+    echo '<h3>Delete comment</h3>';
+    if (!isset( $_REQUEST['comment_id'] ) ) {
+        echo "<p>Error: No comment id specified.</p>";
+        exit;
+    }
+    $comment_id = intval($_REQUEST['comment_id']);
+    if (!$comment_id > 0) {
+        echo "<p>Error: Comment id must be greater than 0.</p>";
+        exit;
+    }
+    ptws_delete_one_comment($_REQUEST['comment_id']);
+    echo '<p>Done.</p>';
+    exit;
+}
+
+
 function ptws_init_actions_for_admin()
 {
     add_action('admin_print_styles', __NAMESPACE__ . '\ptws_enqueue_admin_styles');
@@ -492,6 +512,7 @@ function ptws_init_actions_for_admin()
     add_action('admin_menu', __NAMESPACE__ . '\ptws_admin_menu');
     add_action('wp_ajax_ptws_gallery_auth', __NAMESPACE__ . '\ptws_auth_init');
     add_action('wp_ajax_ptws_test', __NAMESPACE__ . '\ptws_flickr_connect_test');
+    add_action('wp_ajax_ptws_delete_comment', __NAMESPACE__ . '\ptws_admin_comment_delete');
     add_action('wp_ajax_ptws_resolve', __NAMESPACE__ . '\ptws_admin_cache_resolve');
     add_action('wp_ajax_ptws_cache_clear', __NAMESPACE__ . '\ptws_admin_cache_clear');
     add_action('plugins_loaded', __NAMESPACE__ . '\ptws_update_db_check');

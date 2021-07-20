@@ -76,7 +76,7 @@ function ptws_create_comment_tables()
 {
     global $wpdb;
 
-    $table_name = $wpdb->prefix . 'ptwscommentlog';
+    $table_name = $wpdb->prefix . 'ptwsphotocommentlog';
     $charset_collate = $wpdb->get_charset_collate();
 
     $sql = "CREATE TABLE " . $table_name . " (
@@ -471,7 +471,7 @@ function ptws_update_route_record_last_seen($pid)
 function ptws_create_comment_log_record($f)
 {
     global $wpdb;
-    $table_name = $wpdb->prefix . 'ptwscommentlog';
+    $table_name = $wpdb->prefix . 'ptwsphotocommentlog';
     $wpdb->show_errors();
     $wpdb->replace(
         $table_name,
@@ -492,7 +492,7 @@ function ptws_create_comment_log_record($f)
 function ptws_get_comments_count()
 {
     global $wpdb;
-    $table_name = $wpdb->prefix . 'ptwscommentlog';
+    $table_name = $wpdb->prefix . 'ptwsphotocommentlog';
     return $wpdb->get_var("SELECT COUNT(*) FROM $table_name");
 }
 
@@ -501,7 +501,7 @@ function ptws_get_comments_count()
 function ptws_get_unresolved_comments_count()
 {
     global $wpdb;
-    $table_name = $wpdb->prefix . 'ptwscommentlog';
+    $table_name = $wpdb->prefix . 'ptwsphotocommentlog';
     return $wpdb->get_var("SELECT COUNT(*) FROM $table_name WHERE time_of_embedded_photo is NULL");
 }
 
@@ -510,7 +510,7 @@ function ptws_get_unresolved_comments_count()
 function ptws_get_unresolved_comments($n)
 {
     global $wpdb;
-    $table_name = $wpdb->prefix . 'ptwscommentlog';
+    $table_name = $wpdb->prefix . 'ptwsphotocommentlog';
 
     $results = $wpdb->get_results(
         $wpdb->prepare("SELECT * FROM $table_name WHERE time_of_embedded_photo is NULL ORDER BY submit_time DESC LIMIT %d", $n),
@@ -532,6 +532,19 @@ function ptws_get_unresolved_comments($n)
         array_push($s, $r);
     }
     return $s;
+}
+
+
+// Removes the comment with the given ID from the comment log
+function ptws_delete_one_comment($pid)
+{
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'ptwsphotocommentlog';
+    $wpdb->show_errors();
+    $wpdb->query(
+        $wpdb->prepare("DELETE FROM $table_name WHERE id = %s", $pid)
+    );
+    $wpdb->hide_errors();
 }
 
 ?>
