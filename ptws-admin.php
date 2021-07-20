@@ -40,12 +40,96 @@ function ptws_enqueue_admin_styles()
 
 function ptws_admin_menu()
 {
-    add_menu_page('PTWS Custom', 'PTWS Custom', 'publish_pages', 'ptws_plugin_page', __NAMESPACE__ . '\ptws_admin_html_page', PTWS_PLUGIN_URL . "/images/ptws_logo.png", 898);
+    $cp = 'publish_pages';
+    add_menu_page('PTWS Custom', 'PTWS Custom', $cp, 'ptws_plugin_page', __NAMESPACE__ . '\ptws_admin_html_page', PTWS_PLUGIN_URL . "/images/ptws_logo.png", 898);
+    add_submenu_page( 'ptws_plugin_page', 'Log Comment', 'Log Comment', $cp, 'ptws_log_comment', __NAMESPACE__ . '\ptws_admin_html_log_comment_page', 899 );
 
     // adds "Settings" link to the plugin action page
     /* add_filter( 'plugin_action_links', __NAMESPACE__ . '\ptws_add_settings_links', 10, 2);*/
 
     /* ptws_setup_options();*/
+}
+
+
+function ptws_admin_html_log_comment_page()
+{
+    if ($_POST) {
+
+        if (isset($_POST['submit']) && $_POST['submit'] == 'Submit Comment') {
+
+            $f = array();
+            $f['content'] = $_POST['ptws_log_comment_text'];
+            $f['composition_time'] = $_POST['ptws_log_comment_timestamp'];
+            ptws_create_comment_log_record($f);
+
+            echo "<div class='updated'><p><strong>
+                Comment submitted.
+                </strong></p></div>";
+        }
+        ptws_create_afgFlickr_obj();
+    }
+    $url = $_SERVER['REQUEST_URI'];
+    $log_timestamp = ptws_epoch_to_str(time());
+
+    $log_count = ptws_get_comments_count();
+    $log_unresolved_count = ptws_get_unresolved_comments_count();
+
+    echo "<p>Comment contains {$log_count} entries, with {$log_unresolved_count} unresolved.</p>";
+
+    ?>
+        <form method='post' action='<?php echo $url ?>'>
+            <div id='afg-wrap'>
+                <h2>PTWS Log Comment Page</h2>
+                <div id="afg-main-box">
+                    <h4>Timestamp</h4>
+                    <table>
+                        <tr>
+                            <td>
+                                <input class='afg-input' type='text' name='ptws_log_comment_timestamp' value="<?php echo $log_timestamp; ?>" />
+                            </td>
+                            <td style="padding-left:15px;">
+                                Paste in the timestamp of an existing comment to edit it.
+                            </td>
+                        </tr>
+                    </table>
+                    <h4>Comment</h4>
+                    <div>
+                        <textarea style="margin:8px;" name='ptws_log_comment_text' rows='5' cols='40'></textarea>
+                    </div>
+                    <input type="submit" name="submit" id="ptws_log_comment_submit" class="button-primary" value="Submit Comment" />
+                </div>
+            </div>
+        </form>
+    <?php
+    if ($log_unresolved_count > 0) {
+
+        $latest_unresolved = ptws_get_unresolved_comments(50);
+        $latest_unresolved_count = count($latest_unresolved);
+
+        echo "<p>{$latest_unresolved_count} most recent unresolved comments:</p>";
+
+        ?>
+            <table style='border-spacing:0;border:none;'>
+                <tr>
+                    <th style='text-align: left;line-height: 1.3em;font-size: 14px;padding:10px;'>Date</th>
+                    <th style='text-align: left;line-height: 1.3em;font-size: 14px;padding:10px;'>Content</th>
+                    <th></td>
+                </tr>
+        <?php
+
+        foreach ($latest_unresolved as $lu) {
+            ?>
+                <tr>
+                    <td><?php echo $lu['composition_time']; ?></td>
+                    <td style='padding-left:15px;'><?php echo $lu['content']; ?></td>
+                    <td style='padding-left:15px;'><?php echo $lu['id']; ?></td>
+                </tr>
+            <?php
+
+        }
+
+        echo "</table>";
+    }
 }
 
 
@@ -135,6 +219,8 @@ function ptws_admin_html_page()
                             </td>
                         </tr>
                     </table>
+                    <input type="button" class="button-secondary" value="Test Flickr Credentials" onClick="document.location.href='<?php echo get_admin_url() .  'admin-ajax.php?action=ptws_test'; ?>';" />
+                    <br />
                     <?php
 
                     if ($_POST) {
@@ -151,9 +237,14 @@ function ptws_admin_html_page()
 
                     $cache_count = ptws_get_photos_count();
                     if ($cache_count > 0) {
+                        $cache_unresolved_count = ptws_get_unresolved_photos_count();
                         ?>
                         <h3>Photo Cache</h3>
+                        <?php
 
+                            echo "<p>Flickr cache contains {$cache_count} entries, with {$cache_unresolved_count} unresolved.</p>";
+
+                        ?>
                         <table class='ptws-admin-settings'>
 
                             <tr>
@@ -165,7 +256,6 @@ function ptws_admin_html_page()
                                 </td>
                             </tr>
                             <?php
-                            $cache_unresolved_count = ptws_get_unresolved_photos_count();
                             if ($cache_unresolved_count > 0) {
                                 ?>
 
@@ -196,12 +286,14 @@ function ptws_admin_html_page()
                             </tr>
                         </table>
                         <?php
-                        echo "<p>Flickr cache contains {$cache_count} entries, with {$cache_unresolved_count} unresolved.</p>";
                     }
 
                     ?>
                     <h3>Route Database</h3>
-
+                    <?php
+                        $route_count = ptws_get_route_count();
+                        echo "<p>Route database contains {$route_count} entries.</p>";
+                    ?>
                     <table class='ptws-admin-settings'>
                         <tr>
                             <td>Route upload API Secret</td>
@@ -213,16 +305,10 @@ function ptws_admin_html_page()
                             </td>
                         </tr>
                     </table>
-                    <?php
-                    $route_count = ptws_get_route_count();
-                    echo "<p>Route database contains {$route_count} entries.</p>";
-                    ?>
 
                     <br />
-                    <input type="submit" name="submit" id="ptws_save_changes" class="button-primary" value="Save Changes" />
+                    <input type="submit" name="submit" id="ptws_save_changes" class="button-primary" value="Save Settings" />
                     <br />
-                    <br />
-                    <input type="button" class="button-secondary" value="Test Flickr Credentials" onClick="document.location.href='<?php echo get_admin_url() .  'admin-ajax.php?action=ptws_test'; ?>';" />
 
                 </div>
             </div>

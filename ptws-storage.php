@@ -72,6 +72,31 @@ function ptws_create_route_tables()
 }
 
 
+function ptws_create_comment_tables()
+{
+    global $wpdb;
+
+    $table_name = $wpdb->prefix . 'ptwscommentlog';
+    $charset_collate = $wpdb->get_charset_collate();
+
+    $sql = "CREATE TABLE " . $table_name . " (
+        id mediumint(9) NOT NULL AUTO_INCREMENT,
+        content text,
+        composition_time datetime DEFAULT 0 NOT NULL,
+        submit_time datetime DEFAULT CURRENT_TIMESTAMP NOT NULL,
+        time_of_embedded_photo datetime,
+        flickr_id_of_embedded_photo varchar(32),
+        CONSTRAINT unique_composition_time UNIQUE (composition_time),
+        PRIMARY KEY (id)
+    ) $charset_collate;";
+
+    if (!function_exists('dbDelta')) {
+        require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+    }
+    dbDelta($sql);
+}
+
+
 // Adds an unresolved entry to the photo cache
 function ptws_add_uncached_photo($pid)
 {
@@ -119,10 +144,7 @@ function ptws_clear_one_photo($pid)
     $wpdb->show_errors();
 
     $wpdb->query(
-        $wpdb->prepare(
-            "DELETE FROM $flickr_table_name WHERE flickr_id = %s",
-            $pid
-        )
+        $wpdb->prepare("DELETE FROM $flickr_table_name WHERE flickr_id = %s", $pid)
     );
     $wpdb->hide_errors();
 }
@@ -135,10 +157,7 @@ function ptws_get_unresolved_photos($n)
     $flickr_table_name = $wpdb->prefix . 'ptwsflickrcache';
 
     $uncached_recs = $wpdb->get_results(
-        $wpdb->prepare(
-            "SELECT * FROM $flickr_table_name WHERE cached_time = %d LIMIT %d",
-            array(0, $n)
-        ),
+        $wpdb->prepare("SELECT * FROM $flickr_table_name WHERE cached_time = %d LIMIT %d", array(0, $n)),
         'ARRAY_A'
     );
 
@@ -196,12 +215,7 @@ function ptws_get_flickr_cache_record($pid)
     $table_name = $wpdb->prefix . 'ptwsflickrcache';
     $one_row = $wpdb->get_row(
         $wpdb->prepare(
-            "
-                SELECT *
-                FROM $table_name
-                WHERE flickr_id = %s
-            ",
-            $pid
+            "SELECT * FROM $table_name WHERE flickr_id = %s", $pid
         ),
         'ARRAY_A'
     );
@@ -289,12 +303,7 @@ function ptws_get_route_record($pid)
     $routes_table_name = $wpdb->prefix . 'ptwsroutes';
     $one_row = $wpdb->get_row(
         $wpdb->prepare(
-            "
-                SELECT * 
-                FROM $routes_table_name 
-                WHERE route_id = %s
-            ",
-            $pid
+            "SELECT * FROM $routes_table_name WHERE route_id = %s", $pid
         ),
         'ARRAY_A'
     );
@@ -398,8 +407,8 @@ function ptws_update_route_record($f)
     $routes_table_name = $wpdb->prefix . 'ptwsroutes';
     if (!isset( $f['route_id'] ) ) { return; }
     $g = ptws_get_route_record($f['route_id']);
-    if (!g) { return; }
-    if (!g['id']) { return; }
+    if (!$g) { return; }
+    if (!$g['id']) { return; }
 
     // Merge over only the fields that are set in the incoming record
     if (isset($f['route_description'])) { $g['route_description'] = $f['route_description']; }
@@ -450,20 +459,79 @@ function ptws_update_route_record_last_seen($pid)
     $table_name = $wpdb->prefix . 'ptwsroutes';
     $wpdb->update(
         $table_name,
-        array(
-            'last_seen_in_post' => get_the_ID()
-        ),
-        array(
-            'route_id'   => $pid,
-        ),
-        array(
-            '%d'
-        ),
-        array(
-            '%s'
-        )
+        array('last_seen_in_post' => get_the_ID() ),
+        array('route_id'   => $pid),
+        array('%d'),
+        array('%s')
     );
 }
 
+
+// Create or replace an entry in the comment log.
+function ptws_create_comment_log_record($f)
+{
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'ptwscommentlog';
+    $wpdb->show_errors();
+    $wpdb->replace(
+        $table_name,
+        array(
+            'content'            => $f['content'],
+            'composition_time'   => $f['composition_time']
+        ),
+        array(
+            '%s',
+            '%s'
+        )
+    );
+    $wpdb->hide_errors();
+}
+
+
+// Gets the count of photos in the cache
+function ptws_get_comments_count()
+{
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'ptwscommentlog';
+    return $wpdb->get_var("SELECT COUNT(*) FROM $table_name");
+}
+
+
+// Gets the count of unresolved photos in the cache
+function ptws_get_unresolved_comments_count()
+{
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'ptwscommentlog';
+    return $wpdb->get_var("SELECT COUNT(*) FROM $table_name WHERE time_of_embedded_photo is NULL");
+}
+
+
+// Gets up to n unresolved comments from the comment log, with newest first
+function ptws_get_unresolved_comments($n)
+{
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'ptwscommentlog';
+
+    $results = $wpdb->get_results(
+        $wpdb->prepare("SELECT * FROM $table_name WHERE time_of_embedded_photo is NULL ORDER BY submit_time DESC LIMIT %d", $n),
+        'ARRAY_A'
+    );
+
+    $s = array();
+    foreach ($results as $one_row) {
+        $r = array();
+        $r['id'] = (string)$one_row['id'];
+        $r['content'] = (string)$one_row['content'];
+        $r['composition_time'] = (string)$one_row['composition_time'];
+        $r['submit_time'] = (string)$one_row['submit_time'];
+        // Use PHP to make epoch conversions since SQL may not properly handle negative epochs.
+        // https://www.epochconverter.com/programming/php
+        // https://www.epochconverter.com/programming/mysql
+        $r['composition_time_epoch'] = (string)strtotime($one_row['composition_time']);
+        $r['submit_time_epoch'] = (string)strtotime($one_row['submit_time']);
+        array_push($s, $r);
+    }
+    return $s;
+}
 
 ?>

@@ -2,9 +2,6 @@
 
 namespace Poking_Things_With_Sticks;
 
-global $ptws_db_version;
-$ptws_db_version = '1.91';
-
 require_once('afgFlickr/afgFlickr.php');
 include_once('ptws-libs.php');
 
@@ -23,12 +20,12 @@ class PTWS_API {
 
     // Called manually when it's time to register the APIs for initialization
 	public function run() {
-		add_action( 'rest_api_init', array( $this, 'init_route_api' ) );
+		add_action( 'rest_api_init', array( $this, 'init_ptws_api' ) );
 	}
 
 
     // The main function for initializing the "route" APIs.
-	public function init_route_api() {
+	public function init_ptws_api() {
 		// Route for fetching an individual route by ID
         register_rest_route( $this->api_namespace, '/route/id', array(
             array(
@@ -60,6 +57,16 @@ class PTWS_API {
                 // Here we register our permissions callback.
                 // The callback is fired before the main callback to check if the current user can access the endpoint.
                 'permission_callback' => array($this, 'route_permissions_check'),
+            ),
+        ));
+		// Route for fetching a list of the most recent 50 unresolved comments
+        register_rest_route($this->api_namespace, '/commentlog/unresolved', array(
+            array(
+                // By using this constant we ensure that when the WP_REST_Server changes, our readable endpoints will work as intended.
+                'methods'  => \WP_REST_Server::READABLE,
+                'args' => array(),
+                // Here we register our callback. The callback is fired when this endpoint is matched by the WP_REST_Server class.
+                'callback' => array($this, 'comment_get_recent_unresolved'),
             ),
         ));
 	}
@@ -244,6 +251,17 @@ class PTWS_API {
         //    return new \WP_Error( 'rest_forbidden', esc_html__( 'OMG you can not view private data.', 'my-text-domain' ), array( 'status' => 401 ) );
         //}
         return true;
+    }
+
+
+    // Implementing the comment API 'get latest 50' method.
+    public function comment_get_recent_unresolved($request)
+    {
+        $response = ptws_get_unresolved_comments(50);
+        if ($response == null) {
+            return new \WP_Error('rest_invalid', esc_html__('Problem getting latest routes', 'my-text-domain'), array('status' => 400));
+        }
+        return rest_ensure_response( $response );
     }
 }
 

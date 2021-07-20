@@ -3,13 +3,13 @@
 Plugin Name: Poking Things With Sticks Extensions
 Plugin URI:  http://www.mile42.net
 Description: This plugin supports all the non-standard WP stuff I do on PTWS.  Among other things, it finds recent posted pictures on my Flickr feed and integrates them with recent WP posts in a fancypants way
-Version:     2.01
+Version:     2.23
 Author:      Pokingthingswithsticks
 Author URI:  http://www.pokingthingswithsticks.com
 License:     GPL2
 License URI: https://Icantbebothered.tolook.thisup.right.now
 
-Written 2018 Mile42 (email : gbirkel@gmail.com)
+Written 2018 by Mile42 (email : gbirkel@gmail.com)
 This is free software: you can redistribute it and/or modify
 it under the terms of the GPL2 License.
 
@@ -24,7 +24,7 @@ which uses jQuery.sonar by Dave Artz (AOL): http://www.artzstudio.com/files/jque
 namespace Poking_Things_With_Sticks;
 
 global $ptws_db_version;
-$ptws_db_version = '2.01';
+$ptws_db_version = '2.23';
 
 require_once('afgFlickr/afgFlickr.php');
 include_once('ptws-libs.php');
@@ -44,6 +44,7 @@ function ptws_install()
 
         ptws_create_route_tables();
         ptws_create_photo_tables();
+        ptws_create_comment_tables();
 
         update_option("ptws_db_version", $ptws_db_version);
     }
