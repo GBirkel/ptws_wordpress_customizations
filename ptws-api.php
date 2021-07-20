@@ -56,17 +56,18 @@ class PTWS_API {
                 'callback' => array($this, 'route_create'),
                 // Here we register our permissions callback.
                 // The callback is fired before the main callback to check if the current user can access the endpoint.
-                'permission_callback' => array($this, 'route_permissions_check'),
+                'permission_callback' => array($this, 'standard_permissions_check'),
             ),
         ));
 		// Route for fetching a list of the most recent 50 unresolved comments
         register_rest_route($this->api_namespace, '/commentlog/unresolved', array(
             array(
                 // By using this constant we ensure that when the WP_REST_Server changes, our readable endpoints will work as intended.
-                'methods'  => \WP_REST_Server::READABLE,
-                'args' => array(),
+                'methods'  => \WP_REST_Server::CREATABLE,
+                'args' => $this->standard_api_key_only_arguments(),
                 // Here we register our callback. The callback is fired when this endpoint is matched by the WP_REST_Server class.
                 'callback' => array($this, 'comment_get_recent_unresolved'),
+                'permission_callback' => array($this, 'standard_permissions_check'),
             ),
         ));
 	}
@@ -81,7 +82,7 @@ class PTWS_API {
             'description' => esc_html__( 'The id parameter is the unique identifier string for the route', 'my-text-domain' ),
             // type specifies the type of data that the argument should be.
             'type'        => 'string',
-            'validate_callback' => array($this, 'route_arg_validate'),
+            'validate_callback' => array($this, 'ptws_string_arg_validate'),
             // enum specified what values filter can take on.
             //'enum'        => array( 'red', 'green', 'blue' ),
         );
@@ -114,18 +115,30 @@ class PTWS_API {
     }
 
 
+    // Standard arguments requirement:  Just the API key.
+    public function standard_api_key_only_arguments() {
+        $args = array();
+        $args['key'] = array(
+            'description' => esc_html__( 'The secret API key (set in the plugin admin section)', 'my-text-domain' ),
+            'type'        => 'string',
+            'validate_callback' => array( $this, 'ptws_string_arg_validate'),
+        );
+        return $args;
+    }
+
+
     // Defining the arguments for the route API 'post' method.
     public function route_create_arguments() {
         $args = array();
         $args['id'] = array(
             'description' => esc_html__( 'The id parameter is the unique identifier string for the route', 'my-text-domain' ),
             'type'        => 'string',
-            'validate_callback' => array( $this, 'route_arg_validate'),
+            'validate_callback' => array( $this, 'ptws_string_arg_validate'),
         );
         $args['route'] = array(
             'description' => esc_html__( 'The contents of the route as JSON', 'my-text-domain' ),
             'type'        => 'string',
-            'validate_callback' => array( $this, 'route_arg_validate'),
+            'validate_callback' => array( $this, 'ptws_string_arg_validate'),
         );
         $args['name'] = array(
             'description' => esc_html__('An optional name to give to the route', 'my-text-domain'),
@@ -134,14 +147,14 @@ class PTWS_API {
         $args['key'] = array(
             'description' => esc_html__( 'The secret API key (set in the plugin admin section)', 'my-text-domain' ),
             'type'        => 'string',
-            'validate_callback' => array( $this, 'route_arg_validate'),
+            'validate_callback' => array( $this, 'ptws_string_arg_validate'),
         );
         return $args;
     }
 
 
     // A basic validation function that just checks to see if the given value is defined and is a string.
-    public function route_arg_validate( $value, $request, $param ) {
+    public function ptws_string_arg_validate( $value, $request, $param ) {
         if (!is_string($value)) {
             return new \WP_Error( 'rest_invalid_param', esc_html__( 'The ' . $param . ' argument must be a string.', 'my-text-domain' ), array( 'status' => 400 ) );
         }
@@ -245,7 +258,7 @@ class PTWS_API {
     // Check if the requester has permission to access the API.
     // Currently there is no check; the API relies on a secret key send via HTTPS.
     // If we required that the requester be logged in as a current user, it would make the API harder to use in low-bandwidth situations.
-    public function route_permissions_check() {
+    public function standard_permissions_check() {
         // Restrict endpoint to only users who have the edit_posts capability.
         //if ( ! current_user_can( 'edit_others_posts' ) ) {
         //    return new \WP_Error( 'rest_forbidden', esc_html__( 'OMG you can not view private data.', 'my-text-domain' ), array( 'status' => 401 ) );
@@ -257,11 +270,24 @@ class PTWS_API {
     // Implementing the comment API 'get latest 50' method.
     public function comment_get_recent_unresolved($request)
     {
-        $response = ptws_get_unresolved_comments(50);
-        if ($response == null) {
+        if (!isset( $request['key'] ) ) {
+            return new \WP_Error( 'rest_invalid', esc_html__( 'The key parameter is required.', 'my-text-domain' ), array( 'status' => 400 ) );
+        }
+        if (!get_option('ptws_route_api_secret')) {
+            return new \WP_Error( 'rest_invalid', esc_html__( 'Route API secret is not set.', 'my-text-domain' ), array( 'status' => 400 ) );
+        }
+        if ($request['key'] != get_option('ptws_route_api_secret')) {
+            return new \WP_Error( 'rest_invalid', esc_html__( 'The key parameter is incorrect.', 'my-text-domain' ), array( 'status' => 400 ) );
+        }
+
+        $recent_comments = ptws_get_unresolved_comments(50);
+        if ($recent_comments == null) {
             return new \WP_Error('rest_invalid', esc_html__('Problem getting latest routes', 'my-text-domain'), array('status' => 400));
         }
-        return rest_ensure_response( $response );
+        $response = rest_ensure_response( 'Results fetched.' );
+        $response->header( 'Access-Control-Allow-Origin', '*');
+        $response->set_data($recent_comments);
+        return $response;
     }
 }
 
