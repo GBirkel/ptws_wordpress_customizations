@@ -396,7 +396,7 @@ function ptws_admin_cache_resolve()
             $f_sizes_obj = $pf->photos_getSizes($fid);
 
             if (!$f_info_obj || !$f_sizes_obj) {
-                echo ptws_error('Flickr connectivity error getting photo ' . $fid);
+                echo ptws_error('Error resolving Flickr photo id "' . $fid . '", record id "' . $rid . '".');
             } else {
                 $f_sizes = array();
                 foreach ($f_sizes_obj as $a => $b) {
