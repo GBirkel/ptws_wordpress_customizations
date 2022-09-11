@@ -438,7 +438,7 @@ function ptws_auth_read()
 function ptws_enqueue_scripts()
 {
     wp_enqueue_script('jquery');
-    wp_enqueue_script('ptws_js', PTWS_PLUGIN_URL . '/js/dist/ptws.js', array(
+    wp_enqueue_script('ptws_js', PTWS_PLUGIN_URL . '/js/ptws.js', array(
             'jquery'
         )
     );

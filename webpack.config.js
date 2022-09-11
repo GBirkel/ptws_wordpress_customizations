@@ -1,12 +1,12 @@
 var webpack = require('webpack');
 var path = require('path');
-var dir = 'js/dist';
+var dir = 'js';
 
 module.exports = {
 	entry: {
     	'ptws': [
-			path.resolve(__dirname, './js/src/block-itinerary.ts'),
-			path.resolve(__dirname, './js/src/ptws.ts')
+			path.resolve(__dirname, './js-src/block-itinerary.ts'),
+			path.resolve(__dirname, './js-src/ptws.ts')
 		]
    	},
 	output: {
@@ -18,7 +18,7 @@ module.exports = {
 	resolve: {
         modules: [
             path.resolve("node_modules"),
-            path.resolve(__dirname, './js/src/'),
+            path.resolve(__dirname, './js-src/'),
         ],
         extensions: [ ".ts", ".js"]
     },

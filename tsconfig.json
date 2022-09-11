@@ -9,7 +9,7 @@
         "moduleResolution": "node"
     },
     "include": [
-        "./js/src/*"
+        "./js-src/*"
     ],
     "exclude": [
         "node_modules",
