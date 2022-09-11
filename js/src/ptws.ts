@@ -3,7 +3,7 @@ import * as L from 'leaflet';
 import { Chart } from "chart.js";
 //import "./editor.blocks.ts";
 import "./jquery.sonar.min.js";
-//import "./block-itinerary.jsx";
+import { BlockItinerary } from "./block-itinerary";
 
 
 // Force a window scrolling event, to trigger handlers
@@ -564,6 +564,7 @@ jQuery(document).ready(function($) {
 		(<any>jQuery).rsModules.globalCaption = (<any>jQuery).rsProto._initGlobalCaption;
 	}
 
+	//BlockItinerary.register();
 	lazyLoadInit();
 	findAndInitGPSLogDisplays();
 	findAndInitRoyalsliders();
