@@ -8,13 +8,13 @@ namespace Poking_Things_With_Sticks;
  */
 function enqueue_block_editor_assets()
 {
-    $block_path = '/js/editor.blocks.js';
-    wp_enqueue_script(
-        'ptws-blocks-js',
-        PTWS_PLUGIN_URL . $block_path,
-        ['wp-i18n', 'wp-element', 'wp-blocks', 'wp-components'],
-        filemtime(PTWS_PLUGIN_DIRECTORY . $block_path)
-    );
+//    $block_path = '/blocks/itinerary/block.js';
+//    wp_enqueue_script(
+//        'ptws-blocks-itinerary-js',
+//        PTWS_PLUGIN_URL . $block_path,
+//        ['wp-blocks', 'wp-i18n', 'wp-editor', 'wp-element', 'wp-components'],
+//        filemtime(PTWS_PLUGIN_DIRECTORY . $block_path)
+//    );
 }
 
 
@@ -26,13 +26,15 @@ function register_dynamic_blocks()
     // Only load if Gutenberg is available.
     if (!function_exists('register_block_type')) { return; }
 
+    register_block_type(PTWS_PLUGIN_DIRECTORY . '/blocks/itinerary');
+
     // Hook server side rendering into render callback
-    register_block_type('ptws/gallery', [
-        'name' => 'PTWS Gallery',
-        'description' => 'A server-side assembled gallery of images with various options.',
-        'render_callback' => __NAMESPACE__ . '\render_dynamic_gallery_block',
-        'category' => 'widgets',
-    ]);
+    //register_block_type('ptws/gallery', [
+    //    'name' => 'PTWS Gallery',
+    //    'description' => 'A server-side assembled gallery of images with various options.',
+    //    'render_callback' => __NAMESPACE__ . '\render_dynamic_gallery_block',
+    //    'category' => 'widgets',
+    //]);
 }
 
 

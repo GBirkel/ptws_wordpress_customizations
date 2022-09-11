@@ -453,8 +453,11 @@ function ptws_activate()
 add_action('wp_print_scripts', __NAMESPACE__ . '\ptws_enqueue_scripts');
 add_action('wp_print_styles', __NAMESPACE__ . '\ptws_enqueue_styles');
 
-add_action('plugins_loaded', __NAMESPACE__ . '\register_dynamic_blocks');
-//add_action('enqueue_block_editor_assets', __NAMESPACE__ . '\enqueue_block_editor_assets');
+// TODO: Replace with block.json and a subfolder?
+//require plugin_dir_path( __FILE__ ) . 'blocks/itinerary/index.php';
+//add_action('plugins_loaded', __NAMESPACE__ . '\register_dynamic_blocks');
+add_action('init', __NAMESPACE__ . '\register_dynamic_blocks');
+add_action('enqueue_block_editor_assets', __NAMESPACE__ . '\enqueue_block_editor_assets');
 
 add_shortcode('ptwsgallery', __NAMESPACE__ . '\ptwsgallery_shortcode');
 add_shortcode('ptwsroute', __NAMESPACE__ . '\ptwsroute_shortcode');
