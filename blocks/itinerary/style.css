@@ -2,39 +2,87 @@
  * Note that these styles are loaded *before* editor styles, so that
  * editor-specific styles using the same selectors will take precedence.
  */
- .wp-block-gutenberg-examples-example-05-recipe-card .recipe-image {
-	background: #f1f1f1;
-	float: right;
-	width: 50%;
-	min-height: 100px;
-	text-align: center;
+
+/**** Image/map galleries (image on left, description on right) (used to be called leftHandGallery) ****/
+
+.wp-block-ptws-itinerary {
+	border: none;
+	margin: 0.6em 1em 0.6em 1em;
+	display: table;
 }
 
-.wp-block-gutenberg-examples-example-05-recipe-card .recipe-image button {
-	margin-top: 30px;
+.wp-block-ptws-itinerary > div {
+	display: table-row;
 }
 
-.wp-block-gutenberg-examples-example-05-recipe-card .recipe-image button.image-button {
-	margin: 0;
-	padding: 0;
-	display: block;
+.wp-block-ptws-itinerary > div > div {
+	display: table-cell;
+	vertical-align: top;
 }
 
-.wp-block-gutenberg-examples-example-05-recipe-card .recipe-image img {
-	display: block;
-	z-index: 1;
-	position: relative;
+.wp-block-ptws-itinerary > div > div:first-child {
+	margin-left: auto;
+	margin-right: auto;
 }
 
-.wp-block-gutenberg-examples-example-05-recipe-card h2 {
-	font-size: 1.5em;
+.wp-block-ptws-itinerary > div > div:first-child p {
+	margin: 0px;
+	padding: 0px;
 }
 
-.wp-block-gutenberg-examples-example-05-recipe-card ul {
-	padding-left: 2.5em !important; /* Needs fix in Gutenberg. */
+.wp-block-ptws-itinerary > div > div:last-child {
+	margin: 0px;
+	padding: 15px 0px 15px 0px;
 }
 
-.wp-block-gutenberg-examples-example-05-recipe-card::after {
+.wp-block-ptws-itinerary > div > div:last-child div {
+	margin: 0px 0px 4px 0px;
+	padding: 8px 4px 8px 19px;
+	background: -moz-linear-gradient(-60deg,  rgba(182, 172, 151, 0.2) 0%, rgba(255,255,255,0) 100%);
+	background: -ms-linear-gradient(-60deg,  rgba(182, 172, 151, 0.2) 0%,rgba(255,255,255,0) 100%);
+	background: linear-gradient(150deg,  rgba(182, 172, 151, 0.2) 0%,rgba(255,255,255,0) 100%);
+	border-radius: 0px 7px 7px 0px;
+	-moz-border-radius: 0px 7px 7px 0px;
+	-khtml-border-radius: 0px 7px 7px 0px;
+}
+
+.wp-block-ptws-itinerary > div > div:last-child div:first-child h4 {
+	margin: 2px 0px 2px 0px;
+}
+
+.wp-block-ptws-itinerary > div > div:last-child > p {
+	margin: 2px 0px 2px 19px;
+}
+
+.wp-block-ptws-itinerary > div > div:last-child div:first-child p {
+	margin: 2px 0px 2px 10px;
+}
+
+.wp-block-ptws-itinerary > div > div:first-child img {
+	border: none;
+	max-width: 300px;
+	padding: 0px;
+	margin: 4px 0px 15px 5px;
+	-webkit-box-shadow: 2px 2px 6px 0px rgba(100,100,100, 0.4);
+	-moz-box-shadow: 2px 2px 6px 0px rgba(100,100,100, 0.4);
+	box-shadow: 2px 2px 6px 0px rgba(100,100,100, 0.4);
+	border-radius: 9px;
+	-moz-border-radius: 9px;
+	-khtml-border-radius: 9px;
+	-webkit-border-radius: 9px;
+}
+
+.wp-block-ptws-itinerary table {
+	border:none;
+	margin:0;
+}
+
+.wp-block-ptws-itinerary table td {
+	border:none;
+	vertical-align:top;
+}
+
+.wp-block-ptws-itinerary::after {
 	content: "";
 	clear: both;
 	display: table;

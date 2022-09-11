@@ -1,8 +1,8 @@
 {
 	"$schema": "https://json.schemastore.org/block.json",
 	"apiVersion": 2,
-	"name": "gutenberg-examples/example-05-recipe-card",
-	"title": "Example: Recipe Card",
+	"name": "ptws/itinerary",
+	"title": "PTWS: Itinerary",
 	"icon": "index-card",
 	"category": "layout",
 	"attributes": {
@@ -35,7 +35,7 @@
 		"attributes": {
 			"title": "Chocolate Chip Cookies",
 			"mediaURL": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/2ChocolateChipCookies.jpg/320px-2ChocolateChipCookies.jpg",
-			"ingredients": ["flour", "sugar", "chocolate", "💖"],
+			"ingredients": ["flour", "sugar", "chocolate", "farts"],
 			"instructions": ["Mix", "Bake", "Enjoy"]
 		}
 	},
