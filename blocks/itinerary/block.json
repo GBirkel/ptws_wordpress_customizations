@@ -6,10 +6,15 @@
 	"icon": "index-card",
 	"category": "layout",
 	"attributes": {
-		"title": {
+		"from": {
 			"type": "string",
 			"source": "html",
-			"selector": "h2"
+			"selector": "h4.from"
+		},
+		"to": {
+			"type": "string",
+			"source": "html",
+			"selector": "h4.to"
 		},
 		"mediaID": {
 			"type": "number"
@@ -20,12 +25,7 @@
 			"selector": "img",
 			"attribute": "src"
 		},
-		"ingredients": {
-			"type": "string",
-			"source": "html",
-			"selector": ".ingredients"
-		},
-		"instructions": {
+		"steps": {
 			"type": "string",
 			"source": "html",
 			"selector": ".steps"
@@ -33,10 +33,10 @@
 	},
 	"example": {
 		"attributes": {
-			"title": "Chocolate Chip Cookies",
-			"mediaURL": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/2ChocolateChipCookies.jpg/320px-2ChocolateChipCookies.jpg",
-			"ingredients": ["flour", "sugar", "chocolate", "farts"],
-			"instructions": ["Mix", "Bake", "Enjoy"]
+			"from": "Whakatane, New Zealand",
+			"to": "Rotorua Museum, Government Gardens, Queens Drive, Rotorua 3046",
+			"mediaURL": "https://mile42.net/pics-maps/nz/Map-Day_14-a.png",
+			"steps": ["turn left at the fart", "now face west", "think about direction", "oops you should have turned right"]
 		}
 	},
 	"editorScript": "file:./block.js",

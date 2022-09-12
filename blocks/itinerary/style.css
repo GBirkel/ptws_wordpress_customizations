@@ -20,42 +20,10 @@
 	vertical-align: top;
 }
 
+/* Image container */
 .wp-block-ptws-itinerary > div > div:first-child {
 	margin-left: auto;
 	margin-right: auto;
-}
-
-.wp-block-ptws-itinerary > div > div:first-child p {
-	margin: 0px;
-	padding: 0px;
-}
-
-.wp-block-ptws-itinerary > div > div:last-child {
-	margin: 0px;
-	padding: 15px 0px 15px 0px;
-}
-
-.wp-block-ptws-itinerary > div > div:last-child div {
-	margin: 0px 0px 4px 0px;
-	padding: 8px 4px 8px 19px;
-	background: -moz-linear-gradient(-60deg,  rgba(182, 172, 151, 0.2) 0%, rgba(255,255,255,0) 100%);
-	background: -ms-linear-gradient(-60deg,  rgba(182, 172, 151, 0.2) 0%,rgba(255,255,255,0) 100%);
-	background: linear-gradient(150deg,  rgba(182, 172, 151, 0.2) 0%,rgba(255,255,255,0) 100%);
-	border-radius: 0px 7px 7px 0px;
-	-moz-border-radius: 0px 7px 7px 0px;
-	-khtml-border-radius: 0px 7px 7px 0px;
-}
-
-.wp-block-ptws-itinerary > div > div:last-child div:first-child h4 {
-	margin: 2px 0px 2px 0px;
-}
-
-.wp-block-ptws-itinerary > div > div:last-child > p {
-	margin: 2px 0px 2px 19px;
-}
-
-.wp-block-ptws-itinerary > div > div:last-child div:first-child p {
-	margin: 2px 0px 2px 10px;
 }
 
 .wp-block-ptws-itinerary > div > div:first-child img {
@@ -72,14 +40,41 @@
 	-webkit-border-radius: 9px;
 }
 
-.wp-block-ptws-itinerary table {
-	border:none;
-	margin:0;
+.wp-block-ptws-itinerary > div > div:first-child p {
+	margin: 0px;
+	padding: 0px;
 }
 
-.wp-block-ptws-itinerary table td {
-	border:none;
-	vertical-align:top;
+/* Container for all text including title ribbon */
+.wp-block-ptws-itinerary > div > div:last-child {
+	margin: 0px;
+	padding: 15px 0px 15px 0px;
+}
+
+/* Title ribbon */
+.wp-block-ptws-itinerary > div > div:last-child div.ribbon {
+	margin: 0px 0px 4px 0px;
+	padding: 8px 4px 8px 19px;
+	background: -moz-linear-gradient(-60deg,  rgba(182, 172, 151, 0.2) 0%, rgba(255,255,255,0) 100%);
+	background: -ms-linear-gradient(-60deg,  rgba(182, 172, 151, 0.2) 0%,rgba(255,255,255,0) 100%);
+	background: linear-gradient(150deg,  rgba(182, 172, 151, 0.2) 0%,rgba(255,255,255,0) 100%);
+	border-radius: 0px 7px 7px 0px;
+	-moz-border-radius: 0px 7px 7px 0px;
+	-khtml-border-radius: 0px 7px 7px 0px;
+}
+
+.wp-block-ptws-itinerary > div > div:last-child div.ribbon h4 {
+	margin: 2px 0px 2px 0px;
+	font-weight: bold;
+}
+
+/* "to" */
+.wp-block-ptws-itinerary > div > div:last-child div.ribbon p {
+	margin: 2px 0px 2px 10px;
+}
+
+.wp-block-ptws-itinerary > div > div:last-child div.route p {
+	margin: 2px 0px 2px 19px;
 }
 
 .wp-block-ptws-itinerary::after {
