@@ -1,8 +1,12 @@
-( function ( blocks, editor, element, components, blockEditor ) {
-	var el = element.createElement;
-	var RichText = blockEditor.RichText;
-	var MediaUpload = blockEditor.MediaUpload;
-	var useBlockProps = blockEditor.useBlockProps;
+// PTWS Block: Itinerary
+// Client-side Javascript portion
+
+( function () {
+
+	var el = window.wp.element.createElement;
+	var RichText = window.wp.blockEditor.RichText;
+	var MediaUpload = window.wp.blockEditor.MediaUpload;
+	var useBlockProps = window.wp.blockEditor.useBlockProps;
 
 	function iconptwsgallery() {
 		return el(
@@ -32,54 +36,11 @@
 		); 
 	}
 
-	blocks.registerBlockType( 'ptws/itinerary', {
+	window.wp.blocks.registerBlockType( 'ptws/itinerary', {
 		title: 'PTWS: Itinerary',
 		icon: {
 			background: 'rgba(224, 243, 254, 0.52)',
 			src: iconptwsgallery()
-		},
-		category: 'layout',
-		attributes: {
-			from: {
-				type: 'array',
-				source: 'children',
-				selector: 'h4.from',
-			},
-			to: {
-				type: 'array',
-				source: 'children',
-				selector: 'h4.to',
-			},
-			mediaID: {
-				type: 'number',
-			},
-			mediaURL: {
-				type: 'string',
-				source: 'attribute',
-				selector: 'img',
-				attribute: 'src',
-			},
-			steps: {
-				type: 'array',
-				source: 'children',
-				selector: '.steps',
-			},
-		},
-
-		example: {
-			attributes: {
-				from: 'Whakatane, New Zealand',
-				to: 'Rotorua Museum, Government Gardens, Queens Drive, Rotorua 3046',
-				mediaID: 1,
-				mediaURL:
-					'https://mile42.net/pics-maps/nz/Map-Day_14-a.png',
-				steps: [
-					{ type: 'p', props: { children: [ 'turn left at the fart' ] } },
-					{ type: 'p', props: { children: [ 'now face west' ] } },
-					{ type: 'p', props: { children: [ 'think about direction' ] } },
-					{ type: 'p', props: { children: [ 'oops you should have turned right' ] } },
-				],
-			},
 		},
 
 		edit: function ( props ) {
@@ -96,65 +57,64 @@
 				'div',
 				useBlockProps( { className: props.className } ),
 				el( 'div', {},
-					el( 'div', {},
-						el( MediaUpload, {
-							onSelect: onSelectImage,
-							allowedTypes: 'image',
-							value: attributes.mediaID,
-							render: function ( obj ) {
-								if (attributes.mediaID) {
-									return el( 'img', { src: attributes.mediaURL, onClick: obj.open } )
-								} else {
-									return el(
-										components.Button,
-										{
-											className: 'button button-large',
-											onClick: obj.open,
-										},
-										'Upload Image'
-									)
-								}
+					el( MediaUpload, {
+						onSelect: onSelectImage,
+						allowedTypes: 'image',
+						value: attributes.mediaID,
+						render: function ( obj ) {
+							if (attributes.mediaID) {
+								return el( 'img', { src: attributes.mediaURL, onClick: obj.open } )
+							} else {
+								return el(
+									window.wp.components.Button,
+									{
+										className: 'button button-large',
+										onClick: obj.open,
+									},
+									'Upload Image'
+								)
+							}
+						},
+					} )
+				),
+				el( 'div', {},
+					el( 'div', { className: 'ribbon' },
+						el( RichText, {
+							tagName: 'h4',
+							placeholder: 'From',
+							value: attributes.from,
+							onChange: function ( value ) {
+								props.setAttributes( { from: value } );
 							},
+							className: 'from',
+						} ),
+						el( 'p', {}, 'to'),
+						el( RichText, {
+							tagName: 'h4',
+							placeholder: 'To',
+							value: attributes.to,
+							onChange: function ( value ) {
+								props.setAttributes( { to: value } );
+							},
+							className: 'to',
 						} )
 					),
-					el( 'div', {},
-						el( 'div', { className: 'ribbon' },
-							el( RichText, {
-								tagName: 'h4',
-								placeholder: 'From',
-								value: attributes.from,
-								onChange: function ( value ) {
-									props.setAttributes( { from: value } );
-								},
-								className: 'from',
-							} ),
-							el( 'p', {}, 'to'),
-							el( RichText, {
-								tagName: 'h4',
-								placeholder: 'To',
-								value: attributes.to,
-								onChange: function ( value ) {
-									props.setAttributes( { to: value } );
-								},
-								className: 'to',
-							} )
-						),
-						el( 'div', { className: 'route' },
-							el( RichText, {
-								tagName: 'div',
-								multiline: 'p',
-								placeholder: 'Write a list of steps...',
-								value: attributes.steps,
-								onChange: function ( value ) {
-									props.setAttributes( { steps: value } );
-								},
-								className: 'steps',
-							} ),
-						)
+					el( 'div', { className: 'route' },
+						el( RichText, {
+							tagName: 'div',
+							multiline: 'p',
+							placeholder: 'Write a list of steps...',
+							value: attributes.steps,
+							onChange: function ( value ) {
+								props.setAttributes( { steps: value } );
+							},
+							className: 'steps',
+						} ),
 					)
 				)
 			);
 		},
+
 		save: function ( props ) {
 			var attributes = props.attributes;
 
@@ -162,40 +122,32 @@
 				'div',
 				useBlockProps.save( { className: props.className } ),
 				el( 'div', {},
-					el( 'div', {},
-						attributes.mediaURL &&
-							el( 'img', { src: attributes.mediaURL } )
+					attributes.mediaURL &&
+						el( 'img', { src: attributes.mediaURL } )
+				),
+				el( 'div', {},
+					el( 'div', { className: 'ribbon' },
+						el( RichText.Content, {
+							tagName: 'h4',
+							value: attributes.from,
+							className: 'from',
+						} ),
+						el( 'p', {}, 'to'),
+						el( RichText.Content, {
+							tagName: 'h4',
+							value: attributes.to,
+							className: 'to',
+						} )
 					),
-					el( 'div', {},
-						el( 'div', { className: 'ribbon' },
-							el( RichText.Content, {
-								tagName: 'h4',
-								value: attributes.from,
-								className: 'from',
-							} ),
-							el( 'p', {}, 'to'),
-							el( RichText.Content, {
-								tagName: 'h4',
-								value: attributes.to,
-								className: 'to',
-							} )
-						),
-						el( 'div', { className: 'route' },
-							el( RichText.Content, {
-								tagName: 'div',
-								className: 'steps',
-								value: attributes.steps,
-							} )
-						)
+					el( 'div', { className: 'route' },
+						el( RichText.Content, {
+							tagName: 'div',
+							className: 'steps',
+							value: attributes.steps,
+						} )
 					)
 				)
 			);
 		},
 	} );
-} )(
-	window.wp.blocks,
-	window.wp.editor,
-	window.wp.element,
-	window.wp.components,
-	window.wp.blockEditor
-);
+} )();

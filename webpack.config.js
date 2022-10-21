@@ -4,14 +4,15 @@ var dir = 'js';
 
 module.exports = {
 	entry: {
-    	'ptws': [
-			path.resolve(__dirname, './js-src/block-itinerary.ts'),
-			path.resolve(__dirname, './js-src/ptws.ts')
-		]
-   	},
+    	'ptws': {
+			import: [
+				path.resolve(__dirname, './js-src/ptws.ts')
+			]
+		}
+	},
 	output: {
    		path: path.join(__dirname, dir),
-      	filename: "[name].js",
+      	filename: "ptws.js",
       	library: 'ptws',
       	libraryTarget: 'window'
    	},
@@ -76,20 +77,21 @@ module.exports = {
     externals: {
 //		"react": "React",
         "jquery": "jQuery",
-		"@wordpress/block-editor": 'wp.blockEditor',
-		"@wordpress/components": 'wp.components',
-		"@wordpress/element": 'wp.element',
-		"@wordpress/blocks": 'wp.blocks',
-		"@wordpress/editor": 'wp.editor',
-		"@wordpress/utils": 'wp.utils',
-		"@wordpress/date": 'wp.date',
-		"@wordpress/data": 'wp.data',
-		"@wordpress/compose": 'wp.compose',
-		"@wordpress/i18n": 'wp.i18n'
+//		"@wordpress/block-editor": ['wp', 'blockEditor'],
+//		"@wordpress/components": ['wp', 'components'],
+//		"@wordpress/element": ['wp', 'element'],
+//		"@wordpress/blocks": ['wp', 'blocks'],
+//		"@wordpress/editor": ['wp', 'editor'],
+//		"@wordpress/utils": ['wp', 'utils'],
+//		"@wordpress/date": ['wp', 'date'],
+//		"@wordpress/data": ['wp', 'data'],
+//		"@wordpress/compose": ['wp', 'compose'],
+//		"@wordpress/i18n": ['wp', 'i18n']
     },
 	plugins: [
 		new webpack.ProvidePlugin({
-			'ptws': 'ptws'
-		})
+			$: 'jquery',
+			jQuery: 'jquery',
+		  })
 	]
 };

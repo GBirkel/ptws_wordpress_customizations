@@ -8,25 +8,21 @@
 .wp-block-ptws-itinerary {
 	border: none;
 	margin: 0.6em 1em 0.6em 1em;
-	display: table;
+	display: flex;
+	flex-direction: row;
 }
 
 .wp-block-ptws-itinerary > div {
-	display: table-row;
-}
-
-.wp-block-ptws-itinerary > div > div {
-	display: table-cell;
 	vertical-align: top;
 }
 
 /* Image container */
-.wp-block-ptws-itinerary > div > div:first-child {
+.wp-block-ptws-itinerary > div:first-child {
 	margin-left: auto;
 	margin-right: auto;
 }
 
-.wp-block-ptws-itinerary > div > div:first-child img {
+.wp-block-ptws-itinerary > div:first-child img {
 	border: none;
 	max-width: 300px;
 	padding: 0px;
@@ -40,19 +36,20 @@
 	-webkit-border-radius: 9px;
 }
 
-.wp-block-ptws-itinerary > div > div:first-child p {
+.wp-block-ptws-itinerary > div:first-child p {
 	margin: 0px;
 	padding: 0px;
 }
 
 /* Container for all text including title ribbon */
-.wp-block-ptws-itinerary > div > div:last-child {
+.wp-block-ptws-itinerary > div:last-child {
 	margin: 0px;
 	padding: 15px 0px 15px 0px;
+	flex-grow: 2;
 }
 
 /* Title ribbon */
-.wp-block-ptws-itinerary > div > div:last-child div.ribbon {
+.wp-block-ptws-itinerary > div:last-child div.ribbon {
 	margin: 0px 0px 4px 0px;
 	padding: 8px 4px 8px 19px;
 	background: -moz-linear-gradient(-60deg,  rgba(182, 172, 151, 0.2) 0%, rgba(255,255,255,0) 100%);
@@ -63,22 +60,21 @@
 	-khtml-border-radius: 0px 7px 7px 0px;
 }
 
-.wp-block-ptws-itinerary > div > div:last-child div.ribbon h4 {
+.wp-block-ptws-itinerary > div:last-child div.ribbon h4 {
 	margin: 2px 0px 2px 0px;
 	font-weight: bold;
 }
 
 /* "to" */
-.wp-block-ptws-itinerary > div > div:last-child div.ribbon p {
+.wp-block-ptws-itinerary > div:last-child div.ribbon p {
 	margin: 2px 0px 2px 10px;
 }
 
-.wp-block-ptws-itinerary > div > div:last-child div.route p {
+.wp-block-ptws-itinerary > div:last-child div.route p {
 	margin: 2px 0px 2px 19px;
 }
 
 .wp-block-ptws-itinerary::after {
 	content: "";
 	clear: both;
-	display: table;
 }

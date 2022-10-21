@@ -3,8 +3,10 @@
 	"apiVersion": 2,
 	"name": "ptws/itinerary",
 	"title": "PTWS: Itinerary",
+	"category": "text",
 	"icon": "index-card",
-	"category": "layout",
+	"description": "Shows a small image to on the left of a description with a From and To heading.",
+	"textdomain": "ptws",
 	"attributes": {
 		"from": {
 			"type": "string",
@@ -35,8 +37,14 @@
 		"attributes": {
 			"from": "Whakatane, New Zealand",
 			"to": "Rotorua Museum, Government Gardens, Queens Drive, Rotorua 3046",
+			"mediaID": 1,
 			"mediaURL": "https://mile42.net/pics-maps/nz/Map-Day_14-a.png",
-			"steps": ["turn left at the fart", "now face west", "think about direction", "oops you should have turned right"]
+			"steps": [
+				{ "type": "p", "props": { "children": [ "turn left at the fart" ] } },
+				{ "type": "p", "props": { "children": [ "now face west" ] } },
+				{ "type": "p", "props": { "children": [ "think about direction" ] } },
+				{ "type": "p", "props": { "children": [ "oops you should have turned right" ] } }
+			]
 		}
 	},
 	"editorScript": "file:./block.js",

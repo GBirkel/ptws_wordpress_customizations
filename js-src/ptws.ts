@@ -1,88 +1,8 @@
-import * as jQuery from "jquery";
 import * as L from 'leaflet';
 import { Chart } from "chart.js";
-//import "./editor.blocks.ts";
 import "./jquery.sonar.min.js";
-import { BlockItinerary } from "./block-itinerary";
-
-
-// Force a window scrolling event, to trigger handlers
-export function	fakeScroll() {
-	var x = window.scrollX;
-	var y = window.scrollY;
-	window.scrollTo(x, y+1);
-	window.scrollTo(x, y);
-}
-
-
-// Init a RoyalSlider instance on the page, marking it inited afterwards.
-// (Should be called only when we've finished overloading the global caption module.)
-export function initRoyalslider(item) {
-	var sDiv = jQuery(item);
-	if (sDiv.attr('ptwsinitialized')) { return; }
-	sDiv.attr('ptwsinitialized', 1);
-	if ((<any>sDiv).royalSlider === undefined) {
-		console.log("PTWS: Royalslider plugin is not present/activated.");
-		return;
-	}
-	var rsOptions = {
-		addActiveClass: true,
-		arrowsNav: true,
-		arrowsNavAutoHide: false,
-		autoPlay: false,
-		autoScaleSlider: false,
-		controlNavigation: 'bullets',
-		controlsInside: false,
-		globalCaption: true,
-		imageScaleMode: 'fit',
-		imageScalePadding: 0,
-		imageAlignCenter: true,
-		slidesSpacing: 0,
-		keyboardNavEnabled: false,
-		loop: false,
-		minSlideOffset: 0,
-		navigateByClick: false,
-		startSlideId: 0,
-		sliderDrag: true,
-		thumbsFitInViewport: false,
-		transitionType: 'move',
-		visibleNearby: {
-			enabled: true,
-			centerArea: 0.6,
-			center: true,
-			breakpoint: 1124,
-			breakpointCenterArea: 0.7
-		},
-		deeplinking: {
-			enabled: false,
-			change: false
-		}
-		/* size of all images http://help.dimsemenov.com/kb/royalslider-jquery-plugin-faq/adding-width-and-height-properties-to-images */
-		/* imgWidth: 1400, */
-		/* imgHeight: 680 */
-	};
-	// If it has a "ptwsautoplay" class, add auto-play options. 
-	if (sDiv.hasClass('ptwsautoplay')) {
-		(<any>rsOptions).autoPlay = {
-			enabled: true,
-			delay: 2500,
-			stopAtAction: true,
-    		pauseOnHover: false
-		};
-		(<any>rsOptions).loop = true;
-		(<any>rsOptions).controlNavigation = 'none';
-	}
-	(<any>sDiv).royalSlider(rsOptions);
-}
-
-
-// Seek out and init RoyalSlider instances on the page, marking them as inited as we go.
-// Note: Currently not used.
-export function findAndInitRoyalsliders() {
-	jQuery('div.royalSlider').each(function (index, item) {
-		initRoyalslider(item);
-	});
-}
+import { Util } from "./utilities";
+import { Slideshow } from "./slideshow";
 
 
 // Seek out and init GPS log data chunks on the page, marking them as inited as we go.
@@ -387,7 +307,7 @@ export function handleLazyLoadImage(img) {
 		return;
 	}
 
-	jqImg.unbind('scrollin') // remove event binding
+	jqImg.off('scrollin') // remove event binding
 		.hide()
 		.removeAttr('data-lazy-src')
 		.attr('data-lazy-loaded', 'true');
@@ -415,13 +335,13 @@ export function lazyLoadImage(img) {
 		otherImages.each(function (i, additonalImage) {
 			handleLazyLoadImage(additonalImage);
 		});
-		initRoyalslider(oneRSContainer);
+		Slideshow.initRoyalslider(oneRSContainer);
 	});
 }
 
 
 export function lazyLoadInit() {
-	jQuery('img[data-lazy-src]').bind('scrollin', { distance: 200 }, function () {
+	jQuery('img[data-lazy-src]').on('scrollin', { distance: 200 }, function () {
 		lazyLoadImage(this);
 	});
 
@@ -445,12 +365,12 @@ export function QAToggle(node) {
 		jQuery(n).slideUp(
 			null, function() {
 				n.style.display = 'none';
-				fakeScroll();
+				Util.fakeScroll();
 			}
 		);
 	} else {
 		jqn.addClass('disclosed');
-		jQuery(n).slideDown(null, function() {fakeScroll()});
+		jQuery(n).slideDown(null, function() { Util.fakeScroll() });
 	}
 }
 
@@ -481,11 +401,11 @@ export function ptwsFilterButton(e) {
 	if (filters.length > 0) {
 		var selectors = filters.map(function (a) { return "[" + n + "~='" + a + "']" }).join("");
 		jQuery("." + n + selectors).slideDown(
-			null, function() {fakeScroll()});
+			null, function() { Util.fakeScroll() });
 		jQuery("." + n + ":not(" + selectors + ")").slideUp();
 	} else {
 		jQuery("." + n).slideDown(
-			null, function() {fakeScroll()});
+			null, function() { Util.fakeScroll() });
 	}
 }
 
@@ -493,88 +413,27 @@ export function ptwsFilterButton(e) {
 // Seek out and init GPS log data chunks on the page, marking them as inited as we go.
 export function runPostBodyLoad() {
 	lazyLoadInit();
-	findAndInitRoyalsliders();
+	Slideshow.findAndInitRoyalsliders();
 	findAndInitGPSLogDisplays();
 }
 
 
 // http://learn.jquery.com/using-jquery-core/document-ready/
-jQuery(document).ready(function($) {
+jQuery(function() {
 
-	/**
-	 *
-	 * Override the "global caption module" extension to RoyalSlider
-	 * with our own version, which uses "insertAfter" rather than "appendTo",
-	 * effectively moving the global caption div outside the relatively-positioned slideshow,
-	 * so our captions can have a height independent of the slides.
-	 * Risky but effective.
-	 */
-	jQuery.extend((<any>jQuery).rsProto, {
-		_initGlobalCaption: function () {
-			var self = this;
-			if (self.st.globalCaption) {
-				var setCurrCaptionHTML = function () {
-
-					var gcc = self.ptwsGlobalCaptionContainer.get(0);
-					// Destroy any lingering/unfinished transitions
-					gcc.removeAttribute("style");
-					// Destroy any lingering/unfinished event listeners
-					self.ptwsGlobalCaptionContainer.unbind("transitionend webkitTransitionEnd oTransitionEnd MSTransitionEnd");
-					// Get the height of the caption box as-is
-					var start_h = gcc.offsetHeight;
-					// Fill the caption box with the new content
-					self.globalCaption.html(self.currSlide.caption || '');
-					// Force a calculation of the new height based on the new content
-					var end_h = gcc.offsetHeight;
-					// Set the caption box to the _old_ height explicitly 
-					gcc.style.height = start_h + 'px';
-					// Make sure the styling is recalculated as a static height (which we just set), rather than auto (which it was)
-					gcc.offsetHeight;
-					// Start a transition to the _new_ height explicitly
-					gcc.style.transition = "all 0.3s ease-out";
-					gcc.style.height = end_h + 'px';
-					// Set up a post-transition event to remove the explicit height
-					self.ptwsGlobalCaptionContainer.on("transitionend webkitTransitionEnd oTransitionEnd MSTransitionEnd", function () {
-						self.ptwsGlobalCaptionContainer.unbind("transitionend webkitTransitionEnd oTransitionEnd MSTransitionEnd");
-						var gcc = self.ptwsGlobalCaptionContainer.get(0);
-						// Blowing away the entire inline style ensures we return to CSS defaults,
-						// which effectively apply 'auto' for width and height.
-						// This is so the container can properly respond to changes in window/content size.
-						gcc.removeAttribute("style");
-						//  Trigger a fake "scroll" event so our lazy image loader can act on newly-visible images
-						// (This is a bit of a hack, placing it here in the caption module.)
-						fakeScroll();
-					});
-				};
-				self.ev.on('rsAfterInit', function () {
-					// Create our own custom container, outside the slideshow container (just after it in the DOM),
-					// and create the regular global caption container inside it.  The custom container is what we will use
-					// for dynamic resizing in setCurrCaptionHTML .
-					self.ptwsGlobalCaptionContainer = $('<div class="ptwsGCaptionContainer"></div>').insertAfter(!self.st.globalCaptionInside ? self.slider : self._sliderOverflow);
-					self.globalCaption = $('<div class="ptwsGCaption"></div>').appendTo(self.ptwsGlobalCaptionContainer);
-					setCurrCaptionHTML();
-				});
-				self.ev.on('rsBeforeAnimStart', function () {
-					setCurrCaptionHTML();
-				});
-			}
-		}
-	});
-	if ((<any>jQuery).rsModules) {
-		(<any>jQuery).rsModules.globalCaption = (<any>jQuery).rsProto._initGlobalCaption;
-	}
+	Slideshow.addGlobalCaptionOverride();
 
 	//BlockItinerary.register();
 	lazyLoadInit();
 	findAndInitGPSLogDisplays();
-	findAndInitRoyalsliders();
+	Slideshow.findAndInitRoyalsliders();
 
 	// https://connekthq.com/plugins/ajax-load-more/docs/callback-functions/
-	(<any>window).almComplete = function(alm){
-		findAndInitRoyalsliders();
+	(<any>window).almComplete = function(alm) {
+		Slideshow.findAndInitRoyalsliders();
 		findAndInitGPSLogDisplays();
 	};
 
 	// Work with WP.com infinite scroll
-	jQuery('body').bind('post-load', runPostBodyLoad);
+	jQuery('body').on('post-load', runPostBodyLoad);
 });
