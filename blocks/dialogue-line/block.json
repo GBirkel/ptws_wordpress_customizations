@@ -1,0 +1,33 @@
+{
+	"$schema": "https://json.schemastore.org/block.json",
+	"apiVersion": 2,
+	"name": "ptws/dialogue-line",
+	"title": "PTWS: Dialogue Line",
+	"category": "text",
+	"icon": "index-card",
+	"description": "One line of dialogue in a sequence, left-aligned with the others, with an optional attribution on the left.",
+	"textdomain": "ptws",
+	"attributes": {
+		"speaker": {
+			"type": "string",
+			"source": "html",
+			"selector": "div.speaker"
+		},
+		"lines": {
+			"type": "string",
+			"source": "html",
+			"selector": ".lines"
+		}
+	},
+	"example": {
+		"attributes": {
+			"speaker": "Android",
+			"lines": [
+				{ "type": "p", "props": { "children": [ "Oh I say!" ] } },
+				{ "type": "p", "props": { "children": [ "Good lord, is that the time?" ] } }
+			]
+		}
+	},
+	"editorScript": "file:./block.js",
+	"style": "file:./style.css"
+}

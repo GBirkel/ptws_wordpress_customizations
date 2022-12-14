@@ -1,0 +1,24 @@
+/* Dialogue sequences - names on the left, dialogue on the right */
+
+.wp-block-ptws-dialogue div.conversation div.wp-block-ptws-dialogue-line {
+	display: table-row;
+}
+
+.wp-block-ptws-dialogue div.conversation div.wp-block-ptws-dialogue-line > div {
+	padding: 3px 2px 3px 2px;
+	display: table-cell;
+}
+
+.wp-block-ptws-dialogue div.conversation div.wp-block-ptws-dialogue-line > div.speaker {
+	color: #666;
+	text-align: right;
+	font-size: 0.8em;
+	white-space: nowrap;
+	font-weight: bold;
+	padding-right: 8px;
+}
+
+.wp-block-ptws-dialogue div.conversation div.wp-block-ptws-dialogue-line > div.lines p {
+	padding: 0;
+	margin: 0;
+}

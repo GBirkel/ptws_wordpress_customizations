@@ -1,0 +1,21 @@
+{
+	"$schema": "https://json.schemastore.org/block.json",
+	"apiVersion": 2,
+	"name": "ptws/dialogue",
+	"title": "PTWS: Dialogue",
+	"category": "text",
+	"icon": "index-card",
+	"description": "Shows a sequence of lines of text, left-aligned, each with an optional attribution on the left.",
+	"textdomain": "ptws",
+	"attributes": {
+		"align": {
+			"type": "string",
+			"default": "wide"
+		}
+	},
+	"example": {
+		"attributes": { }
+	},
+	"editorScript": "file:./block.js",
+	"style": "file:./style.css"
+}

@@ -1,0 +1,8 @@
+/* Dialogue sequence container */
+
+.wp-block-ptws-dialogue div.conversation {
+	border: none;
+	display: table;
+	padding: 2px;
+	margin: 1.1em;
+}
