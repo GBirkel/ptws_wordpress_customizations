@@ -37,7 +37,7 @@
 	--ptws-content-pullquote-p-font-size: 2rem;
 	--ptws-content-pullquote-giant-p-font-size: 3rem;
 	--ptws-menu-main-container-ul-li-font-size: 1.5em;
-	--ptws-gearFilterButtons-span-font-size: 0.75em;
+	--ptws-gearFilterButtons-span-font-size: 0.8em;
 	--ptws-gearFilterButtons-span-padding: 2px 7px 2px 7px;
 	--ptws-gearFilterButtons-span-margin: 5px 5px;
 }
@@ -306,6 +306,8 @@ figure.wp-block-image > img {
 
 
 /**** Image/map galleries (image on left, description on right) ****/
+/**** This has been re-implemented as the "itinerary" block.    ****/
+/**** These styles are left here to support the legacy HTML in old entries. ****/
 
 .content .entry div.leftHandGallery {
 	border: none;
@@ -747,7 +749,7 @@ ul.children > li > a {
 
 .content h1 {
 	font-size: 1.8em;
-	margin-top: 0.8em;
+	margin-top: 0.6em;
 	margin-bottom: 0.2em;
 }
 

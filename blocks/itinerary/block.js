@@ -38,6 +38,7 @@
 
 	window.wp.blocks.registerBlockType( 'ptws/itinerary', {
 		title: 'PTWS: Itinerary',
+		category: 'text',
 		icon: {
 			background: 'rgba(224, 243, 254, 0.52)',
 			src: iconptwsgallery()
