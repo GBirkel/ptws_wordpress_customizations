@@ -341,7 +341,8 @@ function ptws_flickr_connect_test()
         $rsp_obj = $pf->people_getPublicPhotos($uid, NULL, NULL, 5, 1);
     }
     if (!$rsp_obj) {
-        echo ptws_html_log_error('Flickr connectivity error');
+        echo ptws_html_log_error('Flickr connectivity error:');
+        echo ptws_html_log_error($pf->getErrorMsg());
     } else {
         ?>
         <table style='border-spacing:0;border:1px solid #e5e5e5;box-shadow: 0 1px 1px rgba(0, 0, 0, .04)'>
