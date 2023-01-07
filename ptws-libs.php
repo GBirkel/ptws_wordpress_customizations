@@ -8,6 +8,11 @@ define('PTWS_SITE_URL', site_url());
 define('PTWS_PLUGIN_DIRECTORY', __DIR__);
 
 
+function ptws_session_check() {
+    if (session_status() == PHP_SESSION_NONE) { session_start(['read_and_close' => true]); }
+}
+
+
 function ptws_create_afgFlickr_obj() {
     global $pf;
     $pf = new \afgFlickr(get_option('ptws_api_key'), get_option('ptws_api_secret') ? get_option('ptws_api_secret') : NULL);

@@ -23,7 +23,7 @@ function ptws_admin_init()
 
 function ptws_auth_init()
 {
-    session_start();
+    ptws_session_check();
     global $pf;
     unset($_SESSION['afgFlickr_auth_token']);
     $pf->setToken('');
@@ -327,7 +327,7 @@ function ptws_admin_html_page()
 //
 function ptws_flickr_connect_test()
 {
-    session_start();
+    ptws_session_check();
     global $pf;
 
     echo '<h3>Your Photostream Preview</h3>';
@@ -377,7 +377,7 @@ function ptws_flickr_connect_test()
 //
 function ptws_admin_cache_resolve()
 {
-    session_start();
+    ptws_session_check();
     global $pf;
 
     echo '<h3>Manually resolve cache entries</h3>';
@@ -472,7 +472,7 @@ function ptws_admin_cache_resolve()
 //
 function ptws_admin_cache_clear()
 {
-    session_start();
+    ptws_session_check();
 
     echo '<h3>Clear cache</h3>';
     ptws_clear_photo_cache();
@@ -487,7 +487,7 @@ function ptws_admin_cache_clear()
 //
 function ptws_admin_comment_delete()
 {
-    session_start();
+    ptws_session_check();
 
     echo '<h3>Delete comment</h3>';
     if (!isset( $_REQUEST['comment_id'] ) ) {

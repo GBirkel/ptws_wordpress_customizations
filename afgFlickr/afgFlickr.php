@@ -15,9 +15,7 @@
  *
  */ 
 if ( !class_exists('afgFlickr') ) {
-    if (session_id() == "") {
-        @session_start();
-    }
+    if (session_status() == PHP_SESSION_NONE) { @session_start(['read_and_close' => true]); }
 
     class afgFlickr {
         var $api_key;
