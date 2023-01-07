@@ -22,7 +22,7 @@ function ptws_epoch_to_str($e) {
 
 
 function ptws_error($error_msg = 'Unknown') {
-    return "<h3>PTWS Error - $error_msg</h3>";
+    return "<h3 style='font-family:monospace;'>PTWS Error: $error_msg</h3>";
 }
 
 ?>
