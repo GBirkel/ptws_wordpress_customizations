@@ -391,6 +391,43 @@ function redrawSelection() {
 	var entry = document.getElementById("entry");
 	var inlineStyledEntry = document.getElementById("entryInlinedStyles");
 
+	// Filter out these styles when transferring to individual elements.
+	let ignoredPropList = [
+			"block-size",
+			"margin-block-start",
+			"margin-inline-end",
+			"margin-inline-start",
+			"border-block-end-color",
+			"border-block-start-color",
+			"border-bottom-color",
+			"border-inline-end-color",
+			"border-inline-start-color",
+			"border-left-color",
+			"border-right-color",
+			"border-top-color",
+			"border-block-color",
+			"border-color",
+			"text-decoration-line",
+			"border-inline-color",
+			"caret-color",
+			"column-rule-color",
+			"font-family",
+			"inline-size",
+			"line-height",
+			"margin-block-end",
+			"margin-inline",
+			"outline-color",
+			"padding-block",
+			"padding-inline",
+			"text-decoration",
+			"text-decoration-color",
+			"text-emphasis-color",
+			"-webkit-text-fill-color",
+			"-webkit-text-stroke-color",
+		];
+	var ignoredProps = {};
+	ignoredPropList.forEach(function(item, index, array) { ignoredProps[item] = true; } );
+
 	// https://stackoverflow.com/questions/2712136/how-do-i-make-this-loop-all-children-recursively
 	var all = inlineStyledEntry.getElementsByTagName('*');
 	for (var i = -1, l = all.length; ++i < l;) {
@@ -399,8 +436,11 @@ function redrawSelection() {
 		// https://stackoverflow.com/questions/22907735/get-the-computed-style-and-omit-defaults
 		var s = StyleInliner.getUserStyles(el)
 		for (let key in s) {
+			if (!ignoredProps[key]) {
+				console.log("'" + key + "'");
 				let prop = key.replace(/\-([a-z])/g, v => v[1].toUpperCase());
 				el.style[prop] = s[key];
+			}
 		}
 	}
 
