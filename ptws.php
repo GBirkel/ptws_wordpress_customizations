@@ -122,7 +122,7 @@ function ptws_append_image_and_comments($p, $picContainer, $commentFlag)
         $sxe = simplexml_load_string('<div class="imgComment"><p>' . $p['description'] . '</p></div>', 'SimpleXMLIterator');
     }
     catch(Exception $e) {
-        echo ptws_error('photo description XML parsing error: ' . $e->getMessage());
+        echo ptws_html_log_error('photo description XML parsing error: ' . $e->getMessage());
     }
 
     // http://stackoverflow.com/questions/3418019/simplexml-append-one-tree-to-another

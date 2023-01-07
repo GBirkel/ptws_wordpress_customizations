@@ -332,13 +332,16 @@ function ptws_flickr_connect_test()
 
     echo '<h3>Your Photostream Preview</h3>';
 
+    $uid = get_option('ptws_user_id');
+    echo ptws_html_log('Flickr user ID "' . $uid . '"');
+
     if (get_option('ptws_flickr_token')) {
-        $rsp_obj = $pf->people_getPhotos(get_option('ptws_user_id'), array('per_page' => 5, 'page' => 1));
+        $rsp_obj = $pf->people_getPhotos($uid, array('per_page' => 5, 'page' => 1));
     } else {
-        $rsp_obj = $pf->people_getPublicPhotos(get_option('ptws_user_id'), NULL, NULL, 5, 1);
+        $rsp_obj = $pf->people_getPublicPhotos($uid, NULL, NULL, 5, 1);
     }
     if (!$rsp_obj) {
-        echo ptws_error('Flickr connectivity error');
+        echo ptws_html_log_error('Flickr connectivity error');
     } else {
         ?>
         <table style='border-spacing:0;border:1px solid #e5e5e5;box-shadow: 0 1px 1px rgba(0, 0, 0, .04)'>
@@ -392,11 +395,13 @@ function ptws_admin_cache_resolve()
             $rid = $uncached_rec['id'];
             $fid = $uncached_rec['flickr_id'];
 
+            echo ptws_html_log('Resolving Flickr photo id "' . $fid . '", record id "' . $rid . '":');
+
             $f_info_obj = $pf->photos_getInfo($fid);
             $f_sizes_obj = $pf->photos_getSizes($fid);
 
             if (!$f_info_obj || !$f_sizes_obj) {
-                echo ptws_error('Error resolving Flickr photo id "' . $fid . '", record id "' . $rid . '".');
+                echo ptws_html_log_error('Error.');
             } else {
                 $f_sizes = array();
                 foreach ($f_sizes_obj as $a => $b) {

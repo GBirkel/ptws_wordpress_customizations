@@ -26,8 +26,12 @@ function ptws_epoch_to_str($e) {
 }
 
 
-function ptws_error($error_msg = 'Unknown') {
-    return "<h3 style='font-family:monospace;'>PTWS Error: $error_msg</h3>";
+function ptws_html_log($msg = 'Unknown') {
+    return "<h3 style='font-family:monospace;'>PTWS: $msg</h3>";
+}
+
+function ptws_html_log_error($error_msg = 'Unknown') {
+    return "<h3 style='font-family:monospace;color:red;'>PTWS Error: $error_msg</h3>";
 }
 
 ?>
