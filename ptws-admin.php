@@ -333,7 +333,9 @@ function ptws_flickr_connect_test()
     echo '<h3>Your Photostream Preview</h3>';
 
     $uid = get_option('ptws_user_id');
-    echo ptws_html_log('Flickr user ID "' . $uid . '"');
+    echo ptws_html_log('Flickr User ID "' . $uid . '"');
+    $apik = get_option('ptws_api_key');
+    echo ptws_html_log('Flickr API Key "' . $apik . '"');
 
     if (get_option('ptws_flickr_token')) {
         $rsp_obj = $pf->people_getPhotos($uid, array('per_page' => 5, 'page' => 1));
@@ -341,8 +343,7 @@ function ptws_flickr_connect_test()
         $rsp_obj = $pf->people_getPublicPhotos($uid, NULL, NULL, 5, 1);
     }
     if (!$rsp_obj) {
-        echo ptws_html_log_error('Flickr connectivity error:');
-        echo ptws_html_log_error($pf->getErrorMsg());
+        echo ptws_html_log_error('Flickr connectivity error:' . $pf->getErrorMsg());
     } else {
         ?>
         <table style='border-spacing:0;border:1px solid #e5e5e5;box-shadow: 0 1px 1px rgba(0, 0, 0, .04)'>
