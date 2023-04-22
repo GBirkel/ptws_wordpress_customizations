@@ -165,17 +165,26 @@ function addPage() {
 		}
 		if (data.photoset) {
 			data.photoset.photo.every(function(item, index, array) {
-		
+
 				// Create images and append to div id flickr and wrap link around the image.
-				var newImg = document.createElement("img");
-	
+				var newDiv = document.createElement("div");	
+
+				// Create images and append to div id flickr and wrap link around the image.
+				var newImg = document.createElement("img");	
 				$(newImg).attr("src", item.url_t);
-	
 				$(newImg).click(function () {
 					clickOnItem(item);
 				});
-	
+
+				// Extract a datestamp for coloring the photos by day, or make a fake one if there's no date.
+				var dateTaken = item.datetaken || "0-0-0";
+				var dateParts = dateTaken.split(/[\- ]/);
+				item.yearMonthDay = dateParts[0] + '-' + dateParts[1] + '-' + dateParts[2];
+
+				$(newImg).appendTo($(newDiv));
+
 				item.ourGalleryElement = newImg;
+				item.ourGalleryElementFrame = newDiv;
 				item.fetchedInfo = false;
 				item.markedUsed = false;
 				item.selected = false;
@@ -200,10 +209,25 @@ function redrawGallery() {
 	$('#flickrThumbnails').children().detach();
 
 	var loop = 1;
+	// For changing the background coloring with each day transition
+	var lastGroupWasEven = false;
+	var lastYMD = "0-0-0";
+
 	while (loop <= setCollection[setID]['pageCount']) {
 		setCollection[setID]['pages'][loop].every(function(item, index, array) {
 			// if (item.setID != setID) { return; }
-			$(item.ourGalleryElement).appendTo("#flickrThumbnails");
+			$(item.ourGalleryElementFrame).appendTo("#flickrThumbnails");
+			// If this day isn't the same as the last, flip the coloring
+			if (item.yearMonthDay != lastYMD) {
+				lastYMD = item.yearMonthDay;
+				lastGroupWasEven = !lastGroupWasEven;
+			}
+			if (lastGroupWasEven) {
+				item.ourGalleryElementFrame.className = '';
+			} else {
+				item.ourGalleryElementFrame.className = 'oddday';
+			}
+				
 			redrawOneGalleryItem(item);
 			return true;
 		});
@@ -437,7 +461,7 @@ function redrawSelection() {
 		var s = StyleInliner.getUserStyles(el)
 		for (let key in s) {
 			if (!ignoredProps[key]) {
-				console.log("'" + key + "'");
+				console.log("Found style tag '" + key + "'");
 				let prop = key.replace(/\-([a-z])/g, v => v[1].toUpperCase());
 				el.style[prop] = s[key];
 			}
@@ -637,14 +661,27 @@ class StyleInliner {
 }
 
 #flickrThumbnails {
+	display:flex;
+	flex-wrap:wrap;
+	align-items:stretch;
 	margin:0;
 	padding:0;
 }
 
-#flickrThumbnails img {
+#flickrThumbnails div {
+    margin:2px 0px;
+	border-radius:5px;
+	display:flex;
+	align-items:center;
+    padding:0px;
+}
+#flickrThumbnails div.oddday {
+	background-color:rgba(255, 190, 0, 0.37);
+}
+
+#flickrThumbnails div img {
     margin:3px;
     padding:1px;
-    vertical-align:middle;
 }
 
 #flickrThumbnails img.selected {
