@@ -292,11 +292,11 @@ function addToSelection(item) {
 	item.selected = true;
 	selectedItems.push(item);
 	redrawOneGalleryItem(item);
-	redrawSelection();
+	generateCodeForSelection();
 }
 
 
-function redrawSelection() {
+function generateCodeForSelection() {
 
 	$("#entry").empty();
 
@@ -407,7 +407,7 @@ function redrawSelection() {
 		sgt += 'swipe="' + ids.join(',') + '"';
 	}
 
-	sgt += ']\n\n';
+	sgt += ']';
 
 	$("#entryInlinedStyles").empty();
 	$("#entry").clone().children().appendTo("#entryInlinedStyles");
@@ -543,7 +543,7 @@ function markUsed() {
 	});
 	var astext = document.getElementById("astext");
 	var history = document.getElementById("history");
-	history.value = history.value + astext.value;
+	history.value = history.value + '\n\n' + astext.value;
 }
 
 
@@ -557,20 +557,20 @@ function showOnlyVideos() {
 function largeThumbnailsFn() {
 	var cb = document.getElementById("largeThumbnailsCheckbox");
 	largeThumbnails = cb.checked;
-	redrawSelection();
+	generateCodeForSelection();
 }
 
 
 function commentsFn() {
 	var cb = document.getElementById("commentsCheckbox");
 	comments = cb.checked;
-	redrawSelection();
+	generateCodeForSelection();
 }
 
 
 function codeModeFn() {
     codeMode = $('select#codeModeSelection').val();	// Global
-	redrawSelection();
+	generateCodeForSelection();
 }
 
 
