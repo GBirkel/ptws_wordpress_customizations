@@ -472,7 +472,7 @@ if (!is_admin()) {
     add_filter('the_content', 'Poking_Things_With_Sticks_Lazyload\ptws_ll_add_image_placeholders', 9999);
 } else {
     ptws_init_actions_for_admin();
-    register_activation_hook(__FILE__, 'ptws_activate');
+    register_activation_hook(__FILE__, __NAMESPACE__ . '\ptws_activate');
     /*    add_filter('plugin_action_links', __NAMESPACE__ . '\ptws_add_settings_link', 10, 2 );*/
 }
 
