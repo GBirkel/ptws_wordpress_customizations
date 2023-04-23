@@ -287,7 +287,7 @@ function ptwsgallery_shortcode($atts, $content = null)
                 $emit .= '<a href="' . (string)$p['link_url'] . '" title="' . (string)$p['title'] . '">';
                 $wraw = floatval((int)$p['large_thumbnail_width']);
                 $hraw = floatval((int)$p['large_thumbnail_height']);
-                $w = $wraw / ($hraw / 500.0); // Not using this since we're embedding proper thumbnail-sized dimensions
+                //$w = $wraw / ($hraw / 500.0); // Not using this since we're embedding proper thumbnail-sized dimensions
                 $emit .= '<img src="' . (string)$p['large_thumbnail_url'] . '" ';
                 $emit .= 'data-rsw="' . intval($wraw) . '" ';
                 $emit .= 'data-rsh="' . intval($hraw) . '" ';
