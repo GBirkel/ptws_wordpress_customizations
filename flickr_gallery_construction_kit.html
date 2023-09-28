@@ -48,7 +48,7 @@ var getPhotoSetsListPending = false;
 var loadMorePending = false;
 
 var showingOnlyVideos = false;
-var largeThumbnails = true;
+var sectionByDay = true;
 var comments = true;
 // 0 = PTWS shortcode 1 = HTML with PTWS CSS 2 = HTML with inline CSS
 var codeMode = 0;
@@ -72,8 +72,8 @@ $(document).ready(function() {
 	$('#showOnlyVideosCheckbox').click(function () {
 		showOnlyVideos();
 	});
-	$('#largeThumbnailsCheckbox').click(function () {
-		largeThumbnailsFn();
+	$('#sectionByDayCheckbox').click(function () {
+		sectionByDayFn();
 	});
 	$('#commentsCheckbox').click(function () {
 		commentsFn();
@@ -86,13 +86,13 @@ $(document).ready(function() {
 
 	loadingMoreSpan = $("<span/>").attr("id", "loadingMore").attr("class", "loadingMore").text('Loading More...');
 
+	var scrollContainer = $("#flickrThumbnailScrollContainer");
 	var container = $("#flickrThumbnailContainer");
-	var thumbnails = $("#flickrThumbnails");
 	// Each time the user scrolls
-	container.scroll(function() {
+	scrollContainer.scroll(function() {
 		// End of the document reached?
 		if (!setCollection[setID]['pages']['loadedAll']) {
-			if (thumbnails[0].scrollHeight - container.height() < container.scrollTop()) {
+			if (container[0].scrollHeight < scrollContainer.height() + scrollContainer.scrollTop() + 1) {
 				addPage();
 			}
 		}
@@ -157,12 +157,14 @@ function getPhotosetList() {
 
 
 function madePhotoSetSelection() {
+	clearGallery();
     setID = $('select#photoSetSelection').val();	// Global
     if (!setCollection[setID]) {
 		setCollection[setID] = {
 			pageCount: 0,
 			pages: {},
-			loadedAll: false
+			thumbnailsElement: null,
+			splitByDays: []
 		};
 	}
 	redrawGallery();
@@ -181,7 +183,7 @@ function addPage() {
 	}
 	loadMorePending = true;
 
-	if (loadingMoreSpan) { loadingMoreSpan.appendTo("#flickrThumbnails"); }
+	if (loadingMoreSpan) { loadingMoreSpan.appendTo("#flickrThumbnailContainer"); }
 
 	// Flickr Photostream feed link.
 	$.getJSON(setURL, function(data) {
@@ -201,7 +203,7 @@ function addPage() {
 					clickOnItem(item);
 				});
 
-				// Extract a datestamp for coloring the photos by day, or make a fake one if there's no date.
+				// Extract a datestamp for organizing the photos by day, or make a fake one if there's no date.
 				var dateTaken = item.datetaken || "0-0-0";
 				var dateParts = dateTaken.split(/[\- ]/);
 				item.yearMonthDay = dateParts[0] + '-' + dateParts[1] + '-' + dateParts[2];
@@ -219,6 +221,38 @@ function addPage() {
 			});
 			setCollection[setID]['pageCount'] += 1;
 			setCollection[setID]['pages'][setCollection[setID]['pageCount']] = data.photoset.photo;
+
+			var daySplits = [];
+
+			if (setCollection[setID]['pageCount'] > 0) {
+				var firstItem = setCollection[setID]['pages'][1][0];
+				var lastYMD = firstItem.yearMonthDay;
+				var loop = 1;
+				var oneDay = {
+					sectionElement: null,
+					thumbnailsElement: null,
+					photos: []
+				};
+				while (loop <= setCollection[setID]['pageCount']) {
+					setCollection[setID]['pages'][loop].every(function(item, index, array) {
+						if (item.yearMonthDay != lastYMD) {
+							lastYMD = item.yearMonthDay;
+							daySplits.push(oneDay);
+							oneDay = {
+								sectionElement: null,
+								thumbnailsElement: null,
+								photos: []
+							};
+						}
+						oneDay.photos.push(item);
+						return true;
+					});
+					loop++;
+				}
+				daySplits.push(oneDay);
+				setCollection[setID]['splitByDays'] = daySplits;
+			}
+			clearGallery();
 			redrawGallery();
 		} else {
 			setCollection[setID]['pages']['loadedAll'] = true;
@@ -228,35 +262,75 @@ function addPage() {
 };
 
 
-function redrawGallery() {
-	// Instead of re-populating, we detach the ones that aren't relevant.
-	// This way javascript onclick handlers aren't trashed.
-	$('#flickrThumbnails').children().detach();
-
-	var loop = 1;
-	// For changing the background coloring with each day transition
-	var lastGroupWasEven = false;
-	var lastYMD = "0-0-0";
-
-	while (loop <= setCollection[setID]['pageCount']) {
-		setCollection[setID]['pages'][loop].every(function(item, index, array) {
-			// if (item.setID != setID) { return; }
-			$(item.ourGalleryElementFrame).appendTo("#flickrThumbnails");
-			// If this day isn't the same as the last, flip the coloring
-			if (item.yearMonthDay != lastYMD) {
-				lastYMD = item.yearMonthDay;
-				lastGroupWasEven = !lastGroupWasEven;
+function clearGallery() {
+	// No set exists yet or none selected? Nothing to clear.
+	if (setCollection[setID]) {
+		// Instead of re-populating, we detach the ones that aren't relevant.
+		// This way javascript onclick handlers aren't trashed.
+		setCollection[setID]['splitByDays'].every(function(day, dayIndex, dayArray) {
+			if (day.sectionElement) {
+				$(day.sectionElement).detach();
 			}
-			if (lastGroupWasEven) {
-				item.ourGalleryElementFrame.className = '';
-			} else {
-				item.ourGalleryElementFrame.className = 'oddday';
-			}
-				
-			redrawOneGalleryItem(item);
+			day.photos.every(function(item, index, array) {
+				$(item.ourGalleryElementFrame).detach();
+				return true;
+			});
 			return true;
 		});
-		loop++;
+	}
+	$("#flickrThumbnailContainer").children().detach();
+};
+
+
+function redrawGallery() {
+	if (!sectionByDay) {
+		var thumbs = setCollection[setID]['thumbnailsElement'];
+		if (!thumbs) {
+			thumbs = document.createElement("div");
+			$(thumbs).attr("class", "thumbnailSet");
+			setCollection[setID]['thumbnailsElement'] = thumbs;
+		}
+		$(thumbs).appendTo("#flickrThumbnailContainer");
+		// Change the background coloring with each day transition
+		setCollection[setID]['splitByDays'].every(function(day, dayIndex, dayArray) {
+			day.photos.every(function(item, index, array) {
+				// if (item.setID != setID) { return; }
+				$(item.ourGalleryElementFrame).appendTo($(thumbs));
+				// If this day isn't the same as the last, flip the coloring
+				if (dayIndex % 2) {
+					item.ourGalleryElementFrame.className = '';
+				} else {
+					item.ourGalleryElementFrame.className = 'oddday';
+				}	
+				redrawOneGalleryItem(item);
+				return true;
+			});
+			return true;
+		});
+	} else {
+		// Change the background coloring with each day transition
+		setCollection[setID]['splitByDays'].every(function(day, dayIndex, dayArray) {
+			var section = day.sectionElement;
+			if (!section) {
+				// The container for a run of photos that were taken on the same day.
+				section = document.createElement("div");
+				var sectionJ = $(section).attr("class", "daySection");
+				var sectionHeader = $('<div class="dayHeader"/>').appendTo(sectionJ);
+				var sectionTitle = $('<div class="dayTitle"/>').append(day.photos[0].yearMonthDay).appendTo(sectionHeader);
+				var thumbs = document.createElement("div");
+				$(thumbs).attr("class", "thumbnailSet").appendTo(sectionJ);
+				day.sectionElement = section;
+				day.thumbnailsElement = thumbs;
+			}
+			$(section).appendTo("#flickrThumbnailContainer")
+			day.photos.every(function(item, index, array) {
+				// if (item.setID != setID) { return; }
+				$(item.ourGalleryElementFrame).appendTo($(day.thumbnailsElement));
+				redrawOneGalleryItem(item);
+				return true;
+			});
+			return true;
+		});
 	}
 };
 
@@ -350,7 +424,7 @@ function generateCodeForSelection() {
 
 		var centerDiv = $("<div class='images'/>").appendTo("#entry");
 	    var atLeastOneComment = false;
-	    if (comments && largeThumbnails) {
+	    if (comments) {
 		    selectedItems.every(function(item, index, array) {
 				if (item.hasDescription) { atLeastOneComment = true; }
 				return !atLeastOneComment;
@@ -536,11 +610,7 @@ function appendImageHREFAndComments(item, picContainer, withComment) {
 	var t = getThumbnail(item);
     var href = $("<a href='" + imgFlickrURL + "' title='" +  item.title + "'></a>").appendTo(picContainer);
 	var newImg = document.createElement("img");
-	if (largeThumbnails) {
-       	$(newImg).attr("src", t.url).attr("style", "max-width:800px;").appendTo(href);
-	} else {
-       	$(newImg).attr("src", item.url_s).appendTo(href);
-	}
+    $(newImg).attr("src", t.url).attr("style", "max-width:800px;").appendTo(href);
 	if (withComment) {
 		var commentSubContainer = $('<div class="imgComment"/>').appendTo(picContainer);
 		if (item.hasDescription) {
@@ -575,13 +645,14 @@ function markUsed() {
 function showOnlyVideos() {
 	var cb = document.getElementById("showOnlyVideosCheckbox");
 	showingOnlyVideos = cb.checked;
+	clearGallery();
 	redrawGallery();
 }
 
 
-function largeThumbnailsFn() {
-	var cb = document.getElementById("largeThumbnailsCheckbox");
-	largeThumbnails = cb.checked;
+function sectionByDayFn() {
+	var cb = document.getElementById("sectionByDayCheckbox");
+	sectionByDay = cb.checked;
 	generateCodeForSelection();
 }
 
@@ -604,6 +675,7 @@ function clearTemplate() {
 	    item.selected = false;
 	    return true;
 	});
+	clearGallery();
 	redrawGallery();
 	$("#entry").empty();
 	var astext = document.getElementById("astext");
@@ -677,7 +749,7 @@ class StyleInliner {
 /******** Styling for the construction kit *******/
 
 
-#flickrThumbnailContainer {
+#flickrThumbnailScrollContainer {
 	resize: vertical;
 	height: 400px;
 	overflow-y: scroll;
@@ -685,7 +757,7 @@ class StyleInliner {
 	margin:6px 0 6px 0;
 }
 
-#flickrThumbnails {
+div.thumbnailSet {
 	display:flex;
 	flex-wrap:wrap;
 	align-items:stretch;
@@ -693,42 +765,42 @@ class StyleInliner {
 	padding:0;
 }
 
-#flickrThumbnails div {
+div.thumbnailSet div {
     margin:2px 0px;
 	border-radius:5px;
 	display:flex;
 	align-items:center;
     padding:0px;
 }
-#flickrThumbnails div.oddday {
+div.thumbnailSet div.oddday {
 	background-color:rgba(255, 190, 0, 0.37);
 }
 
-#flickrThumbnails div img {
+div.thumbnailSet div img {
     margin:3px;
     padding:1px;
 }
 
-#flickrThumbnails img.selected {
+div.thumbnailSet img.selected {
 	opacity:0.3;
 }
 
-#flickrThumbnails img.hasDescription {
+div.thumbnailSet img.hasDescription {
 	border-style: solid;
 	border-width: 2px;
 	border-color: green;
 }
 
-#flickrThumbnails img.markedUsed {
+div.thumbnailSet img.markedUsed {
 	opacity:0.3;
 }
 
-#flickrThumbnails img.hidden {
+div.thumbnailSet img.hidden {
 	display:none;
 	visibility:hidden;
 }
 
-#flickrThumbnails span.loadingMore {
+span.loadingMore {
 	padding:20px 20px;
 	font-size:15px;
 	color:gray;
@@ -748,9 +820,9 @@ class StyleInliner {
 
 <input type=checkbox value="1" name="showOnlyVideos" id="showOnlyVideosCheckbox" /> <label for="showOnlyVideosCheckbox">Videos Only</label>
 
-<input type=checkbox value="1" name="largeThumbnails" id="largeThumbnailsCheckbox" checked="checked" /> <label for="largeThumbnailsCheckbox">Large Thumbnails</label>
-
 <input type=checkbox value="1" name="comments" id="commentsCheckbox" checked="checked" /> <label for="commentsCheckbox">Comments</label>
+
+<input type=checkbox value="1" name="sectionByDay" id="sectionByDayCheckbox" checked="checked" /> <label for="sectionByDayCheckbox">Section By Day</label>
 
 <select id="codeModeSelection">
 	<option value=0>Shortcode</option>
@@ -758,7 +830,8 @@ class StyleInliner {
 	<option value=2>HTML + Inline Styles</option>
 </select>
 
-<div id="flickrThumbnailContainer"><div id="flickrThumbnails"></div></div>
+<div id="flickrThumbnailScrollContainer"><div id="flickrThumbnailContainer"></div>
+</div>
 
 <hr>
 
