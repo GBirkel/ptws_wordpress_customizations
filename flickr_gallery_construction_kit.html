@@ -15,7 +15,32 @@ var apiKey = '-- IT\'S A SEEEKRIT --';
 var setID = null;
 
 var baseFlickrURL = 'https://api.flickr.com/services/rest/?api_key=' + apiKey;
+
 var setCollection = {};
+// {(setId): {
+//		pageCount: number
+//		pages: {
+//			(#): [
+//				{	( extended item fetched from Flickr )
+//					ourGalleryElement: img
+//					ourGalleryElementFrame: div
+//					fetchedInfo: boolean
+//					markedUsed: boolean
+//					selected: boolean
+//					setID: string(setId)
+//					yearMonthDay: string ("2022-01-23")
+//				}
+//			]
+//			loadedAll: boolean
+//		}
+//		thumbnailsElement: div
+//		splitByDays: [ {
+//			sectionElement: div
+//			thumbnailsElement: div
+//			photos: [ (same extended item as above) ]
+//		} ]
+//	}
+
 var selectedItems = [];	// Globals eew!
 
 var getPhotoSetsListPending = false;
