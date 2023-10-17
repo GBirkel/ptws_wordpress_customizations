@@ -50,8 +50,10 @@ var loadMorePending = false;
 var showingOnlyVideos = false;
 var sectionByDay = true;
 var comments = true;
-// 0 = PTWS shortcode 1 = HTML with PTWS CSS 2 = HTML with inline CSS
+// 0 = PTWS shortcode 1 = HTML
 var codeMode = 0;
+// 0 = HTML with PTWS CSS 1 = HTML with inline styles
+var htmlMode = 0
 
 var loadingMoreSpan = null;
 
@@ -78,8 +80,19 @@ $(document).ready(function() {
 	$('#commentsCheckbox').click(function () {
 		commentsFn();
 	});
-	$('select#codeModeSelection').on('change', function (e) {
-		codeModeFn();
+
+	$('select#buildModeSelection').on('change', function (e) {
+	    codeMode = $('select#buildModeSelection').val();	// Global
+		var shortcodeModePanel = document.getElementById("shortcodeModePanel");
+		var htmlModePanel = document.getElementById("htmlModePanel");
+		shortcodeModePanel.style.display = codeMode ? "none" : "block";
+		htmlModePanel.style.display = codeMode ? "block" : "none";		
+		rebuildModePanel();
+	});
+
+	$('select#html_mode_selection').on('change', function (e) {
+	    htmlMode = $('select#html_mode_selection').val();	// Global
+		rebuildModePanel();
 	});
 
 	$(document).on('keydown', keyHandler);
@@ -389,26 +402,74 @@ function clickOnItem(item) {
 
 function addToSelection(item) {
 	item.selected = true;
-	selectedItems.push(item);
+	if (selectedItems.length < 1) {
+		selectedItems.push([item]);
+	} else {
+		selectedItems[selectedItems.length-1].push(item);
+	}
 	redrawOneGalleryItem(item);
-	generateCodeForSelection();
+	rebuildModePanel();
 }
 
 
-function generateCodeForSelection() {
+function rebuildModePanel() {
+	if (codeMode == 1) {
+		rebuildHtmlModePanel();
+	} else {
+		rebuildShortcodeModePanel();
+	}
+}
 
-	$("#entry").empty();
 
-	var s = selectedItems.length;
+function rebuildShortcodeModePanel() {
+	var astext = document.getElementById("shortcodetext");
+	astext.value = generateShortCodesFromSelection();
+	return;	
+}
+
+
+function generateShortCodesFromSelection() {
+	if (!selectedItems.length) { return ""; }
+	// Each segment gets its own shortcode
+	var allSegments = selectedItems.map( function(segment) {
+		// Filter out any videos - shortcodes can't handle them
+		var ids = segment.filter(function(item) {
+			return item.media != 'video'
+		}).map(function(item) { return item.id });
+
+		if (!ids.length) { return ""; }
+		var sgt = '[ptwsgallery ';
+		if (ids.length < 5) { sgt += 'fixed="' + ids.join(',') + '"'; }
+		else { sgt += 'swipe="' + ids.join(',') + '"'; }
+		sgt += ']';
+		return sgt
+	});
+	return allSegments.join("\n");
+}
+
+
+function rebuildHtmlModePanel() {
+
+	$("#html_mode_entry").empty();
+
+	var i = selectedItems.length;
+	if (!i) { return; }
+
+	selectedItems.forEach( function(segment) {
+		rebuildHtmlForSegment(segment);
+	});
+}
+
+function rebuildHtmlForSegment(segment) {
+
+	var s = segment.length;
 	if (!s) { return; }
 
-	var sgt = '[ptwsgallery ';
+	if ((s == 1) && (segment[0].media == 'video')) {
 
-	if ((s == 1) && (selectedItems[0].media == 'video')) {
-
-		var item = selectedItems[0];
+		var item = segment[0];
 		var imgFlickrURL = getImgFlickrURL(item);
-		var centerDiv = $("<center/>").appendTo("#entry");
+		var centerDiv = $("<center/>").appendTo("#html_mode_entry");
 
         var href = $("<a data-flickr-embed='true' href='" + imgFlickrURL + "' title='" +  item.title + "'></a>").appendTo(centerDiv);
 		// Breaking up 'script' so this isn't immediately loaded and inlined!
@@ -416,16 +477,16 @@ function generateCodeForSelection() {
 		var newImg = document.createElement("img");
        	$(newImg).attr("src", item.url_m).attr("style", "width:800px;height:450px;").attr("width", "800").attr("height", "450").appendTo(href);
 		if (item.hasDescription && comments) {
-			var commentContainer = $('<div class="imgComment"/>').appendTo("#entry");
+			var commentContainer = $('<div class="imgComment"/>').appendTo("#html_mode_entry");
 			commentContainer.append(splitPeaSoup(item.fullInfo.description._content));
 		}
 
 	} else if (s < 5) {
 
-		var centerDiv = $("<div class='images'/>").appendTo("#entry");
+		var centerDiv = $("<div class='images'/>").appendTo("#html_mode_entry");
 	    var atLeastOneComment = false;
 	    if (comments) {
-		    selectedItems.every(function(item, index, array) {
+		    segment.every(function(item, index, array) {
 				if (item.hasDescription) { atLeastOneComment = true; }
 				return !atLeastOneComment;
 			});
@@ -433,7 +494,7 @@ function generateCodeForSelection() {
 
 		var itemsInPortrait = [];
 		var itemsNotInPortrait = [];
-	    selectedItems.every(function(item, index, array) {
+	    segment.every(function(item, index, array) {
 			var t = getThumbnail(item);
 			if (t.w/t.h < 0.8) {
 				itemsInPortrait.push(item);
@@ -457,14 +518,12 @@ function generateCodeForSelection() {
 		       	return true;
 			});
 	    } else {
-		    selectedItems.every(function(item, index, array) {
+		    segment.every(function(item, index, array) {
 				var picContainer = $('<div/>').appendTo(centerDiv);
 				appendImageHREFAndComments(item, picContainer, atLeastOneComment);
 		       	return true;
 			});
 		}
-	    var ids = selectedItems.map(function(item) { return item.id });
-		sgt += 'fixed="' + ids.join(',') + '"';
 
 	} else {
 
@@ -482,7 +541,7 @@ function generateCodeForSelection() {
 		}
 		var divideStep = 0;
 
-	    selectedItems.every(function(item, index, array) {
+	    segment.every(function(item, index, array) {
 
 	    	if (divideIndex) {
 	    		if (divideStep == divideIndex) {
@@ -500,19 +559,14 @@ function generateCodeForSelection() {
 
 	        return true;
 	    });
-		newGrid.appendTo("#entry");
-
-	    var ids = selectedItems.map(function(item) { return item.id });
-		sgt += 'swipe="' + ids.join(',') + '"';
+		newGrid.appendTo("#html_mode_entry");
 	}
 
-	sgt += ']';
+	$("#html_mode_entry_inlined_styles").empty();
+	$("#html_mode_entry").clone().children().appendTo("#html_mode_entry_inlined_styles");
 
-	$("#entryInlinedStyles").empty();
-	$("#entry").clone().children().appendTo("#entryInlinedStyles");
-
-	var entry = document.getElementById("entry");
-	var inlineStyledEntry = document.getElementById("entryInlinedStyles");
+	var entry = document.getElementById("html_mode_entry");
+	var inlineStyledEntry = document.getElementById("html_mode_entry_inlined_styles");
 
 	// Filter out these styles when transferring to individual elements.
 	let ignoredPropList = [
@@ -567,13 +621,11 @@ function generateCodeForSelection() {
 		}
 	}
 
-	var astext = document.getElementById("astext");
-	if (codeMode == 0) {
-		astext.value = sgt;
-	} else if (codeMode == 1) {
-		astext.value = entry.innerHTML;
-	} else {
+	var astext = document.getElementById("html_as_text");
+	if (htmlMode == 1) {
 		astext.value = inlineStyledEntry.innerHTML;
+	} else {
+		astext.value = entry.innerHTML;
 	}
 
   	astext.select();
@@ -632,12 +684,14 @@ function splitPeaSoup(soup) {
 
 
 function markUsed() {
-	selectedItems.every(function(item, index, array) {
-	    item.markedUsed = true;
-	    return true;
+	selectedItems.every(function(segment) {
+		segment.every(function(item) {
+			item.markedUsed = true;
+			return true;
+		});
 	});
-	var astext = document.getElementById("astext");
-	var history = document.getElementById("history");
+	var astext = document.getElementById("html_as_text");
+	var history = document.getElementById("html_as_text_history");
 	history.value = history.value + '\n\n' + astext.value;
 }
 
@@ -653,20 +707,15 @@ function showOnlyVideos() {
 function sectionByDayFn() {
 	var cb = document.getElementById("sectionByDayCheckbox");
 	sectionByDay = cb.checked;
-	generateCodeForSelection();
+	clearGallery();
+	redrawGallery();
 }
 
 
 function commentsFn() {
 	var cb = document.getElementById("commentsCheckbox");
 	comments = cb.checked;
-	generateCodeForSelection();
-}
-
-
-function codeModeFn() {
-    codeMode = $('select#codeModeSelection').val();	// Global
-	generateCodeForSelection();
+	rebuildModePanel();
 }
 
 
@@ -818,46 +867,63 @@ span.loadingMore {
 
 <input type=button value="Add Page" name="addPage" id="addPageButton" />
 
+Mode: <select id="buildModeSelection">
+	<option value=0>Shortcode</option>
+	<option value=1>HTML</option>
+</select>
+
 <input type=checkbox value="1" name="showOnlyVideos" id="showOnlyVideosCheckbox" /> <label for="showOnlyVideosCheckbox">Videos Only</label>
 
-<input type=checkbox value="1" name="comments" id="commentsCheckbox" checked="checked" /> <label for="commentsCheckbox">Comments</label>
-
 <input type=checkbox value="1" name="sectionByDay" id="sectionByDayCheckbox" checked="checked" /> <label for="sectionByDayCheckbox">Section By Day</label>
-
-<select id="codeModeSelection">
-	<option value=0>Shortcode</option>
-	<option value=1>HTML + Classes</option>
-	<option value=2>HTML + Inline Styles</option>
-</select>
 
 <div id="flickrThumbnailScrollContainer"><div id="flickrThumbnailContainer"></div>
 </div>
 
 <hr>
 
-<div class="content">
-	<div class="post">
-		<div class="entry" id="entry">
-		</div>
-		<div class="entry" style="display:none;" id="entryInlinedStyles">
+<div id="shortcodeModePanel" style="display:block;">
+
+	<div class="content">
+		<div class="post">
+			<div class="entry" id="shortcodeEditArea">
+			</div>
 		</div>
 	</div>
+
+	<div style="padding:10px;"><textarea rows="6" style="width:100%;" id="shortcodetext">
+	</textarea></div>
+
 </div>
+<div id="htmlModePanel" style="display:none;">
 
-<div id="standardDiv">
+	<input type=checkbox value="1" name="comments" id="commentsCheckbox" checked="checked" /> <label for="commentsCheckbox">Comments</label>
+
+	Styling: <select id="html_mode_selection">
+		<option value=0>Classes</option>
+		<option value=1>Inline Styles</option>
+	</select>
+
+	<div class="content">
+		<div class="post">
+			<div class="entry" id="html_mode_entry">
+			</div>
+			<div class="entry" style="display:none;" id="html_mode_entry_inlined_styles">
+			</div>
+		</div>
+	</div>
+
+	<div style="padding:10px;"><textarea rows="6" style="width:100%;" id="html_as_text">
+	</textarea></div>
+
+	<input type=button value="Mark As Used, Then Log (ESC)" name="markUsed" id="useButton" />
+	<input type=button value="Clear (Shift-ESC)" name="clearTemplate" id="clearButton" />
+
+	<div style="padding:10px;"><textarea rows="6" style="width:100%;" id="html_as_text_history">
+	</textarea></div>
+
 </div>
-
-<div style="padding:10px;"><textarea rows="6" style="width:100%;" id="astext">
-</textarea></div>
-
-<input type=button value="Mark As Used, Then Log (ESC)" name="markUsed" id="useButton" />
-<input type=button value="Clear (Shift-ESC)" name="clearTemplate" id="clearButton" />
-
-<div style="padding:10px;"><textarea rows="6" style="width:100%;" id="history">
-</textarea></div>
 
 <form>
-
 
 </body> 
 </html>
