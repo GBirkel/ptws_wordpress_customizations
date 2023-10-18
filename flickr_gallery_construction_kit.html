@@ -24,6 +24,7 @@ var setCollection = {};
 //				{	( extended item fetched from Flickr )
 //					ourGalleryElement: img
 //					ourGalleryElementFrame: div
+//					ourShortcodeOrganizerElement: div
 //					fetchedInfo: boolean
 //					markedUsed: boolean
 //					selected: boolean
@@ -42,6 +43,8 @@ var setCollection = {};
 //	}
 
 var selectedItems = [];	// Globals eew!
+var selectedSegment = 0;
+var selectedIndex = 0;
 
 var getPhotoSetsListPending = false;
 
@@ -82,11 +85,11 @@ $(document).ready(function() {
 	});
 
 	$('select#buildModeSelection').on('change', function (e) {
-	    codeMode = $('select#buildModeSelection').val();	// Global
+	    codeMode = $('select#buildModeSelection').val() || "s";	// Global
 		var shortcodeModePanel = document.getElementById("shortcodeModePanel");
 		var htmlModePanel = document.getElementById("htmlModePanel");
-		shortcodeModePanel.style.display = codeMode ? "none" : "block";
-		htmlModePanel.style.display = codeMode ? "block" : "none";		
+		shortcodeModePanel.style.display = (codeMode == "s") ? "block" : "none";
+		htmlModePanel.style.display = (codeMode  == "h") ? "block" : "none";		
 		rebuildModePanel();
 	});
 
@@ -210,10 +213,10 @@ function addPage() {
 				var newDiv = document.createElement("div");	
 
 				// Create images and append to div id flickr and wrap link around the image.
-				var newImg = document.createElement("img");	
+				var newImg = document.createElement("img");
 				$(newImg).attr("src", item.url_t);
 				$(newImg).click(function () {
-					clickOnItem(item);
+					clickOnGalleryItem(item);
 				});
 
 				// Extract a datestamp for organizing the photos by day, or make a fake one if there's no date.
@@ -368,7 +371,7 @@ function redrawOneGalleryItem(item) {
 }
 
 
-function clickOnItem(item) {
+function clickOnGalleryItem(item) {
     if (!item.fetchedInfo) {    
 	    var getInfo = baseFlickrURL + '&method=flickr.photos.getInfo&photo_id=' + item.id + '&format=json&nojsoncallback=1';
 	    $.getJSON(getInfo, function(data) {
@@ -424,9 +427,55 @@ function rebuildModePanel() {
 function rebuildShortcodeModePanel() {
 	var astext = document.getElementById("shortcodetext");
 	astext.value = generateShortCodesFromSelection();
+
+	$("#shortcode_edit_area").children().detach();
+
+	selectedItems.forEach( function(segment, segmentIndex) {
+
+		var s = segment.length;
+		if (!s) { return; }
+
+		var newStrip = $("<div/>").attr("class", "imageStrip");
+		var newRow = $("<div/>").appendTo(newStrip);
+
+	    segment.every(function(item, itemIndex, array) {
+
+			var ourShortcodeOrganizerElement = item.ourShortcodeOrganizerElement;
+			if (!ourShortcodeOrganizerElement) {
+				var ourShortcodeOrganizerElement = document.createElement("div");
+				var e = $(ourShortcodeOrganizerElement);
+		        var newImg = $("<img/>").attr("src", item.url_t).appendTo(e);
+				$(newImg).click(function () {
+					clickOnShortcodeItem(item, segmentIndex, itemIndex);
+				});
+				item.ourShortcodeOrganizerElement = ourShortcodeOrganizerElement;
+			}
+			$(ourShortcodeOrganizerElement).appendTo(newRow);
+ 	        return true;
+		});
+		newStrip.appendTo("#shortcode_edit_area");
+	});
+
 	return;	
 }
 
+
+function getItemByIndex(givenSegment, givenIndex) {
+	if (selectedItems.length <= givenSegment) { return null; }
+	if (selectedItems[givenSegment].length <= givenIndex) { return null; }
+	return selectedItems[givenSegment][givenIndex];
+}
+
+function clickOnShortcodeItem(item, givenSegmnet, givenIndex) {
+
+	const lastSelection = getItemByIndex(selectedSegment, selectedIndex);
+	if (lastSelection) {
+		lastSelection.ourShortcodeOrganizerElement.className = '';
+	}
+	selectedSegment = givenSegmnet;
+	selectedIndex = givenIndex;
+	item.ourShortcodeOrganizerElement.className = 'selected';
+}
 
 function generateShortCodesFromSelection() {
 	if (!selectedItems.length) { return ""; }
@@ -451,6 +500,9 @@ function generateShortCodesFromSelection() {
 function rebuildHtmlModePanel() {
 
 	$("#html_mode_entry").empty();
+
+	var astext = document.getElementById("html_as_text");
+	astext.value = '';
 
 	var i = selectedItems.length;
 	if (!i) { return; }
@@ -596,9 +648,11 @@ function rebuildHtmlForSegment(segment) {
 			"outline-color",
 			"padding-block",
 			"padding-inline",
+			"perspective-origin",
 			"text-decoration",
 			"text-decoration-color",
 			"text-emphasis-color",
+			"transform-origin",
 			"-webkit-text-fill-color",
 			"-webkit-text-stroke-color",
 		];
@@ -720,16 +774,16 @@ function commentsFn() {
 
 
 function clearTemplate() {
-	selectedItems.every(function(item, index, array) {
-	    item.selected = false;
-	    return true;
+	selectedItems.every(function(segment) {
+		segment.every(function(item) {
+			item.selected = false;
+			return true;
+		});
 	});
+	selectedItems = [];
 	clearGallery();
 	redrawGallery();
-	$("#entry").empty();
-	var astext = document.getElementById("astext");
-	astext.value = '';
-	selectedItems = [];
+	rebuildModePanel();
 }
 
 
@@ -845,8 +899,8 @@ div.thumbnailSet img.markedUsed {
 }
 
 div.thumbnailSet img.hidden {
-	display:none;
-	visibility:hidden;
+	display: none;
+	visibility: hidden;
 }
 
 span.loadingMore {
@@ -855,6 +909,12 @@ span.loadingMore {
 	color:gray;
 	border:1px solid gray;
 	border-radius:5px;
+}
+
+div.shortcode_edit_area div.selected {
+	border-style: solid;
+	border-width: 2px;
+	border-color: blue;
 }
 
 </style>
@@ -868,8 +928,8 @@ span.loadingMore {
 <input type=button value="Add Page" name="addPage" id="addPageButton" />
 
 Mode: <select id="buildModeSelection">
-	<option value=0>Shortcode</option>
-	<option value=1>HTML</option>
+	<option value="s">Shortcode</option>
+	<option value="h">HTML</option>
 </select>
 
 <input type=checkbox value="1" name="showOnlyVideos" id="showOnlyVideosCheckbox" /> <label for="showOnlyVideosCheckbox">Videos Only</label>
@@ -885,7 +945,7 @@ Mode: <select id="buildModeSelection">
 
 	<div class="content">
 		<div class="post">
-			<div class="entry" id="shortcodeEditArea">
+			<div class="entry shortcode_edit_area" id="shortcode_edit_area">
 			</div>
 		</div>
 	</div>
