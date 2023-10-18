@@ -25,6 +25,7 @@ var setCollection = {};
 //					ourGalleryElement: img
 //					ourGalleryElementFrame: div
 //					ourShortcodeOrganizerElement: div
+//					currentSelectionPosition: [int, int]
 //					fetchedInfo: boolean
 //					markedUsed: boolean
 //					selected: boolean
@@ -54,7 +55,7 @@ var showingOnlyVideos = false;
 var sectionByDay = true;
 var comments = true;
 // 0 = PTWS shortcode 1 = HTML
-var codeMode = 0;
+var codeMode = "s";
 // 0 = HTML with PTWS CSS 1 = HTML with inline styles
 var htmlMode = 0
 
@@ -123,11 +124,79 @@ function keyHandler(e) {
     if (e.which >= 97 && e.which <= 122) {
         key = e.which - 32;
     }
-    if (key == 27) {		// 'ESC'
+    else if (key == 27) {		// 'ESC'
     	if (!e.shiftKey) {
 			markUsed();
 		}
 		clearTemplate();
+	}
+	// Shortcode-mode only keys
+	if (codeMode == "s") {
+		// If this is 'null' the current selection is invalid (doesn't resolve to an item)
+		const currentSelection = getItemByIndex(selectedSegment, selectedIndex);
+		// Any arrow key
+		if (((key == 37) || (key == 38) || (key == 39) || (key == 40)) && currentSelection) {
+			deselectCurrentShortcodeItem();
+			let newSegment = selectedSegment;
+			let newIndex = selectedIndex;
+			
+			if (key == 37) { // Left arrow
+				if (selectedIndex > 0) {
+					newIndex--;
+				} else if (selectedSegment > 0) {
+					newSegment--;
+					newIndex = selectedItems[newSegment].length-1;
+				}
+			} else if (key == 38) { // Up arrow
+				if (selectedSegment > 0) {
+					newSegment--;
+					newIndex = Math.min(newIndex, selectedItems[newSegment].length-1);
+				}
+			} else if (key == 39) { // Right arrow
+				if (selectedIndex < (selectedItems[selectedSegment].length-1)) {
+					newIndex++;
+				} else if (selectedSegment < (selectedItems.length-1)) {
+					newSegment++;
+					newIndex = 0;
+				}
+			} else if (key == 40) { // Down arrow
+				if (selectedSegment < (selectedItems.length-1)) {
+					newSegment++;
+					newIndex = Math.min(newIndex, selectedItems[newSegment].length-1);
+				}
+			}
+			selectNewShortcodeItem(newSegment, newIndex);
+		} else if ((key == 13) && currentSelection) {	// Enter
+			// Can't split off an array with only one item
+			if (selectedIndex > 0) {
+				deselectCurrentShortcodeItem();
+				let segmentToEdit = selectedItems[selectedSegment];
+				let firstHalf = segmentToEdit.slice(0, selectedIndex);
+				let secondHalf = segmentToEdit.slice(selectedIndex, segmentToEdit.length);
+				// Remove the segmentToEdit, replace it with secondHalf
+				selectedItems.splice(selectedSegment, 1, secondHalf);
+				// Insert firstHalf before secondHalf (removing nothing)
+				selectedItems.splice(selectedSegment, 0, firstHalf);
+				rebuildModePanel();
+				// Move to the beginning of the next segment (the new one)
+				selectNewShortcodeItem(selectedSegment+1, 0);
+			}
+		} else if ((key == 8) && currentSelection) {	// Delete
+			if (e.shiftKey) {	// Shift removes the item from the selection
+
+			} else {	// Delete without shift joins the segment with the previous
+				if ((selectedIndex == 0) && (selectedSegment > 0)) {
+					deselectCurrentShortcodeItem();
+					let firstHalf = selectedItems[selectedSegment-1];
+					let joined = firstHalf.concat(selectedItems[selectedSegment]);
+					// Splice the replacement segment in, removing the two that were joined
+					selectedItems.splice(selectedSegment-1, 2, joined);
+					rebuildModePanel();
+					// Move to the end of this new segment
+					selectNewShortcodeItem(selectedSegment-1, joined.length-1);
+				}
+			}
+		}
 	}
 }
 
@@ -441,12 +510,15 @@ function rebuildShortcodeModePanel() {
 	    segment.every(function(item, itemIndex, array) {
 
 			var ourShortcodeOrganizerElement = item.ourShortcodeOrganizerElement;
+			// Needs to be re-set every time we redraw the selection
+			item.currentSelectionPosition = [segmentIndex, itemIndex];
 			if (!ourShortcodeOrganizerElement) {
 				var ourShortcodeOrganizerElement = document.createElement("div");
-				var e = $(ourShortcodeOrganizerElement);
+				var e = $(ourShortcodeOrganizerElement).attr("class", "item");;
 		        var newImg = $("<img/>").attr("src", item.url_t).appendTo(e);
 				$(newImg).click(function () {
-					clickOnShortcodeItem(item, segmentIndex, itemIndex);
+					deselectCurrentShortcodeItem();
+					selectNewShortcodeItem(item.currentSelectionPosition[0], item.currentSelectionPosition[1]);
 				});
 				item.ourShortcodeOrganizerElement = ourShortcodeOrganizerElement;
 			}
@@ -466,16 +538,23 @@ function getItemByIndex(givenSegment, givenIndex) {
 	return selectedItems[givenSegment][givenIndex];
 }
 
-function clickOnShortcodeItem(item, givenSegmnet, givenIndex) {
-
+function deselectCurrentShortcodeItem() {
 	const lastSelection = getItemByIndex(selectedSegment, selectedIndex);
 	if (lastSelection) {
-		lastSelection.ourShortcodeOrganizerElement.className = '';
+		lastSelection.ourShortcodeOrganizerElement.className = 'item';
 	}
-	selectedSegment = givenSegmnet;
-	selectedIndex = givenIndex;
-	item.ourShortcodeOrganizerElement.className = 'selected';
 }
+
+
+function selectNewShortcodeItem(givenSegmnet, givenIndex) {
+	const thisSelection = getItemByIndex(givenSegmnet, givenIndex);
+	if (thisSelection) {
+		selectedSegment = givenSegmnet;
+		selectedIndex = givenIndex;
+		thisSelection.ourShortcodeOrganizerElement.className = 'item selected';
+	}
+}
+
 
 function generateShortCodesFromSelection() {
 	if (!selectedItems.length) { return ""; }
@@ -781,6 +860,7 @@ function clearTemplate() {
 		});
 	});
 	selectedItems = [];
+	deselectCurrentShortcodeItem();
 	clearGallery();
 	redrawGallery();
 	rebuildModePanel();
@@ -911,9 +991,16 @@ span.loadingMore {
 	border-radius:5px;
 }
 
-div.shortcode_edit_area div.selected {
+div.shortcode_edit_area div.item {
 	border-style: solid;
-	border-width: 2px;
+	border-width: 3px;
+}
+
+div.shortcode_edit_area div.item:not(.selected) {
+	border-color: rgba(255, 255, 255, 0);
+}
+
+div.shortcode_edit_area div.item.selected {
 	border-color: blue;
 }
 
