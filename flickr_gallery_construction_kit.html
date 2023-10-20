@@ -139,7 +139,7 @@ function keyHandler(e) {
 			deselectCurrentShortcodeItem();
 			let newSegment = selectedSegment;
 			let newIndex = selectedIndex;
-			
+
 			if (key == 37) { // Left arrow
 				if (selectedIndex > 0) {
 					newIndex--;
@@ -167,7 +167,7 @@ function keyHandler(e) {
 			}
 			selectNewShortcodeItem(newSegment, newIndex);
 		} else if ((key == 13) && currentSelection) {	// Enter
-			// Can't split off an array with only one item
+			// Need more than one item to split off an array
 			if (selectedIndex > 0) {
 				deselectCurrentShortcodeItem();
 				let segmentToEdit = selectedItems[selectedSegment];
@@ -183,7 +183,13 @@ function keyHandler(e) {
 			}
 		} else if ((key == 8) && currentSelection) {	// Delete
 			if (e.shiftKey) {	// Shift removes the item from the selection
-
+				deselectCurrentShortcodeItem();
+				currentSelection.selected = false;
+				redrawOneGalleryItem(currentSelection);
+				selectedItems[selectedSegment].splice(selectedIndex, 1);
+				rebuildModePanel();
+				// If we deleted the last in the segment, select the preceding rather than the following.
+				selectNewShortcodeItem(selectedSegment, Math.min(selectedIndex, selectedItems[selectedSegment].length-1));
 			} else {	// Delete without shift joins the segment with the previous
 				if ((selectedIndex == 0) && (selectedSegment > 0)) {
 					deselectCurrentShortcodeItem();
@@ -193,7 +199,7 @@ function keyHandler(e) {
 					selectedItems.splice(selectedSegment-1, 2, joined);
 					rebuildModePanel();
 					// Move to the end of this new segment
-					selectNewShortcodeItem(selectedSegment-1, joined.length-1);
+					selectNewShortcodeItem(selectedSegment-1, firstHalf.length);
 				}
 			}
 		}
@@ -402,6 +408,10 @@ function redrawGallery() {
 				var sectionJ = $(section).attr("class", "daySection");
 				var sectionHeader = $('<div class="dayHeader"/>').appendTo(sectionJ);
 				var sectionTitle = $('<div class="dayTitle"/>').append(day.photos[0].yearMonthDay).appendTo(sectionHeader);
+				var addDayButton = $('<input type=button value="Add All" />').appendTo(sectionHeader);
+				addDayButton.click(function () {
+			    	addToSelection(day.photos);
+				});
 				var thumbs = document.createElement("div");
 				$(thumbs).attr("class", "thumbnailSet").appendTo(sectionJ);
 				day.sectionElement = section;
@@ -462,25 +472,58 @@ function clickOnGalleryItem(item) {
 			    	}
 			    }
 		    	// Call this after getting a response from this AJAX info request
-		    	addToSelection(item);
+		    	addToSelection([item]);
 			});
 		});
     } else {
     	// Info already fetched, call this immediately
-    	addToSelection(item);
+    	addToSelection([item]);
     }
 }
 
 
-function addToSelection(item) {
-	item.selected = true;
+function addToSelection(unfilteredItems) {
+	let items = unfilteredItems.filter(function(item) {
+			return !item.selected;
+		});
+	if (items.length < 1) { return; }
+
+	items.forEach( function(item) {
+		item.selected = true;
+		redrawOneGalleryItem(item);
+	});
+
 	if (selectedItems.length < 1) {
-		selectedItems.push([item]);
+		selectedItems.push(items);
+		rebuildModePanel();
 	} else {
-		selectedItems[selectedItems.length-1].push(item);
+	// Shortcode-mode only keys
+		if (codeMode == "s") {
+			const lastSelection = getItemByIndex(selectedSegment, selectedIndex);
+			if (lastSelection) {
+				deselectCurrentShortcodeItem();
+				let firstHalf = selectedItems[selectedSegment].slice(0, selectedIndex+1);
+				let secondHalf = selectedItems[selectedSegment].slice(selectedIndex+1);
+				let joined = firstHalf.concat(items);
+				let newSegment = joined.concat(secondHalf);
+				selectedItems.splice(selectedSegment, 1, newSegment);
+				rebuildModePanel();
+				// Have to do this after the rebuild or there may not yet be an element whose class we can change to "selected".
+				selectNewShortcodeItem(selectedSegment, joined.length-1);
+			} else {
+				let newSegment = selectedItems[selectedItems.length-1].concat(items);
+				selectedItems.splice(selectedItems.length-1, 1, newSegment);
+				rebuildModePanel();
+				// Have to do this after the rebuild or there may not yet be an element whose class we can change to "selected".
+				selectNewShortcodeItem(selectedItems.length-1, selectedItems[selectedItems.length-1].length - 1);
+			}
+		} else {
+			let firstHalf = selectedItems[selectedItems.length-1];
+			let joined = firstHalf.concat(items);
+			selectedItems.splice(selectedItems.length-1, 1, joined);
+			rebuildModePanel();
+		}
 	}
-	redrawOneGalleryItem(item);
-	rebuildModePanel();
 }
 
 
@@ -504,7 +547,7 @@ function rebuildShortcodeModePanel() {
 		var s = segment.length;
 		if (!s) { return; }
 
-		var newStrip = $("<div/>").attr("class", "imageStrip");
+		var newStrip = $("<div/>").attr("class", "shortcode_image_segment");
 		var newRow = $("<div/>").appendTo(newStrip);
 
 	    segment.every(function(item, itemIndex, array) {
@@ -514,12 +557,54 @@ function rebuildShortcodeModePanel() {
 			item.currentSelectionPosition = [segmentIndex, itemIndex];
 			if (!ourShortcodeOrganizerElement) {
 				var ourShortcodeOrganizerElement = document.createElement("div");
-				var e = $(ourShortcodeOrganizerElement).attr("class", "item");;
+				var e = $(ourShortcodeOrganizerElement).attr("draggable", "true");
 		        var newImg = $("<img/>").attr("src", item.url_t).appendTo(e);
-				$(newImg).click(function () {
+				$(e).click(function () {
 					deselectCurrentShortcodeItem();
 					selectNewShortcodeItem(item.currentSelectionPosition[0], item.currentSelectionPosition[1]);
 				});
+				ourShortcodeOrganizerElement.addEventListener("dragstart", function (event) {
+					event.dataTransfer.setData("text/plain", item.currentSelectionPosition[0]+'-'+item.currentSelectionPosition[1]);
+				});
+				ourShortcodeOrganizerElement.addEventListener("dragover", function (event) {
+					event.preventDefault();
+				});
+				ourShortcodeOrganizerElement.addEventListener("drop", function (event) {
+					event.preventDefault();
+					var data = event.dataTransfer.getData("text/plain");
+					let position = data.split("-");
+					let sourceSegment = parseInt(position[0]);
+					let sourceIndex = parseInt(position[1]);
+					let targetSegment = item.currentSelectionPosition[0];
+					let targetIndex = item.currentSelectionPosition[1]+1;
+
+					console.log(sourceSegment, sourceIndex, targetSegment, targetIndex);
+
+					deselectCurrentShortcodeItem();
+					let sourceSegmentArray = selectedItems[sourceSegment];
+					let targetSegmentArray = selectedItems[targetSegment];
+					let itemToMove = selectedItems[sourceSegment][sourceIndex];
+
+					// If we're moving between segments, or dropping into the same segment after dragged item, we can insert and then remove
+					if ((sourceSegment == targetSegment) && (sourceIndex < targetIndex)) {
+						targetSegmentArray.splice(targetIndex, 0, itemToMove);
+						sourceSegmentArray.splice(sourceIndex, 1);
+						targetIndex--;
+					} else {
+						sourceSegmentArray.splice(sourceIndex, 1);
+						targetSegmentArray.splice(targetIndex, 0, itemToMove);
+						if (sourceSegmentArray.length < 1) {
+							selectedItems.splice(sourceSegment, 1);
+							if (sourceSegment < targetSegment) {
+								targetSegment--;
+							}
+						}
+					}
+					rebuildModePanel();
+					// Move to the end of this new segment
+					selectNewShortcodeItem(targetSegment, targetIndex);
+				});
+
 				item.ourShortcodeOrganizerElement = ourShortcodeOrganizerElement;
 			}
 			$(ourShortcodeOrganizerElement).appendTo(newRow);
@@ -822,6 +907,7 @@ function markUsed() {
 			item.markedUsed = true;
 			return true;
 		});
+		return true;
 	});
 	var astext = document.getElementById("html_as_text");
 	var history = document.getElementById("html_as_text_history");
@@ -858,6 +944,7 @@ function clearTemplate() {
 			item.selected = false;
 			return true;
 		});
+		return true;
 	});
 	selectedItems = [];
 	deselectCurrentShortcodeItem();
@@ -936,36 +1023,36 @@ class StyleInliner {
 	resize: vertical;
 	height: 400px;
 	overflow-y: scroll;
-	padding:0;
-	margin:6px 0 6px 0;
+	padding: 0;
+	margin: 6px 0 6px 0;
 }
 
 div.thumbnailSet {
-	display:flex;
-	flex-wrap:wrap;
-	align-items:stretch;
-	margin:0;
-	padding:0;
+	display: flex;
+	flex-wrap: wrap;
+	align-items: stretch;
+	margin: 0;
+	padding: 0;
 }
 
 div.thumbnailSet div {
-    margin:2px 0px;
-	border-radius:5px;
-	display:flex;
-	align-items:center;
-    padding:0px;
+    margin: 2px 0px;
+	border-radius: 5px;
+	display: flex;
+	align-items: center;
+    padding: 0px;
 }
 div.thumbnailSet div.oddday {
-	background-color:rgba(255, 190, 0, 0.37);
+	background-color: rgba(255, 190, 0, 0.37);
 }
 
 div.thumbnailSet div img {
-    margin:3px;
-    padding:1px;
+    margin: 3px;
+    padding: 1px;
 }
 
 div.thumbnailSet img.selected {
-	opacity:0.3;
+	opacity: 0.3;
 }
 
 div.thumbnailSet img.hasDescription {
@@ -991,23 +1078,54 @@ span.loadingMore {
 	border-radius:5px;
 }
 
-div.shortcode_edit_area div.item {
+div.shortcode_image_segment {
+	border: none;
+	display: table;
+	padding: 2px;
+	margin-left: 1em;
+	margin-bottom: 15px;
+	box-shadow: 1px 1px 13px -1px rgba(81, 81, 81, 0.51);
+}
+
+div.shortcode_image_segment > div {
+	display: table-row;
+}
+
+div.shortcode_image_segment > div > div {
+	display: table-cell;
+	margin: 0px;
+	padding: 0px 6px 4px 0px;
+	-webkit-box-shadow: none;
+	-moz-box-shadow: none;
+	box-shadow: none;
+}
+
+div.shortcode_image_segment > div:first-child > div {
+	padding-top: 4px;
+}
+
+div.shortcode_image_segment > div > div:first-child {
+	padding-left: 6px;
+}
+
+div.shortcode_image_segment > div > div > img {
+	padding: 2px;
 	border-style: solid;
 	border-width: 3px;
 }
 
-div.shortcode_edit_area div.item:not(.selected) {
+div.shortcode_image_segment > div > div:not(.selected) > img {
 	border-color: rgba(255, 255, 255, 0);
 }
 
-div.shortcode_edit_area div.item.selected {
+div.shortcode_image_segment > div > div.selected > img {
 	border-color: blue;
 }
 
 </style>
 
 </head> 
-<body> 
+<body style="padding:0 1em;"> 
 <form>
 
 <select id="photoSetSelection"></select>
@@ -1028,7 +1146,7 @@ Mode: <select id="buildModeSelection">
 
 <hr>
 
-<div id="shortcodeModePanel" style="display:block;">
+<div id="shortcodeModePanel" style="display:block;padding:0 1em;">
 
 	<div class="content">
 		<div class="post">
@@ -1036,6 +1154,8 @@ Mode: <select id="buildModeSelection">
 			</div>
 		</div>
 	</div>
+
+	<div>Drag to rearrange, Enter to split on selection, Delete (on first in row) to join rows, Shift-Delete to remove selected item.</div>
 
 	<div style="padding:10px;"><textarea rows="6" style="width:100%;" id="shortcodetext">
 	</textarea></div>
@@ -1062,13 +1182,13 @@ Mode: <select id="buildModeSelection">
 	<div style="padding:10px;"><textarea rows="6" style="width:100%;" id="html_as_text">
 	</textarea></div>
 
-	<input type=button value="Mark As Used, Then Log (ESC)" name="markUsed" id="useButton" />
-	<input type=button value="Clear (Shift-ESC)" name="clearTemplate" id="clearButton" />
-
 	<div style="padding:10px;"><textarea rows="6" style="width:100%;" id="html_as_text_history">
 	</textarea></div>
 
 </div>
+
+<input type=button value="Mark As Used, Then Log (ESC)" name="markUsed" id="useButton" />
+<input type=button value="Clear (Shift-ESC)" name="clearTemplate" id="clearButton" />
 
 <form>
 
