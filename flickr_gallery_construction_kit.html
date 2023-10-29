@@ -47,6 +47,8 @@ var selectedItems = [];	// Globals eew!
 var selectedSegment = 0;
 var selectedIndex = 0;
 
+const shortcodeModeRowLength = 6;
+
 var getPhotoSetsListPending = false;
 
 var loadMorePending = false;
@@ -54,7 +56,7 @@ var loadMorePending = false;
 var showingOnlyVideos = false;
 var sectionByDay = true;
 var comments = true;
-// 0 = PTWS shortcode 1 = HTML
+// s = PTWS shortcode 1 = HTML
 var codeMode = "s";
 // 0 = HTML with PTWS CSS 1 = HTML with inline styles
 var htmlMode = 0
@@ -148,9 +150,19 @@ function keyHandler(e) {
 					newIndex = selectedItems[newSegment].length-1;
 				}
 			} else if (key == 38) { // Up arrow
-				if (selectedSegment > 0) {
+				if (selectedIndex >= shortcodeModeRowLength) {
+					newIndex -= shortcodeModeRowLength;
+				} else if (selectedSegment > 0) {
 					newSegment--;
-					newIndex = Math.min(newIndex, selectedItems[newSegment].length-1);
+					const newTotalLength = selectedItems[newSegment].length-1;
+					const newSegmentRows = Math.floor(newTotalLength/shortcodeModeRowLength);
+					const newRowRemainder = newTotalLength % shortcodeModeRowLength;
+					const oldRowRemainder = selectedIndex % shortcodeModeRowLength;
+					if ((newSegmentRows > 0) && (oldRowRemainder > newRowRemainder)) {
+						newIndex = ((newSegmentRows-1) * shortcodeModeRowLength) + oldRowRemainder; 
+					} else {
+						newIndex = Math.min(newTotalLength, (newSegmentRows * shortcodeModeRowLength) + oldRowRemainder);
+					}
 				}
 			} else if (key == 39) { // Right arrow
 				if (selectedIndex < (selectedItems[selectedSegment].length-1)) {
@@ -160,9 +172,11 @@ function keyHandler(e) {
 					newIndex = 0;
 				}
 			} else if (key == 40) { // Down arrow
-				if (selectedSegment < (selectedItems.length-1)) {
+				if (selectedIndex + shortcodeModeRowLength < selectedItems[selectedSegment].length) {
+					newIndex += shortcodeModeRowLength;
+				} else if (selectedSegment < (selectedItems.length-1)) {
 					newSegment++;
-					newIndex = Math.min(newIndex, selectedItems[newSegment].length-1);
+					newIndex = Math.min(Math.floor(newIndex % shortcodeModeRowLength), selectedItems[newSegment].length-1);
 				}
 			}
 			selectNewShortcodeItem(newSegment, newIndex);
@@ -528,7 +542,7 @@ function addToSelection(unfilteredItems) {
 
 
 function rebuildModePanel() {
-	if (codeMode == 1) {
+	if (codeMode == "h") {
 		rebuildHtmlModePanel();
 	} else {
 		rebuildShortcodeModePanel();
@@ -548,7 +562,13 @@ function rebuildShortcodeModePanel() {
 		if (!s) { return; }
 
 		var newStrip = $("<div/>").attr("class", "shortcode_image_segment");
-		var newRow = $("<div/>").appendTo(newStrip);
+
+		var rowsNeeded = Math.floor(s/shortcodeModeRowLength)+1;
+		var newRows = [];
+		for (var rowIndex = 0; rowIndex < rowsNeeded; rowIndex++) {
+			let newRow = $("<div/>").appendTo(newStrip);
+			newRows.push(newRow);
+		}
 
 	    segment.every(function(item, itemIndex, array) {
 
@@ -607,7 +627,7 @@ function rebuildShortcodeModePanel() {
 
 				item.ourShortcodeOrganizerElement = ourShortcodeOrganizerElement;
 			}
-			$(ourShortcodeOrganizerElement).appendTo(newRow);
+			$(ourShortcodeOrganizerElement).appendTo(newRows[Math.floor(itemIndex/shortcodeModeRowLength)]);
  	        return true;
 		});
 		newStrip.appendTo("#shortcode_edit_area");
@@ -657,7 +677,7 @@ function generateShortCodesFromSelection() {
 		sgt += ']';
 		return sgt
 	});
-	return allSegments.join("\n");
+	return allSegments.join("\n\n");
 }
 
 
