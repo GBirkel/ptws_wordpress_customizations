@@ -221,7 +221,16 @@ function ptws_admin_html_page()
                     <?php
 
                     if ($_POST) {
-                        if (isset($_POST['submit']) && $_POST['submit'] == 'Clear Photo') {
+                        if (isset($_POST['submit']) && $_POST['submit'] == 'Clear Photo By Flickr ID') {
+
+                            if (!$_POST['ptws_photo_flickr_id_to_clear']) {
+                                echo '<p>No photo ID to clear entered.</p>';
+                            } else {
+                                ptws_clear_one_photo_by_flickr_id($_POST['ptws_photo_flickr_id_to_clear']);
+                                echo '<p>Photo cleared from cache.</p>';
+                            }
+                        }
+                        if (isset($_POST['submit']) && $_POST['submit'] == 'Clear Photo By ID') {
 
                             if (!$_POST['ptws_photo_id_to_clear']) {
                                 echo '<p>No photo ID to clear entered.</p>';
@@ -270,15 +279,25 @@ function ptws_admin_html_page()
                         ?>
                         </table>
 
+                        <p>Clear a single photo from the cache.</p>
+
                         <table class='ptws-admin-settings'>
                             <tr>
                                 <td>Flickr Photo ID</td>
                                 <td>
-                                    <input class='afg-input' type='text' name='ptws_photo_id_to_clear' id='ptws_photo_id_to_clear' value="" />
-                                    <input type="submit" name="submit" id="ptws_clear_single_photo" class="button-primary" value="Clear Photo" />
+                                    <input class='afg-input' type='text' name='ptws_photo_flickr_id_to_clear' id='ptws_photo_flickr_id_to_clear' value="" />
                                 </td>
                                 <td>
-                                    Clear a single photo from the cache.
+                                    <input type="submit" name="submit" id="ptws_clear_single_photo_by_flickr_id" class="button-primary" value="Clear Photo By Flickr ID" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>PTWS Database ID</td>
+                                <td>
+                                    <input class='afg-input' type='text' name='ptws_photo_id_to_clear' id='ptws_photo_id_to_clear' value="" />
+                                </td>
+                                <td>
+                                    <input type="submit" name="submit" id="ptws_clear_single_photo_by_id" class="button-primary" value="Clear Photo By ID" />
                                 </td>
                             </tr>
                         </table>

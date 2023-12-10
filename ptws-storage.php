@@ -144,6 +144,20 @@ function ptws_clear_one_photo($pid)
     $wpdb->show_errors();
 
     $wpdb->query(
+        $wpdb->prepare("DELETE FROM $flickr_table_name WHERE id = %s", $pid)
+    );
+    $wpdb->hide_errors();
+}
+
+
+// Removes the entry with the given Flickr ID from the photo cache
+function ptws_clear_one_photo_by_flickr_id($pid)
+{
+    global $wpdb;
+    $flickr_table_name = $wpdb->prefix . 'ptwsflickrcache';
+    $wpdb->show_errors();
+
+    $wpdb->query(
         $wpdb->prepare("DELETE FROM $flickr_table_name WHERE flickr_id = %s", $pid)
     );
     $wpdb->hide_errors();
