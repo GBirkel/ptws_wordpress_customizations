@@ -154,6 +154,9 @@ function keyHandler(e) {
 					newIndex -= shortcodeModeRowLength;
 				} else if (selectedSegment > 0) {
 					newSegment--;
+					// If we're going up a segment, but the current column is farther along
+					// than the length of the last row in the new segment,
+					// go up an additonal row so we can remain in the same column (of that higher row).
 					const newTotalLength = selectedItems[newSegment].length-1;
 					const newSegmentRows = Math.floor(newTotalLength/shortcodeModeRowLength);
 					const newRowRemainder = newTotalLength % shortcodeModeRowLength;
