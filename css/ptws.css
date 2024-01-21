@@ -41,6 +41,12 @@
 	--ptws-gearFilterButtons-span-padding: 2px 7px 2px 7px;
 	--ptws-gearFilterButtons-span-margin: 5px 5px;
 }
+@media (min-width: 1281px) {
+	/* Targeting desktop browsers only */
+	div.max768 img {
+		max-width: 768px;
+	}
+}
 @media screen and (max-device-width: 1024px) {
   :root {
 		/* On mobile devices, the photos are much smaller, and much more */
@@ -62,9 +68,9 @@
 @media screen and (max-device-width: 1024px) and (orientation:portrait) {
   :root {
 	  	/* Boost font sizes from the body on down in portrait mode */
-	    --ptws-body-font-size: 1.4em;
+	    --ptws-body-font-size: 1.5em;
 	  	/* Compensate for the boost in the main menu so it's not huge */
-		--ptws-menu-main-container-ul-li-font-size: 1.4em;
+		--ptws-menu-main-container-ul-li-font-size: 1.5em;
   }
 }
 
