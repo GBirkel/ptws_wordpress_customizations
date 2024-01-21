@@ -46,6 +46,9 @@
 	div.content div.image-max-640 img {
 		max-width: 640px;
 	}
+	div.content div.image-max-768 img {
+		max-width: 768px;
+	}
 }
 @media screen and (max-device-width: 1024px) {
   :root {
@@ -72,10 +75,6 @@
 	  	/* Compensate for the boost in the main menu so it's not huge */
 		--ptws-menu-main-container-ul-li-font-size: 1.5em;
   }
-}
-
-div.content div.image-max-640 img {
-	max-width: 641px;
 }
 
 /******** General customization *******/
