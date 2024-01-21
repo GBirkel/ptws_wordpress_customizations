@@ -41,7 +41,7 @@
 	--ptws-gearFilterButtons-span-padding: 2px 7px 2px 7px;
 	--ptws-gearFilterButtons-span-margin: 5px 5px;
 }
-@media (min-width: 1281px) {
+@media (min-width: 1024px) {
 	/* Targeting desktop browsers only */
 	div.content div.image-max-640 img {
 		max-width: 640px;
@@ -74,6 +74,9 @@
   }
 }
 
+div.content div.image-max-640 img {
+	max-width: 641px;
+}
 
 /******** General customization *******/
 
@@ -93,9 +96,9 @@ div.comment-respond {
 }
 
 iframe.wikiloc {
-	margin:1em;
-	width:600px;
-	height:600px;
+	margin: 1em;
+	width: 600px;
+	height: 600px;
 }
 
 
