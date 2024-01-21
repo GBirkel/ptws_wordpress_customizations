@@ -43,8 +43,8 @@
 }
 @media (min-width: 1281px) {
 	/* Targeting desktop browsers only */
-	div.max768 img {
-		max-width: 768px;
+	div.content div.image-max-640 img {
+		max-width: 640px;
 	}
 }
 @media screen and (max-device-width: 1024px) {
