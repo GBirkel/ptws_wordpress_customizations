@@ -145,19 +145,17 @@ function ptws_admin_html_page()
             update_option('ptws_api_secret', $_POST['ptws_api_secret']);
             update_option('ptws_user_id', $_POST['ptws_user_id']);
 
-            echo "<div class='updated'>
-        <p>
-            <strong>
-                Settings updated successfully.
-                <br /><br />
-                <font style='color:red'>
-                    Important Note:
-                </font>
-                If you have installed a caching plugin (like WP Super Cache or W3 Total Cache etc.),
-                you may have to delete your cached pages for the settings to take effect.
-            </strong>
-        </p>
-    </div>";
+            ?>
+                <div class='updated' style="font-weight:bold;">
+                    <p>
+                        Settings updated successfully.
+                        <br /><br />
+                        <font style='color:red'>Important Note:</font>
+                        If you have installed a caching plugin (like WP Super Cache or W3 Total Cache etc.),
+                        you may have to delete your cached pages for the settings to take effect.
+                    </p>
+                </div>
+            <?php 
             if (get_option('ptws_api_secret') && !get_option('ptws_flickr_token')) {
                 echo "<div class='updated'>
         <p><strong>Click \"Grant Access\" button to authorize Awesome Flickr Gallery to access your private photos from Flickr.</strong></p>
