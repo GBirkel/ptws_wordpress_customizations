@@ -233,6 +233,7 @@ span.ui-icon-triangle-1-s::before {
 div.wp-block-image > figure.aligncenter > img, figure.wp-block-image > img {
 	margin-left: 1.2em;
 	margin-right: 1.2em;
+	max-width: calc(100% - 2.4em);
 }
 
 
