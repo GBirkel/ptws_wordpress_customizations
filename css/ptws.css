@@ -128,7 +128,7 @@ iframe.wikiloc {
 .entry > p {
 	margin: 1em 1.4em 1em 25px;
 	padding: 0 0 0 0;
-	text-indent:1.6em;
+	text-indent: 1.6em;
 }
 
 .entry ul {
@@ -178,7 +178,7 @@ iframe.wikiloc {
 
 .time {
 	background: url(../images/icon-time.png) no-repeat center left;
-	margin: 0 0 0 0px;
+	margin: 0;
 	padding: 0 0 2px 18px;
 }
 
@@ -204,10 +204,10 @@ iframe.wikiloc {
 /* Disclose icons, expressed to override jquery-ui style */
 
 span.ui-icon-triangle-1-e {
-	display:inline-block;
-	text-indent:0;
-	padding-top:0.25em;
-	font-size:0.8em;
+	display: inline-block;
+	text-indent: 0;
+	padding-top: 0.25em;
+	font-size: 0.8em;
 	width: 1.2em;
 	height: 1em;
 }
@@ -216,10 +216,10 @@ span.ui-icon-triangle-1-e::before {
 }
 
 span.ui-icon-triangle-1-s {
-	display:inline-block;
-	text-indent:0;
-	padding-top:0.25em;
-	font-size:0.8em;
+	display: inline-block;
+	text-indent: 0;
+	padding-top: 0.25em;
+	font-size: 0.8em;
 	width: 1.2em;
 	height: 1em;
 }
