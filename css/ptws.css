@@ -229,7 +229,8 @@ span.ui-icon-triangle-1-s::before {
 
 /******** Modifying built in image figure embeds to give them a margin *******/
 
-figure.wp-block-image > img {
+/* Two versions: One with "align center" position applied, one with "none" position */ 
+div.wp-block-image > figure.aligncenter > img, figure.wp-block-image > img {
 	margin-left: 1.2em;
 	margin-right: 1.2em;
 }
