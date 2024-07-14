@@ -226,7 +226,7 @@ function keyHandler(e) {
 
 function getPhotosetList() {
 
-	var setURL = baseFlickrURL + '&method=flickr.photosets.getList&user_id=' + userID + '&per_page=100&format=json&nojsoncallback=1';
+	var setURL = baseFlickrURL + '&method=flickr.photosets.getList&user_id=' + userID + '&per_page=200&format=json&nojsoncallback=1';
 
 	if (getPhotoSetsListPending) { return; } // Avoid triggering two at once.
 	getPhotoSetsListPending = true;
@@ -841,6 +841,7 @@ function rebuildHtmlForSegment(segment) {
 			"text-emphasis-color",
 			"transform-origin",
 			"-webkit-text-fill-color",
+			"-webkit-box-shadow",
 			"-webkit-text-stroke-color",
 		];
 	var ignoredProps = {};
