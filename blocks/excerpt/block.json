@@ -1,0 +1,28 @@
+{
+	"$schema": "https://json.schemastore.org/block.json",
+	"apiVersion": 2,
+	"name": "ptws/excerpt",
+	"title": "PTWS: Excerpt",
+	"category": "text",
+	"icon": "index-card",
+	"description": "Applies formatting to the text that conveys it is an excerpt from somewhere else.",
+	"textdomain": "ptws",
+	"attributes": {
+		"parts": {
+			"type": "string",
+			"source": "html",
+			"selector": ".excerptparts"
+		}
+	},
+	"example": {
+		"attributes": {
+			"parts": [
+				{ "type": "p", "props": { "children": [ "This book is called 'Nine Things To Do With Your Bicycle When You're In A Zero-G Environment.'  Read with caution." ] } },
+				{ "type": "p", "props": { "children": [ "The first thing you should do is procure some kind of breathing apparatus." ] } },
+				{ "type": "p", "props": { "children": [ "I mean, if you want to stay alive for more than a few minutes anyway.  That's your decision, really." ] } }
+			]
+		}
+	},
+	"editorScript": "file:./block.js",
+	"style": "file:./style.css"
+}

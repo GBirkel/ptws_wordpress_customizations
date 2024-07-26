@@ -1,0 +1,12 @@
+/**
+ * Note that these styles are loaded *before* editor styles, so that
+ * editor-specific styles using the same selectors will take precedence.
+ */
+
+.wp-block-ptws-excerpt div p {
+	color: rgb(127, 159, 148);
+	padding-left: 1.6em;
+	padding-right: 1.6em;
+	font-weight: bold;
+	font-size: calc(var(--ptws-content-font-size)*0.95);
+}

@@ -482,9 +482,6 @@ add_action('wp_head', __NAMESPACE__ . '\ptws_additional_page_head' );
 add_action('wp_print_scripts', __NAMESPACE__ . '\ptws_enqueue_scripts');
 add_action('wp_print_styles', __NAMESPACE__ . '\ptws_enqueue_styles');
 
-// TODO: Replace with block.json and a subfolder?
-//require plugin_dir_path( __FILE__ ) . 'blocks/itinerary/index.php';
-//add_action('plugins_loaded', __NAMESPACE__ . '\register_dynamic_blocks');
 add_action('init', __NAMESPACE__ . '\register_dynamic_blocks');
 add_action('enqueue_block_editor_assets', __NAMESPACE__ . '\enqueue_block_editor_assets');
 

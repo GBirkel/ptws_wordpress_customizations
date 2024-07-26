@@ -26,6 +26,7 @@ function register_dynamic_blocks()
     // Only load if Gutenberg is available.
     if (!function_exists('register_block_type')) { return; }
 
+    register_block_type(PTWS_PLUGIN_DIRECTORY . '/blocks/excerpt');
     register_block_type(PTWS_PLUGIN_DIRECTORY . '/blocks/itinerary');
     register_block_type(PTWS_PLUGIN_DIRECTORY . '/blocks/dialogue');
     register_block_type(PTWS_PLUGIN_DIRECTORY . '/blocks/dialogue-line');
