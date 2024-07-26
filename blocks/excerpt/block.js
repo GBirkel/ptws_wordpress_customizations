@@ -47,7 +47,7 @@
 			var attributes = props.attributes;
 
 			return el(
-				'p',
+				'div',
 				useBlockProps( { className: props.className } ),
 				el( RichText, {
 					tagName: 'div',
@@ -67,7 +67,7 @@
 			var attributes = props.attributes;
 
 			return el(
-				'p',
+				'div',
 				useBlockProps.save( { className: props.className } ),
 				el( RichText.Content, {
 					tagName: 'div',

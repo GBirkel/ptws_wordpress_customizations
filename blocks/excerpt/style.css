@@ -3,10 +3,17 @@
  * editor-specific styles using the same selectors will take precedence.
  */
 
+.wp-block-ptws-excerpt > div {
+	margin: 1em 1.4em 1em 25px;
+	padding: 0 0 0 0;
+	text-indent: 1.6em;
+}
+
 .wp-block-ptws-excerpt > div > p {
-	color: rgb(127, 159, 148);
+	color: rgb(105, 147, 132);
 	padding-left: 1.6em;
 	padding-right: 1.6em;
 	font-weight: bold;
+	letter-spacing: -0.01rem;
 	font-size: calc(var(--ptws-content-font-size)*0.95);
 }
