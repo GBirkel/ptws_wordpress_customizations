@@ -3,7 +3,7 @@
  * editor-specific styles using the same selectors will take precedence.
  */
 
-.wp-block-ptws-excerpt div p {
+.wp-block-ptws-excerpt > div > p {
 	color: rgb(127, 159, 148);
 	padding-left: 1.6em;
 	padding-right: 1.6em;
