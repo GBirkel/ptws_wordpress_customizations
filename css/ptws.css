@@ -28,16 +28,16 @@
 }
 
 :root {
-	--ptws-body-font-size: 1em;
+	--ptws-body-font-size: 1rem;
 	--ptws-body-background: #FFFFFF;
 	--ptws-body-color: #000000;
-    --ptws-content-font-size: 1em;
-	--ptws-content-quote-p-font-size: 1.05em;
-	--ptws-content-poem-p-font-size: 1.25em;
+    --ptws-content-font-size: 1rem;
+	--ptws-content-quote-p-font-size: 1.05rem;
+	--ptws-content-poem-p-font-size: 1.25rem;
 	--ptws-content-pullquote-p-font-size: 2rem;
 	--ptws-content-pullquote-giant-p-font-size: 3rem;
-	--ptws-menu-main-container-ul-li-font-size: 1.5em;
-	--ptws-gearFilterButtons-span-font-size: 0.8em;
+	--ptws-menu-main-container-ul-li-font-size: 1.5rem;
+	--ptws-gearFilterButtons-span-font-size: 0.8rem;
 	--ptws-gearFilterButtons-span-padding: 2px 7px 2px 7px;
 	--ptws-gearFilterButtons-span-margin: 5px 5px;
 }
@@ -57,13 +57,14 @@
 	    --ptws-body-background: #EAEAEA;
 	    --ptws-body-color: #111111;
 		/* On mobile devices but not in portrait mode, boost entry text size a bit */
-	    --ptws-content-font-size: 1.3em;
-		--ptws-content-quote-p-font-size: 1.35em;
-		--ptws-content-poem-p-font-size: 1.45em;
+		--ptws-body-font-size: 1.1rem;
+	    --ptws-content-font-size: 1.3rem;
+		--ptws-content-quote-p-font-size: 1.35rem;
+		--ptws-content-poem-p-font-size: 1.45rem;
 		--ptws-content-pullquote-p-font-size: 2.5rem;
 		--ptws-content-pullquote-giant-p-font-size: 3.4rem;
-		--ptws-menu-main-container-ul-li-font-size: 1.6em;
-		--ptws-gearFilterButtons-span-font-size: 1.1em;
+		--ptws-menu-main-container-ul-li-font-size: 1.6rem;
+		--ptws-gearFilterButtons-span-font-size: 1.1rem;
 		--ptws-gearFilterButtons-span-padding: 8px 12px 8px 12px;
 		--ptws-gearFilterButtons-span-margin: 8px 8px;
   }
@@ -71,7 +72,7 @@
 @media screen and (max-device-width: 1024px) and (orientation:portrait) {
   :root {
 	  	/* Boost font sizes from the body on down in portrait mode */
-	    --ptws-body-font-size: 1.5em;
+	    --ptws-body-font-size: 1.5rem;
 	  	/* Compensate for the boost in the main menu so it's not huge */
 		--ptws-menu-main-container-ul-li-font-size: 1.5em;
   }
