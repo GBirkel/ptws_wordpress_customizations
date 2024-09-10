@@ -1,7 +1,9 @@
 {
 	"$schema": "https://json.schemastore.org/block.json",
-	"apiVersion": 2,
+	"apiVersion": 3,
 	"name": "ptws/dialogue-line",
+	"version": "0.3.6",
+	"parent": [ "ptws/dialogue" ],
 	"title": "PTWS: Dialogue Line",
 	"category": "text",
 	"icon": "index-card",

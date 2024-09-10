@@ -4,8 +4,13 @@
 ( function () {
 
 	var el = window.wp.element.createElement;
+	var createBlock = window.wp.blocks.createBlock;
+	var data_dispatch = window.wp.data.dispatch;
+	var data_select = window.wp.data.select;
     var InnerBlocks = window.wp.blockEditor.InnerBlocks;
+    var getBlock = window.wp.blockEditor;
     var useBlockProps = window.wp.blockEditor.useBlockProps;
+    var useInnerBlocksProps = window.wp.blockEditor.useInnerBlocksProps;
 
 	function iconptwsgallery() {
 		return el(
@@ -36,32 +41,64 @@
 	}
 
 	window.wp.blocks.registerBlockType( 'ptws/dialogue', {
-		title: 'PTWS: Dialogue',
-		category: 'text',
 		icon: {
 			background: 'rgba(224, 243, 254, 0.52)',
 			src: iconptwsgallery()
 		},
-		supports: {
-			align: [ 'wide' ]
-		},
-		attributes: {
-			align: {
-				type: 'string',
-				default: 'wide'
-			}
-		},
 
 		edit: function ( props ) {
+            const addLine = function() {
+                const newBlock = createBlock( 'ptws/dialogue-line' );
+				// The editor saves all its data in a store.
+				// https://developer.wordpress.org/block-editor/reference-guides/data/data-core-editor/#getBlocks
+				const b = data_select( 'core/block-editor' ).getBlock( props.clientId );
+                data_dispatch( 'core/block-editor' ).insertBlock( newBlock, b.innerBlocks.length, props.clientId );
+            };
+
             return el( 'div',
 						useBlockProps( { className: props.className } ),
 						el( 'div',
-							{ className: 'conversation' },
-							el( InnerBlocks, { allowedBlocks: [ 'ptws/dialogue-line' ] } )
+							{ className: 'conversation editing' },
+							el( InnerBlocks,
+								// https://developer.wordpress.org/block-editor/reference-guides/packages/packages-block-editor/#useinnerblocksprops
+								useInnerBlocksProps( {
+									className: props.className,
+									// https://github.com/WordPress/gutenberg/blob/HEAD/packages/block-editor/src/components/inner-blocks/README.md#renderappender
+									renderAppender: false,
+									template: [
+										['ptws/dialogue-line', {
+											"speaker": "",
+											"lines": [
+												{ "type": "p", "props": { "children": [ "" ] } }
+											]
+										} ],
+										['ptws/dialogue-line', {
+											"speaker": "",
+											"lines": [
+												{ "type": "p", "props": { "children": [ "" ] } }
+											]
+										} ],
+										['ptws/dialogue-line', {
+											"speaker": "",
+											"lines": [
+												{ "type": "p", "props": { "children": [ "" ] } }
+											]
+										} ]
+									]
+								} )
+							),
+							el( 'div',
+								{ className: 'addlinebutton' },
+								el( 'input',
+									{ 	type: 'button',
+										onClick: addLine,
+										value: "Add Line"
+									}
+								)
+							)
 						)
-					);
-        },
-
+			)
+		},
         save: function ( props ) {
             return el( 'div',
 						useBlockProps.save( { className: props.className } ),

@@ -6,3 +6,8 @@
 	padding: 2px;
 	margin: 1.1em;
 }
+
+.wp-block-ptws-dialogue div.conversation.editing div.addlinebutton {
+	text-align: right;
+}
+

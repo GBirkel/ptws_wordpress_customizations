@@ -1,21 +1,47 @@
 {
-	"$schema": "https://json.schemastore.org/block.json",
-	"apiVersion": 2,
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
 	"name": "ptws/dialogue",
+	"version": "0.3.6",
 	"title": "PTWS: Dialogue",
+	"allowedBlocks": ["ptws/dialogue-line"],
 	"category": "text",
+	"example": {
+		"attributes": { },
+		"innerBlocks": [
+			{ "name": "ptws/dialogue-line", "attributes": {
+				"speaker": "Android",
+				"lines": [
+					{ "type": "p", "props": { "children": [ "Oh I say!" ] } },
+					{ "type": "p", "props": { "children": [ "Good lord, is that the time?" ] } }
+				]
+			} },
+			{ "name": "ptws/dialogue-line", "attributes": {
+				"speaker": "Me",
+				"lines": [
+					{ "type": "p", "props": { "children": [ "Depends.  Does the time usually wear spats?" ] } }
+				]
+			} },
+			{ "name": "ptws/dialogue-line", "attributes": {
+				"speaker": "Android",
+				"lines": [
+					{ "type": "p", "props": { "children": [ "Look; don't ask me, ask the Manpower Services Commission!" ] } }
+				]
+			} }
+		]
+	},
 	"icon": "index-card",
-	"description": "Shows a sequence of lines of text, left-aligned, each with an optional attribution on the left.",
 	"textdomain": "ptws",
+	"description": "Shows a sequence of paragraphs of dialogue, left-aligned, each with an optional attribution on the left.",
 	"attributes": {
 		"align": {
 			"type": "string",
 			"default": "wide"
 		}
 	},
-	"example": {
-		"attributes": { }
-	},
 	"editorScript": "file:./block.js",
-	"style": "file:./style.css"
+	"style": "file:./style.css",
+	"supports": {
+			"align": [ "wide" ]
+	}
 }
