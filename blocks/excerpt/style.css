@@ -9,6 +9,10 @@
 	text-indent: 1.6em;
 }
 
+.wp-block-ptws-excerpt > div.editing {
+	border: 1px solid gray;
+}
+
 .wp-block-ptws-excerpt > div > p {
 	color: rgb(105, 147, 132);
 	padding-left: 1.6em;

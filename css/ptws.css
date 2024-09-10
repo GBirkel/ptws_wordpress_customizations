@@ -32,8 +32,6 @@
 	--ptws-body-background: #FFFFFF;
 	--ptws-body-color: #000000;
     --ptws-content-font-size: 1rem;
-	--ptws-content-quote-p-font-size: 1.05rem;
-	--ptws-content-poem-p-font-size: 1.25rem;
 	--ptws-content-pullquote-p-font-size: 2rem;
 	--ptws-content-pullquote-giant-p-font-size: 3rem;
 	--ptws-menu-main-container-ul-li-font-size: 1.5rem;
@@ -59,8 +57,6 @@
 		/* On mobile devices but not in portrait mode, boost entry text size a bit */
 		--ptws-body-font-size: 1.1rem;
 	    --ptws-content-font-size: 1.3rem;
-		--ptws-content-quote-p-font-size: 1.35rem;
-		--ptws-content-poem-p-font-size: 1.45rem;
 		--ptws-content-pullquote-p-font-size: 2.5rem;
 		--ptws-content-pullquote-giant-p-font-size: 3.4rem;
 		--ptws-menu-main-container-ul-li-font-size: 1.6rem;
@@ -72,7 +68,7 @@
 @media screen and (max-device-width: 1024px) and (orientation:portrait) {
   :root {
 	  	/* Boost font sizes from the body on down in portrait mode */
-	    --ptws-body-font-size: 1.5rem;
+	    --ptws-body-font-size: 1.6rem;
 	  	/* Compensate for the boost in the main menu so it's not huge */
 		--ptws-menu-main-container-ul-li-font-size: 1.5em;
   }
@@ -445,14 +441,14 @@ table.musicplaylist tr td:first-child {
 /* WP Quote with citation */
 
 .content blockquote.wp-block-quote p {
-	font-size: var(--ptws-content-quote-p-font-size);
+	font-size: calc(var(--ptws-content-font-size) + 0.25rem);
 	font-style: normal;
 	color: rgba(0, 62, 11, 1);
 }
 /* WP official styles override this and make it italic, which is infuriating */
 .content blockquote.wp-block-quote.is-style-large p {
 	font-style: normal;
-	font-size: calc(0.4em + var(--ptws-content-quote-p-font-size));
+	font-size: calc(var(--ptws-content-font-size) + 0.65rem);
 }
 /* More pointless over-specification because otherwise WP's in-house styles screw us */
 .content blockquote.wp-block-quote.is-style-large {
@@ -462,7 +458,7 @@ table.musicplaylist tr td:first-child {
 
 .content blockquote.wp-block-quote cite {
 	color: rgba(0, 151, 26, 1);
-	font-size: calc(var(--ptws-content-font-size) - 0.1em);
+	font-size: calc(var(--ptws-content-font-size) - 0.1rem);
 }
 .content blockquote.wp-block-quote.is-style-large cite {
 	font-size: var(--ptws-content-font-size);
@@ -471,7 +467,7 @@ table.musicplaylist tr td:first-child {
 .content blockquote.wp-block-quote.poem p {
 	font-family: "Noto Serif";
 	font-style: italic;
-	font-size: var(--ptws-content-poem-p-font-size);
+	font-size: calc(var(--ptws-content-font-size) + 0.25rem);
 	color: rgba(0, 94, 17, 1);
 }
 
