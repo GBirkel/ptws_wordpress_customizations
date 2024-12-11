@@ -1,0 +1,33 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "ptws/disclosure",
+	"version": "0.3.6",
+	"title": "PTWS: Disclosure",
+	"category": "text",
+	"example": {
+		"attributes": { "heading": "Click here to disclose the answer!" },
+		"innerBlocks": [
+			{ "name": "core/paragraph", "attributes": { "placeholder": "Good lord, is that the time?"} }
+		]
+	},
+	"icon": "index-card",
+	"textdomain": "ptws",
+	"description": "Shows a heading with a disclosure triangle next to it. When clicked, it reveals its inner contents below.",
+	"attributes": {
+		"heading": {
+			"type": "string",
+			"source": "html",
+			"selector": "div.heading"
+		},
+		"align": {
+			"type": "string",
+			"default": "wide"
+		}
+	},
+	"editorScript": "file:./block.js",
+	"style": "file:./style.css",
+	"supports": {
+			"align": [ "wide" ]
+	}
+}

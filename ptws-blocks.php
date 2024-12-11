@@ -30,6 +30,7 @@ function register_dynamic_blocks()
     register_block_type(PTWS_PLUGIN_DIRECTORY . '/blocks/itinerary');
     register_block_type(PTWS_PLUGIN_DIRECTORY . '/blocks/dialogue');
     register_block_type(PTWS_PLUGIN_DIRECTORY . '/blocks/dialogue-line');
+    register_block_type(PTWS_PLUGIN_DIRECTORY . '/blocks/disclosure');
 
     // Hook server side rendering into render callback
     //register_block_type('ptws/gallery', [

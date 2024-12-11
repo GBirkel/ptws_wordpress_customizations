@@ -1,0 +1,55 @@
+/* Dialogue sequence container */
+
+.wp-block-ptws-disclosure {
+	margin: 1em 1.4em 1em 25px;
+	padding: 0;
+}
+
+.wp-block-ptws-disclosure > div.heading {
+	color: rgb(102, 176, 139);
+	margin: 0 1.4em 0.5em 0;
+	padding: 0em 0em 0em 0.32em;
+	text-indent: 0.3em;
+}
+
+.wp-block-ptws-disclosure > div.heading::before { 
+	display: block;
+	float: left;
+	padding-top:0.25em;
+	font-size:0.8em;
+	width: 1.2em;
+}
+.wp-block-ptws-disclosure > div.heading:not(.disclosed)::before { 
+	content: "►";
+}
+.wp-block-ptws-disclosure > div.heading.disclosed::before {
+	content: "▼";
+}
+
+.wp-block-ptws-disclosure > div.heading:hover {
+	text-decoration: underline;
+	cursor: pointer;
+}
+
+
+.wp-block-ptws-disclosure > div.disclosecontent:not(.editing) {
+	display: none;
+}
+
+.wp-block-ptws-disclosure > div.disclosecontent {
+	font-size: 0.9em;
+	margin: 0 1.4em 0 0;
+	padding: 0em 1em 0em 1.7em;
+}
+
+.wp-block-ptws-disclosure > div.disclosecontent p {
+	margin: 0 1.4em 0.5em 0;
+	padding: 0 1em 0 0.1em;
+	text-indent: 0.3em;
+}
+
+.wp-block-ptws-disclosure > div.disclosecontent.disclosed {
+	display: block;	/* For when the intended qaa is inside a qaq, like in a li.qaq */
+	text-indent: 0;
+}
+
