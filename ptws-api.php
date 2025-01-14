@@ -26,6 +26,16 @@ class PTWS_API {
 
     // The main function for initializing the "route" APIs.
 	public function init_ptws_api() {
+		// Route for fetching an individual image by Flickr ID
+        register_rest_route( $this->api_namespace, '/image/flickrid', array(
+            array(
+                // By using this constant we ensure that when the WP_REST_Server changes, our readable endpoints will work as intended.
+                'methods'  => \WP_REST_Server::READABLE,
+                'args' => $this->image_get_by_flickr_id_arguments(),
+                // Here we register our callback. The callback is fired when this endpoint is matched by the WP_REST_Server class.
+                'callback' => array( $this, 'image_get_by_flickr_id'),
+            ),
+        ) );
 		// Route for fetching an individual route by ID
         register_rest_route( $this->api_namespace, '/route/id', array(
             array(
@@ -73,6 +83,23 @@ class PTWS_API {
 	}
 
 
+    // Defining the arguments for the image API 'get' method.
+    public function image_get_by_flickr_id_arguments() {
+        $args = array();
+        // Here we are registering the schema for the image id argument.
+        $args['id'] = array(
+            // description should be a human readable description of the argument.
+            'description' => esc_html__( 'The id parameter is the unique identifier string for the image', 'my-text-domain' ),
+            // type specifies the type of data that the argument should be.
+            'type'        => 'string',
+            'validate_callback' => array($this, 'ptws_string_arg_validate'),
+            // enum specifies what values filter can take on.
+            //'enum'        => array( 'red', 'green', 'blue' ),
+        );
+        return $args;
+    }
+
+
     // Defining the arguments for the route API 'get' method.
     public function route_get_by_id_arguments() {
         $args = array();
@@ -83,14 +110,26 @@ class PTWS_API {
             // type specifies the type of data that the argument should be.
             'type'        => 'string',
             'validate_callback' => array($this, 'ptws_string_arg_validate'),
-            // enum specified what values filter can take on.
-            //'enum'        => array( 'red', 'green', 'blue' ),
         );
         return $args;
     }
 
 
-    // Implementing the route API 'get by id' method.  Currently it just spews a boilerplate message.
+    // Implementing the image API 'get by Flickr id' method.
+	public function image_get_by_flickr_id($request) {
+        if (!isset( $request['id'] ) ) {
+            return new \WP_Error( 'rest_invalid', esc_html__( 'The id parameter is required.', 'my-text-domain' ), array( 'status' => 400 ) );
+        }
+        $response = ptws_get_flickr_cache_record($request['id']);
+        if ($response == null) {
+            return new \WP_Error('rest_invalid', esc_html__('No image exists with ID ' . $request['id'], 'my-text-domain'), array('status' => 400));
+        }
+        // rest_ensure_response() wraps the data we want to return into a WP_REST_Response, and ensures it will be properly returned.
+        return rest_ensure_response( $response );
+    }
+
+
+    // Implementing the route API 'get by id' method.
 	public function route_get_by_id($request) {
         if (!isset( $request['id'] ) ) {
             return new \WP_Error( 'rest_invalid', esc_html__( 'The id parameter is required.', 'my-text-domain' ), array( 'status' => 400 ) );

@@ -47,6 +47,7 @@
 		},
 
 		edit: function ( props ) {
+
             const addLine = function() {
                 const newBlock = createBlock( 'ptws/dialogue-line' );
 				// The editor saves all its data in a store.
