@@ -294,7 +294,7 @@ function ptws_costruct_flickr_cache_record_fields( $flickr_user_id, $flickr_id, 
     $f['taken_time'] = $p['dates']['taken'];
     $f['uploaded_time'] = $upl_time;
     $f['updated_time'] = $upd_time;
-    $f['cached_time'] = $upd_time;
+    $f['cached_time'] = ptws_epoch_to_str(time());
     $f['last_seen_in_post'] = $last_seen_in_post;
 
     return $f;
