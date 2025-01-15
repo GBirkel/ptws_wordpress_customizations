@@ -118,14 +118,65 @@ class PTWS_API {
     // Implementing the image API 'get by Flickr id' method.
 	public function image_get_by_flickr_id($request) {
         if (!isset( $request['id'] ) ) {
-            return new \WP_Error( 'rest_invalid', esc_html__( 'The id parameter is required.', 'my-text-domain' ), array( 'status' => 400 ) );
+            return new \WP_Error( 'rest_invalid',
+                        esc_html__( 'The id parameter is required.', 'my-text-domain' ),
+                        array( 'status' => 400 ) );
         }
-        $response = ptws_get_flickr_cache_record($request['id']);
-        if ($response == null) {
-            return new \WP_Error('rest_invalid', esc_html__('No image exists with ID ' . $request['id'], 'my-text-domain'), array('status' => 400));
+
+        $flickr_id = $request['id'];
+
+        $response = ptws_get_flickr_cache_record($flickr_id);
+        if ($response != null) {
+            // rest_ensure_response() wraps the data we want to return into a WP_REST_Response,
+            // and ensures it will be properly returned.
+            return rest_ensure_response( $response );
         }
-        // rest_ensure_response() wraps the data we want to return into a WP_REST_Response, and ensures it will be properly returned.
-        return rest_ensure_response( $response );
+
+        if (current_user_can( 'edit_posts' )) {
+            ptws_session_check();
+            $flickr_user_id = get_option('ptws_user_id');
+
+            $last_seen_in_post = null;
+            if (isset( $request['last_seen_in_post'] ) ) {
+                $last_seen_in_post = $request['last_seen_in_post'];
+            }
+
+            global $pf;
+            ptws_create_afgFlickr_obj();
+
+            $f_info_obj = $pf->photos_getInfo($flickr_id);
+            $f_sizes_obj = $pf->photos_getSizes($flickr_id);
+
+            if (!$f_info_obj || !$f_sizes_obj) {
+                return new \WP_Error('rest_invalid',
+                            esc_html__('Queried Flickr, but no image exists with ID ' . $flickr_id, 'my-text-domain'),
+                            array('status' => 400));
+            }
+
+            $r = ptws_costruct_flickr_cache_record_fields($flickr_user_id, $flickr_id, $f_info_obj, $f_sizes_obj, $last_seen_in_post);
+
+            if (!$r) {
+                return new \WP_Error('rest_invalid',
+                            esc_html__('Error constructing Flickr cache record for Flickr ID ' . $flickr_id, 'my-text-domain'),
+                            array('status' => 400));
+            }
+
+            ptws_create_flickr_cache_record($r);
+
+            $response = ptws_get_flickr_cache_record($flickr_id);
+            if ($response == null) {
+                return new \WP_Error('rest_invalid',
+                            esc_html__('Error fetching newly created Flickr cache record for Flickr ID ' . $flickr_id, 'my-text-domain'),
+                            array('status' => 400));
+            }
+
+            // rest_ensure_response() wraps the data we want to return into a WP_REST_Response,
+            // and ensures it will be properly returned.
+            return rest_ensure_response( $response );
+        }
+        return new \WP_Error('rest_invalid',
+                    esc_html__('No cached image exists with ID ' . $request['id'], 'my-text-domain'),
+                    array('status' => 400));
     }
 
 

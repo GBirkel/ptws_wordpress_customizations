@@ -420,71 +420,41 @@ function ptws_admin_cache_resolve()
             $f_sizes_obj = $pf->photos_getSizes($fid);
 
             if (!$f_info_obj || !$f_sizes_obj) {
-                echo ptws_html_log_error('Error.');
-            } else {
-                $f_sizes = array();
-                foreach ($f_sizes_obj as $a => $b) {
-                    $f_sizes[$b['label']] = $b;
-                }
-
-                $p = $f_info_obj['photo'];
-                echo '<ul><li>id ' . $rid . '</li>';
-                echo '<li>flicker_id ' . $fid . '</li>';
-                echo '<li>title ' . $p['title']['_content'] . '</li>';
-                echo '<li>width ' . $f_sizes['Original']['width'] . '</li>';
-                echo '<li>height ' . $f_sizes['Original']['height'] . '</li>';
-                $url = 'https://www.flickr.com/photos/' . $uid . '/' . $fid . '/';
-                echo '<li>link_url ' . $url . '</li>';
-
-                echo '<li>large_thumbnail_width ' . $f_sizes['Large']['width'] . '</li>';
-                echo '<li>large_thumbnail_height ' . $f_sizes['Large']['height'] . '</li>';
-                echo '<li>large_thumbnail_url ' . $f_sizes['Large']['source'] . '</li>';
-
-                echo '<li>square_thumbnail_width ' . $f_sizes['Square']['width'] . '</li>';
-                echo '<li>square_thumbnail_height ' . $f_sizes['Square']['height'] . '</li>';
-                echo '<li>square_thumbnail_url ' . $f_sizes['Square']['source'] . '</li>';
-
-                $upl_time = ptws_epoch_to_str($p['dateuploaded']);
-                $upd_time = ptws_epoch_to_str($p['dates']['lastupdate']);
-
-                echo '<li>comments ' . $p['comments']['_content'] . '</li>';
-                echo '<li>description ' . $p['description']['_content'] . '</li>';
-                echo '<li>taken_time ' . $p['dates']['taken'] . '</li>';
-                echo '<li>uploaded_time ' . $upl_time . '</li>';
-                echo '<li>updated_time ' . $upd_time . '</li>';
-                echo '<li>old cached_time ' . $uncached_rec['cached_time'] . '</li>';
-                echo '</ul>';
-
-                $large_w = intval($f_sizes['Large']['width']);
-                $large_h = intval($f_sizes['Large']['height']);
-                $large_src = $f_sizes['Large']['source'];
-                if ($large_w == 0 || $large_h == 0) {
-                    $large_w = intval($f_sizes['Original']['width']);
-                    $large_h = intval($f_sizes['Original']['height']);
-                    $large_src = $f_sizes['Original']['source'];
-                }
-
-                $f = array();
-                $f['flickr_id'] = $fid;
-                $f['title'] = $p['title']['_content'];
-                $f['width'] = intval($f_sizes['Original']['width']);
-                $f['height'] = intval($f_sizes['Original']['height']);
-                $f['link_url'] = $url;
-                $f['large_thumbnail_width'] = $large_w;
-                $f['large_thumbnail_height'] = $large_h;
-                $f['large_thumbnail_url'] = $large_src;
-                $f['square_thumbnail_width'] = intval($f_sizes['Square']['width']);
-                $f['square_thumbnail_height'] = intval($f_sizes['Square']['height']);
-                $f['square_thumbnail_url'] = $f_sizes['Square']['source'];
-                $f['comments'] = intval($p['comments']['_content']);
-                $f['description'] = $p['description']['_content'];
-                $f['taken_time'] = $p['dates']['taken'];
-                $f['uploaded_time'] = $upl_time;
-                $f['updated_time'] = $upd_time;
-                $f['cached_time'] = $upd_time;
-                $f['last_seen_in_post'] = $uncached_rec['last_seen_in_post'];
-                ptws_create_flickr_cache_record($f);
+                echo ptws_html_log_error('Error with Flickr API.');
+                continue;
             }
+
+            $r = ptws_costruct_flickr_cache_record_fields($rid, $fid, $f_info_obj, $f_sizes_obj, $uncached_rec['last_seen_in_post']);
+
+            if (!$r) {
+                echo ptws_html_log_error('Error constructing Flickr cache record.');
+                continue;
+            }
+
+            echo '<ul><li>id ' . $rid . '</li>';
+            echo '<li>flicker_id ' . $fid . '</li>';
+            echo '<li>title ' . $r['title'] . '</li>';
+            echo '<li>width ' . $r['width'] . '</li>';
+            echo '<li>height ' . $r['height'] . '</li>';
+            echo '<li>link_url ' . $r['link_url'] . '</li>';
+
+            echo '<li>large_thumbnail_width ' . $r['large_thumbnail_width'] . '</li>';
+            echo '<li>large_thumbnail_height ' . $r['large_thumbnail_height'] . '</li>';
+            echo '<li>large_thumbnail_url ' . $r['large_thumbnail_url'] . '</li>';
+
+            echo '<li>square_thumbnail_width ' . $r['square_thumbnail_width'] . '</li>';
+            echo '<li>square_thumbnail_height ' . $r['square_thumbnail_height'] . '</li>';
+            echo '<li>square_thumbnail_url ' . $r['square_thumbnail_url'] . '</li>';
+
+            echo '<li>comments ' . $r['comments'] . '</li>';
+            echo '<li>description ' . $r['description'] . '</li>';
+            echo '<li>taken_time ' . $r['taken_time'] . '</li>';
+            echo '<li>uploaded_time ' . $r['uploaded_time'] . '</li>';
+            echo '<li>updated_time ' . $r['updated_time'] . '</li>';
+            echo '<li>old cached_time ' . $uncached_rec['cached_time'] . '</li>';
+            echo '</ul>';
+
+            ptws_create_flickr_cache_record($r);
         }
     }
     exit;

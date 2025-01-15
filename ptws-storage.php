@@ -32,7 +32,7 @@ function ptws_create_photo_tables()
         updated_time datetime DEFAULT 0 NOT NULL,
         cached_time datetime DEFAULT CURRENT_TIMESTAMP NOT NULL,
         auto_placed tinyint(1) DEFAULT 0,
-        last_seen_in_post bigint(20) unsigned,
+        last_seen_in_post bigint(20) UNSIGNED,
         CONSTRAINT unique_flickr_id UNIQUE (flickr_id),
         PRIMARY KEY  (id)
     ) $charset_collate;";
@@ -244,6 +244,60 @@ function ptws_get_flickr_cache_record($pid)
     $one_row['updated_time_epoch'] = strtotime($one_row['updated_time']);
     $one_row['cached_time_epoch'] = strtotime($one_row['cached_time']);
     return $one_row;
+}
+
+
+// Takes standard response data from two Flickr API queries, plus two identifiers,
+// and combines it into a local Flickr cache record.  Returns null if one of the
+// provided values is null.
+//
+function ptws_costruct_flickr_cache_record_fields( $flickr_user_id, $flickr_id, $flickr_info_obj, $flickr_sizes_obj, $last_seen_in_post ) {
+
+    if (!$flickr_user_id || !$flickr_id || !$flickr_info_obj || !$flickr_sizes_obj) {
+        return null;
+    }
+
+    $f_sizes = array();
+    foreach ($flickr_sizes_obj as $a => $b) {
+        $f_sizes[$b['label']] = $b;
+    }
+
+    $p = $flickr_info_obj['photo'];
+    $url = 'https://www.flickr.com/photos/' . $flickr_user_id . '/' . $flickr_id . '/';
+
+    $upl_time = ptws_epoch_to_str($p['dateuploaded']);
+    $upd_time = ptws_epoch_to_str($p['dates']['lastupdate']);
+
+    $large_w = intval($f_sizes['Large']['width']);
+    $large_h = intval($f_sizes['Large']['height']);
+    $large_src = $f_sizes['Large']['source'];
+    if ($large_w == 0 || $large_h == 0) {
+        $large_w = intval($f_sizes['Original']['width']);
+        $large_h = intval($f_sizes['Original']['height']);
+        $large_src = $f_sizes['Original']['source'];
+    }
+
+    $f = array();
+    $f['flickr_id'] = $flickr_id;
+    $f['title'] = $p['title']['_content'];
+    $f['width'] = intval($f_sizes['Original']['width']);
+    $f['height'] = intval($f_sizes['Original']['height']);
+    $f['link_url'] = $url;
+    $f['large_thumbnail_width'] = $large_w;
+    $f['large_thumbnail_height'] = $large_h;
+    $f['large_thumbnail_url'] = $large_src;
+    $f['square_thumbnail_width'] = intval($f_sizes['Square']['width']);
+    $f['square_thumbnail_height'] = intval($f_sizes['Square']['height']);
+    $f['square_thumbnail_url'] = $f_sizes['Square']['source'];
+    $f['comments'] = intval($p['comments']['_content']);
+    $f['description'] = $p['description']['_content'];
+    $f['taken_time'] = $p['dates']['taken'];
+    $f['uploaded_time'] = $upl_time;
+    $f['updated_time'] = $upd_time;
+    $f['cached_time'] = $upd_time;
+    $f['last_seen_in_post'] = $last_seen_in_post;
+
+    return $f;
 }
 
 
