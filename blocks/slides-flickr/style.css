@@ -1,0 +1,74 @@
+/* Flickr Slides */
+
+
+.content .entry div.wp-block-ptws-slides-flickr {
+	text-align: center;
+	flex:1;
+}
+
+.content .entry div.wp-block-ptws-slides-flickr img {
+	border: none;
+	width: 95%;
+	padding: 0px;
+	margin: 4px 10px 4px 10px;
+	box-shadow: 1px 1px 9px -1px rgba(81, 81, 81, 0.51);
+}
+
+.content .entry div.wp-block-ptws-slides-flickr div.imgComment {
+	text-align: left;
+	text-indent: 10px;
+	font-size: 0.9em;
+	margin: 0 10px 0 10px;
+	padding: 0px 15px 0 15px;
+}
+
+.content .entry div.wp-block-ptws-slides-flickr div.imgComment p {
+	margin: 5px 0 5px 0;
+	color: gray;
+	font-weight: normal;
+}
+
+/* Hide in viewing mode and editing mode */
+
+.wp-block-ptws-slides-flickr div.photodata {
+	display: none;
+}
+
+/* Editing mode */
+
+.wp-block-ptws-slides-flickr.editing {
+	display: inline-flex;
+	flex-direction: column;
+	align-items: center;
+	padding: 10px 10px 0 10px;
+	border-radius: 7px;
+	border: 1px solid rgba(0, 0, 0, 0);
+}
+
+.wp-block-ptws-slides-flickr.editing.is-selected {
+	border: 1px solid black;
+}
+
+.wp-block-ptws-slides-flickr.editing.is-hovered {
+	border: 1px solid rgba(0, 0, 0, 0.5);
+}
+
+.wp-block-ptws-slides-flickr.editing img {
+	height: 150px;
+}
+
+.wp-block-ptws-slides-flickr div.emptyimage {
+	height: 150px;
+	width: 200px;
+	background-color: gray;
+}
+
+.wp-block-ptws-slides-flickr div.settings > textarea {
+	background-color: rgba(128, 128, 128, 0.1);
+	color: #666;
+	vertical-align: text-top;
+	font-size: 0.9rem;
+	white-space: nowrap;
+	font-weight: bold;
+}
+

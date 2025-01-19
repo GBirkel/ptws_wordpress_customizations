@@ -1,0 +1,171 @@
+{
+	"$schema": "https://json.schemastore.org/block.json",
+	"apiVersion": 3,
+	"name": "ptws/slides-flickr",
+	"version": "0.3.6",
+	"parent": [ "ptws/slides" ],
+	"title": "PTWS: Flickr Slide",
+	"category": "text",
+	"usesContext": ["ptws/slides-context"],
+	"icon": "index-card",
+	"description": "One image with metadata fetched from Flickr.",
+	"textdomain": "ptws",
+	"attributes": {
+		"flickr_id": {
+			"type": "string",
+			"source": "attribute",
+			"selector": "div.photodata",
+			"attribute": "data-ptws-flickr-id"
+		},
+		"flickr_id_is_valid": {
+			"type": "boolean",
+			"source": "attribute",
+			"selector": "div.photodata",
+			"attribute": "data-ptws-flickr-id-is-valid"
+		},
+		"cached_time": {
+			"type": "string",
+			"source": "attribute",
+			"selector": "div.photodata",
+			"attribute": "data-ptws-cached-time"
+		},
+		"cached_time_epoch": {
+			"type": "string",
+			"default": "0",
+			"source": "attribute",
+			"selector": "div.photodata",
+			"attribute": "data-ptws-cached-time-epoch"
+		},
+		"description": {
+			"type": "string",
+			"source": "text",
+			"selector": "div.photodata > div.description"
+		},
+		"flex_ratio": {
+			"type": "string",
+			"default": "1",
+			"source": "attribute",
+			"selector": "div.photodata",
+			"attribute": "data-ptws-flex-ratio"
+		},
+		"height": {
+			"type": "string",
+			"default": "0",
+			"source": "attribute",
+			"selector": "div.photodata",
+			"attribute": "data-ptws-height"
+		},
+		"id": {
+			"type": "string",
+			"source": "attribute",
+			"selector": "div.photodata",
+			"attribute": "data-ptws-id"
+		},
+		"large_thumbnail_height": {
+			"type": "string",
+			"default": "0",
+			"source": "attribute",
+			"selector": "div.photodata",
+			"attribute": "data-ptws-large-thumbnail-height"
+		},
+		"large_thumbnail_url": {
+			"type": "string",
+			"source": "text",
+			"selector": "div.photodata > div.largethumbnailurl"
+		},
+		"large_thumbnail_width": {
+			"type": "string",
+			"default": "0",
+			"source": "attribute",
+			"selector": "div.photodata",
+			"attribute": "data-ptws-large-thumbnail-width"
+		},
+		"link_url": {
+			"type": "string",
+			"source": "text",
+			"selector": "div.photodata > div.linkurl"
+		},
+		"square_thumbnail_height": {
+			"type": "string",
+			"default": "0",
+			"source": "attribute",
+			"selector": "div.photodata",
+			"attribute": "data-ptws-square-thumbnail-height"
+		},
+		"square_thumbnail_url": {
+			"type": "string",
+			"source": "text",
+			"selector": "div.photodata > div.squarethumbnailurl"
+		},
+		"square_thumbnail_width": {
+			"type": "string",
+			"default": "0",
+			"source": "attribute",
+			"selector": "div.photodata",
+			"attribute": "data-ptws-square-thumbnail-width"
+		},
+		"taken_time": {
+			"type": "string",
+			"source": "attribute",
+			"selector": "div.photodata",
+			"attribute": "data-ptws-taken-time"
+		},
+		"taken_time_epoch": {
+			"type": "string",
+			"default": "0",
+			"source": "attribute",
+			"selector": "div.photodata",
+			"attribute": "data-ptws-taken-time-epoch"
+		},
+		"title": {
+			"type": "string",
+			"source": "text",
+			"selector": "div.photodata > div.title"
+		},
+		"updated_time": {
+			"type": "string",
+			"source": "attribute",
+			"selector": "div.photodata",
+			"attribute": "data-ptws-updated-time"
+		},
+		"updated_time_epoch": {
+			"type": "string",
+			"default": "0",
+			"source": "attribute",
+			"selector": "div.photodata",
+			"attribute": "data-ptws-updated-time-epoch"
+		},
+		"uploaded_time": {
+			"type": "string",
+			"source": "attribute",
+			"selector": "div.photodata",
+			"attribute": "data-ptws-uploaded-time"
+		},
+		"uploaded_time_epoch": {
+			"type": "string",
+			"default": "0",
+			"source": "attribute",
+			"selector": "div.photodata",
+			"attribute": "data-ptws-uploaded-time-epoch"
+		},
+		"width": {
+			"type": "string",
+			"default": "0",
+			"source": "attribute",
+			"selector": "div.photodata",
+			"attribute": "data-ptws-width"
+		}
+	},
+	"example": {
+		"attributes": {
+			"flickr_id": "0000000",
+			"flickr_id_is_valid": false,
+			"taken_time_epoch": "2024-12-12 00:43:44",
+			"uploaded_time_epoch": "2024-12-12 00:43:44",
+			"updated_time_epoch": "2024-12-12 00:43:44",
+			"cached_time_epoch": "2024-12-12 00:43:44"
+		}
+	},
+	"editorScript": "file:./block.js",
+	"style": "file:./style.css"
+}

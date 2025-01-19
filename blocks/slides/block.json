@@ -1,0 +1,41 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "ptws/slides",
+	"version": "0.3.6",
+	"title": "PTWS: Slides",
+	"allowedBlocks": ["ptws/slides-flickr"],
+	"category": "text",
+	"example": {
+		"attributes": { "flex_ratios": "1" },
+		"innerBlocks": [
+			{	"name": "ptws/slides-flickr",
+				"attributes": {
+					"flickr_id": "",
+					"flickr_id_is_valid": false,
+					"flex_ratio": "1",
+					"large_thumbnail_height": "0",
+					"large_thumbnail_width": "0",
+					"taken_time_epoch": "2024-12-12 00:43:44",
+					"uploaded_time_epoch": "2024-12-12 00:43:44",
+					"updated_time_epoch": "2024-12-12 00:43:44",
+					"cached_time_epoch": "2024-12-12 00:43:44"
+				}
+			}
+		]
+	},
+	"icon": "index-card",
+	"textdomain": "ptws",
+	"description": "Shows a sequence of one or more images (slides), in a variety of layouts.",
+	"attributes": {
+		"layout": {
+			"type": "string",
+			"default": "fixed"
+		}
+	},
+	"providesContext": {
+        "ptws/slides-context-layout": "layout"
+    },
+	"editorScript": "file:./block.js",
+	"style": "file:./style.css"
+}

@@ -31,7 +31,8 @@ function register_dynamic_blocks()
     register_block_type(PTWS_PLUGIN_DIRECTORY . '/blocks/dialogue');
     register_block_type(PTWS_PLUGIN_DIRECTORY . '/blocks/dialogue-line');
     register_block_type(PTWS_PLUGIN_DIRECTORY . '/blocks/disclosure');
-    register_block_type(PTWS_PLUGIN_DIRECTORY . '/blocks/flickr_image');
+    register_block_type(PTWS_PLUGIN_DIRECTORY . '/blocks/slides');
+    register_block_type(PTWS_PLUGIN_DIRECTORY . '/blocks/slides-flickr');
 
     // Hook server side rendering into render callback
     //register_block_type('ptws/gallery', [
