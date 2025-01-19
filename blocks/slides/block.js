@@ -3,18 +3,26 @@
 
 ( function () {
 
-	var el = window.wp.element.createElement;
-	var useState = window.wp.element.useState;
-	var createBlock = window.wp.blocks.createBlock;
+	var apiFetch = window.wp.apiFetch;
+
 	var dataDispatch = window.wp.data.dispatch;
 	var dataSelect = window.wp.data.select;
+	var useSelect = window.wp.data.useSelect;
+
+	var createBlock = window.wp.blocks.createBlock;
+
     var InnerBlocks = window.wp.blockEditor.InnerBlocks;
-    var getBlock = window.wp.blockEditor;
 	var PlainText = window.wp.blockEditor.PlainText;
     var useBlockProps = window.wp.blockEditor.useBlockProps;
     var useInnerBlocksProps = window.wp.blockEditor.useInnerBlocksProps;
-	var apiFetch = window.wp.apiFetch;
+
+	var el = window.wp.element.createElement;
+	var useEffect = window.wp.element.useEffect;
+	var useMemo = window.wp.element.useMemo;
+	var useState = window.wp.element.useState;
+
 	var wpUrl = window.wp.url;
+
 
 	function iconptwsgallery() {
 		return el(
@@ -56,84 +64,43 @@
 			const [flickrIdsValid, setFlickrIdsValid] = useState(false);
 			const [flickrRecords, setFlickrRecords] = useState([]);
 
-			var debounceTimer = null;
+			const [debounceTimer, setDebounceTimer] = useState(null);
+
+			// useSelect to watch the child blocks of this one for any changes.
+			const { watchedInnerBlocks } = useSelect( ( select ) => {
+				const thisBlock = select( 'core/block-editor' ).getBlock( props.clientId );
+				return { watchedInnerBlocks: thisBlock ? thisBlock.innerBlocks : [] }
+			}, [] );
+
+			// useMemo to restrict the changes we're interested in to the clientIds and their order.
+			const [ watchedInnerBlockFlickrIds ] = useMemo( () => {
+				return [ watchedInnerBlocks.map( (b) => b.attributes.flickr_id ) ];
+			}, [ watchedInnerBlocks ] );
+
+			// useEffect to take action when the array of clientIds appears to have changed.
+			useEffect(() => {
+				updateFlexRatioForChildBlocks();
+			}, [watchedInnerBlockFlickrIds]);
 
 
-            function resolveImages(value) {
-                const flickr_id = value.trim();
-				debounceTimer = null;
+			function updateFlexRatioForChildBlocks() {
 
-				if (flickr_id.length < 1) {
-					setFlickrIdsValid(false);
-					setFlickrRecords([]);
-					return;
-				}
+				console.log("Decided that inner blocks changed");
 
-				var re = new RegExp('^\\d+$');
-				var m = flickr_id.match(re);
-				if (!m) {
-					setFlickrIdsValid(false);
-					setFlickrRecords([]);
-					return;
-				}
-
-                if ( this.fetching ) { return; }
-                this.fetching = true;
-
-				apiFetch({
-					path: wpUrl.addQueryArgs( '/ptws/v1/image/flickrid', { id: flickr_id } )
-				}).then(
-                    ( flickr_record ) => {
-                        this.fetching = false;
-
-						setFlickrIdsValid(true);
-						setFlickrRecords([flickr_record]);
-                    }
-
-                ).catch(
-                    (e) => {
-						console.log("Error");
-						console.log(e);
-						setFlickrIdsValid(false);
-						setFlickrRecords([]);
-                        this.fetching = false;
-                    }
-                );
-            }
-
-
-            function createImages() {
-				if (!flickrIdsValid) { return; }
-				if (flickrRecords.length < 1) { return; }
-
-				// Prepare some data to work with.
-				// We're going to mix the info about the blocks we haven't created yet -
-				// but have fetched records for - with the blocks that already exist.
-				var imageWorkingSet = flickrRecords.map((r) => {
-					return {
-						clientId: null,
-						record: r,
-						block: null,
-						flexRatio: null,
-						height: parseFloat(r.large_thumbnail_height || 0),
-						width: parseFloat(r.large_thumbnail_width || 0)
-					}
-				});
-
-				// Get a list of all the current child blocks.
 				const thisBlock = dataSelect( 'core/block-editor' ).getBlock( props.clientId );
-				const childBlocks = thisBlock ? thisBlock.innerBlocks : [];
+				const currentInnerBlocks = thisBlock?.innerBlocks || [];
 
-				// Same data structure, but these have a 'block' instead of a 'record'.
-				childBlocks.forEach((b) => {
-					imageWorkingSet.push({
+				// Empty set?  Get outta heeeeere!
+				if (currentInnerBlocks.length == 0) { return; }
+
+				const imageWorkingSet = currentInnerBlocks.map((b) => {
+					return {
 						clientId: b.clientId,
-						record: null,
 						block: b,
 						flexRatio: null,
 						height: parseFloat(b.attributes.large_thumbnail_height),
 						width: parseFloat(b.attributes.large_thumbnail_width)
-					});
+					}
 				});
 
 				console.log("Working set:");
@@ -170,18 +137,93 @@
 
 				// Send attribute updates to all the blocks that exist already
 				siblingValidDimensions.forEach((b) => {
-					if (b.clientId) {
-						dataDispatch( 'core/block-editor' ).updateBlockAttributes( b.clientId, {
-							flex_ratio: b.flexRatio
-						});
+					dataDispatch( 'core/block-editor' ).updateBlockAttributes( b.clientId, {
+						flex_ratio: b.flexRatio
+					});
+				});
+			}
+
+
+            async function resolveImages(idString) {
+                const idStringTrimmed = idString.trim();
+				setDebounceTimer(null);
+
+				if (idStringTrimmed.length < 1) {
+					setFlickrIdsValid(false);
+					setFlickrRecords([]);
+					return;
+				}
+
+				var re = new RegExp('^[\\d ,]+$');
+				if (!idStringTrimmed.match(re)) {
+					setFlickrIdsValid(false);
+					setFlickrRecords([]);
+					return;
+				}
+
+				var potentialIds = idStringTrimmed.split(',');
+				potentialIds = potentialIds.map((id) => { return id.trim() });
+
+                if ( this.fetching ) { return; }
+                this.fetching = true;
+
+				const fetches = potentialIds.map((id) => {
+					return new Promise((resolve, reject) => {
+						apiFetch({
+							path: wpUrl.addQueryArgs( '/ptws/v1/image/flickrid', { id: id } )
+						}).then(
+							( flickr_record ) => {
+								resolve(flickr_record);
+							}
+						).catch(
+							(err) => {
+								console.log("Error");
+								console.error(err);
+								reject(err);
+							}
+						);
+					})
+				});
+
+                this.fetching = false;
+
+				try {
+					const records = await Promise.all(fetches);
+					setFlickrIdsValid(true);
+					setFlickrRecords(records);
+					console.log(records);
+				} catch (err) {
+					console.log("Await all error");
+					console.error(err);
+					setFlickrIdsValid(false);
+					setFlickrRecords([]);
+				}
+            }
+
+
+            function createImages() {
+				if (!flickrIdsValid) { return; }
+				if (flickrRecords.length < 1) { return; }
+
+				// Prepare some data to work with.
+				// We're going to mix the info about the blocks we haven't created yet -
+				// but have fetched records for - with the blocks that already exist.
+				var imageWorkingSet = flickrRecords.map((r) => {
+					return {
+						record: r,
+						height: parseFloat(r.large_thumbnail_height || 0),
+						width: parseFloat(r.large_thumbnail_width || 0)
 					}
 				});
 
+				// We're only interested in images with non-zero dimensions.
+				// We will refuse to create slides that have a 0-width or 0-height thumbnail,
+				// and we will refuse to update existing slides that have the same.
+				const siblingValidDimensions = imageWorkingSet.filter((d) => ((d.width > 0) && (d.height > 0)));
+
 				// Now create and add the new blocks all at once.
 				siblingValidDimensions.forEach((b) => {
-					if (!b.clientId && b.record) {
-						addFlickrSlide(b.record, b.flexRatio);
-					}
+					addFlickrSlide(b.record, b.flexRatio);
 				});
 
 				setFlickrIds("");
@@ -214,7 +256,8 @@
 
 			function delayedFetch(value) {
 				if (debounceTimer) { clearTimeout(debounceTimer); }
-				debounceTimer = (setTimeout(() => resolveImages(value), 300));
+				newDebounceTimer = (setTimeout(() => resolveImages(value), 300));
+				setDebounceTimer(newDebounceTimer)
 			}
 
 
