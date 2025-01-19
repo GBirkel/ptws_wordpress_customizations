@@ -2,7 +2,9 @@
     return array('dependencies' => array(
         'wp-blocks',
         'wp-element',
-        'wp-block-editor'
+        'wp-components',
+        'wp-block-editor',
+        'wp-api'
     ),
-    'version' => 'a335ccc2346141');
+    'version' => '1111111111111111111111111');
 ?>

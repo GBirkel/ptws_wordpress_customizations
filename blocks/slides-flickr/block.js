@@ -92,158 +92,8 @@
 
 		edit: function ( props ) {
 			var attributes = props.attributes;
-			console.log("edit");
-			console.log(props);
 
 			const layout = props.context["ptws/slides-context-layout"];
-
-			var debounceTimer = null;
-
-			// This handles keyboard-based actions in the input field.
-			// Changes to the input value are handled in inputOnChange.
-			function inputOnKeyDown(event) {
-				if (event.key == "Enter") {
-					event.preventDefault();
-//					console.log("Enter");
-//					if (debounceTimer == null) {
-//						console.log("debouncenull");
-						//const b = data_select( 'core/block-editor' ).getBlock( props.clientId );
-//						data_dispatch( 'core/block-editor' ).unsetBlockEditingMode( props.clientId );
-//					}
-				}
-			}
-
-            function getImage(value) {
-                const flickr_id = value.trim();
-				debounceTimer = null;
-
-				if (flickr_id.length < 1) {
-					props.setAttributes( { flickr_id_is_valid: false } );
-					return;
-				}
-
-				var re = new RegExp('^\\d+$');
-				var m = flickr_id.match(re);
-				if (!m) {
-					props.setAttributes( { flickr_id_is_valid: false } );
-					return;
-				}
-
-                if ( this.fetching ) { return; }
-                this.fetching = true;
-
-				apiFetch({
-					path: wpUrl.addQueryArgs( '/ptws/v1/image/flickrid', { id: flickr_id } )
-				}).then(
-                    ( flickr_record ) => {
-                        this.fetching = false;
-
-						// Extract all the info returned from the server into local block attributes.
-						props.setAttributes( {
-							flickr_id_is_valid: true,
-
-							cached_time: 			flickr_record.cached_time,
-							cached_time_epoch:		flickr_record.cached_time_epoch,
-							description: 			flickr_record.description,
-							height:					flickr_record.height,
-							id:						flickr_record.id,
-							large_thumbnail_height: flickr_record.large_thumbnail_height || 0,
-							large_thumbnail_url: 	flickr_record.large_thumbnail_url,
-							large_thumbnail_width: 	flickr_record.large_thumbnail_width || 0,
-							link_url: 				flickr_record.link_url,
-							square_thumbnail_height: flickr_record.square_thumbnail_height,
-							square_thumbnail_url: 	flickr_record.square_thumbnail_url,
-							square_thumbnail_width: flickr_record.square_thumbnail_width,
-							taken_time: 			flickr_record.taken_time,
-							taken_time_epoch: 		flickr_record.taken_time_epoch,
-							title: 					flickr_record.title,
-							updated_time: 			flickr_record.updated_time,
-							updated_time_epoch: 	flickr_record.updated_time_epoch,
-							uploaded_time: 			flickr_record.uploaded_time,
-							uploaded_time_epoch: 	flickr_record.uploaded_time_epoch,
-							width: 					flickr_record.width,
-						} );
-
-						const thisHeight = parseFloat(flickr_record.large_thumbnail_height || "0");
-						const thisWidth = parseFloat(flickr_record.large_thumbnail_width || "0");
-						// If the image we just looked up has no valid thumbnail dimensions,
-						// don't bother doing any flex ratio recalculation.
-						if ((thisHeight == 0) || (thisWidth == 0)) { return }
-
-						const parentBlockIds = data_select( 'core/block-editor' ).getBlockParents( props.clientId );
-						// Can't find a parent block?  Can't do any signaling, so, give up.
-						if (!parentBlockIds || (parentBlockIds.length < 1)) { return; }
-
-						// Get a list of all the child blocks of the parent.
-						const parentBlock = data_select( 'core/block-editor' ).getBlock(parentBlockIds[0]);
-						const childBlocks = parentBlock ? parentBlock.innerBlocks : [];
-						const childCount = childBlocks.length;
-
-						// Only one child of the parent?  Must be this block.  So it has no siblings to update.
-						if (childCount < 2) { return; }
-
-						// Filter out this block so only the siblings remain.
-						const siblings = childBlocks.filter((b) => ( b.clientId != props.clientId ));
-
-						const siblingDimensions = siblings.map(b => {
-							return { clientId: b.clientId,
-									 width: parseFloat(b.attributes.large_thumbnail_width),
-									 height: parseFloat(b.attributes.large_thumbnail_height) };
-						});
-
-						// We're only interested in images with non-zero dimensions
-						const siblingValidDimensions = siblingDimensions.filter((d) => ((d.width > 0) && (d.height > 0)));
-
-						var imageMaxHeight = thisHeight;
-						siblingValidDimensions.forEach((d) => {
-							if (d.height > imageMaxHeight) { imageMaxHeight = d.height }
-						});
-
-						var imgTotalScaledWidth = (imageMaxHeight / thisHeight) * thisWidth;
-						siblingValidDimensions.forEach((d) => {
-							imgTotalScaledWidth += (imageMaxHeight / d.height) * d.width;
-						});
-
-						if ((imageMaxHeight > 0) && (imgTotalScaledWidth > 0)) {
-							siblingValidDimensions.forEach((d) => {
-								const imgScaledWidth = (imageMaxHeight / d.height) * d.width;
-								const flexRatio = (childCount / imgTotalScaledWidth) * imgScaledWidth;
-
-								console.log(`id: ${d.clientId} flex: ${flexRatio}`);
-
-								// Problem: This is not forcing a "save" on the images it updates.
-								// The values are not even getting written into attributes.
-								data_dispatch( 'core/block-editor' ).updateBlockAttributes( d.clientId, {
-									flex_ratio: flexRatio
-								});
-							});
-
-							const imgScaledWidth = (imageMaxHeight / thisHeight) * thisWidth;
-							const flexRatio = (childCount / imgTotalScaledWidth) * imgScaledWidth;
-
-							console.log(`this flex: ${flexRatio}`);
-
-							// Don't forget to set the flex_ratio of this block too.
-							props.setAttributes( {
-								flex_ratio: flexRatio,
-							} );
-						}
-                    }
-
-                ).catch(
-                    (e) => {
-						console.log("Error");
-						console.log(e);
-						props.setAttributes( { flickr_id_is_valid: false } );
-                        this.fetching = false;
-                    }
-                );
-            }
-
-			function delayedFetch(value) {
-				if (debounceTimer) { clearTimeout(debounceTimer); }
-				debounceTimer = (setTimeout(() => getImage(value), 300));
-			}
 
 			return el(
 				'div',
@@ -254,24 +104,15 @@
 				attributes.flickr_id_is_valid ? (
 						el( 'img', {
 								src: attributes.large_thumbnail_url,
+								title: attributes.title
 							}
 						)
 				) : (
 					el( 'div', { className: 'emptyimage' }, "" )
 				),
 				el('div',
-					{ className: 'settings' },
-					el( PlainText, {
-						tagName: 'div',
-						placeholder: 'Flickr ID',
-						cols: 12,
-						value: attributes.flickr_id,
-						onKeyDown: inputOnKeyDown,
-						onChange: function ( value ) {
-							props.setAttributes( { flickr_id: value } );
-							delayedFetch(value);
-						}
-					} )
+					{ className: 'metadata' },
+					el( 'div', { className: 'flickr-id' }, attributes.flickr_id )
 				)
 			)
 		},

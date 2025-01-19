@@ -6,5 +6,5 @@
         'wp-block-editor',
         'wp-api'
     ),
-    'version' => 'a35c32f3365c1b');
+    'version' => '1111111111111111111111111');
 ?>
