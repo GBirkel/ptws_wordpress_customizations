@@ -394,6 +394,7 @@ div.wp-block-image > figure.aligncenter > img, figure.wp-block-image > img {
 
 
 /* Dialogue sequences - names on the left, dialogue on the right */
+/* Re-implemented as a "dialogue" block.  Styles left here for legacy HTML */
 
 .content .entry div.dialogue {
 	border: none;
