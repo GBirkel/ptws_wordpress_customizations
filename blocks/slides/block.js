@@ -52,6 +52,7 @@
 		); 
 	}
 
+
 	window.wp.blocks.registerBlockType( 'ptws/slides', {
 		icon: {
 			background: 'rgba(224, 243, 254, 0.52)',
@@ -60,11 +61,14 @@
 
 		edit: function ( props ) {
 
-			const [flickrIds, setFlickrIds] = useState("");
+			const [idsInputValue, setIdsInputValue] = useState("");
 			const [flickrIdsValid, setFlickrIdsValid] = useState(false);
 			const [flickrRecords, setFlickrRecords] = useState([]);
 
-			const [debounceTimer, setDebounceTimer] = useState(null);
+			const [inputDebounceTimer, setInputDebounceTimer] = useState(null);
+			const [updateFlexRatioDebounceTimer, setUpdateFlexRatioDebounceTimer] = useState(null);
+
+			var attributes = props.attributes;
 
 			// useSelect to watch the child blocks of this one for any changes.
 			const { watchedInnerBlocks } = useSelect( ( select ) => {
@@ -73,14 +77,41 @@
 			}, [] );
 
 			// useMemo to restrict the changes we're interested in to the clientIds and their order.
-			const [ watchedInnerBlockFlickrIds ] = useMemo( () => {
-				return [ watchedInnerBlocks.map( (b) => b.attributes.flickr_id ) ];
+			const watchedInnerBlockFlickrIds = useMemo( () => {
+				// Get the Flickr IDs for all the current blocks, sort them alphabetically, and join them into a string.
+				// This represents what we actually want to watch for changes.
+				// (When the user re-orders slides in an existing set, their assigned flex ratios do not need to change.)
+				return watchedInnerBlocks.map( (b) => b.attributes.flickr_id ).sort().join(',');
 			}, [ watchedInnerBlocks ] );
+
 
 			// useEffect to take action when the array of clientIds appears to have changed.
 			useEffect(() => {
-				updateFlexRatioForChildBlocks();
+				if (updateFlexRatioDebounceTimer) { clearTimeout(updateFlexRatioDebounceTimer); }
+				const newDebounceTimer = (setTimeout(() => {
+						setUpdateFlexRatioDebounceTimer(null);
+						updateFlexRatioForChildBlocks()
+					}, 200));
+				setUpdateFlexRatioDebounceTimer(newDebounceTimer)
 			}, [watchedInnerBlockFlickrIds]);
+
+
+			async function processInitialIds(idString) {
+				const records = await resolveImages(idString);
+				createImages(records);
+			}
+
+
+			// useEffect with no arguments to run an initial check of the initial_ids attribute.
+			useEffect(() => {
+				if (!attributes.isPreviewMode) {
+					if (attributes.initial_ids.trim() != "") {
+						console.log(`Found initial_ids: ${attributes.initial_ids}`);
+						processInitialIds(attributes.initial_ids);
+						props.setAttributes( { initial_ids: "" } );
+					}
+				}
+			}, []);
 
 
 			function updateFlexRatioForChildBlocks() {
@@ -146,26 +177,27 @@
 
             async function resolveImages(idString) {
                 const idStringTrimmed = idString.trim();
-				setDebounceTimer(null);
+				setInputDebounceTimer(null);
 
 				if (idStringTrimmed.length < 1) {
 					setFlickrIdsValid(false);
 					setFlickrRecords([]);
-					return;
+					return [];
 				}
 
 				var re = new RegExp('^[\\d ,]+$');
 				if (!idStringTrimmed.match(re)) {
 					setFlickrIdsValid(false);
 					setFlickrRecords([]);
-					return;
+					return [];
 				}
 
 				var potentialIds = idStringTrimmed.split(',');
 				potentialIds = potentialIds.map((id) => { return id.trim() });
 
-                if ( this.fetching ) { return; }
+                if ( this.fetching ) { return []; }
                 this.fetching = true;
+				var records = [];
 
 				const fetches = potentialIds.map((id) => {
 					return new Promise((resolve, reject) => {
@@ -188,27 +220,30 @@
                 this.fetching = false;
 
 				try {
-					const records = await Promise.all(fetches);
-					setFlickrIdsValid(true);
-					setFlickrRecords(records);
-					console.log(records);
+					records = await Promise.all(fetches);
 				} catch (err) {
 					console.log("Await all error");
 					console.error(err);
 					setFlickrIdsValid(false);
 					setFlickrRecords([]);
+					return [];
 				}
+
+				// If we get this far, the records and Ids are valid.
+				console.log(records);
+				setFlickrRecords(records);
+				setFlickrIdsValid(true);
+				return records;
             }
 
 
-            function createImages() {
-				if (!flickrIdsValid) { return; }
-				if (flickrRecords.length < 1) { return; }
+            function createImages(records) {
+				if (records.length < 1) { return; }
 
 				// Prepare some data to work with.
 				// We're going to mix the info about the blocks we haven't created yet -
 				// but have fetched records for - with the blocks that already exist.
-				var imageWorkingSet = flickrRecords.map((r) => {
+				var imageWorkingSet = records.map((r) => {
 					return {
 						record: r,
 						height: parseFloat(r.large_thumbnail_height || 0),
@@ -225,10 +260,6 @@
 				siblingValidDimensions.forEach((b) => {
 					addFlickrSlide(b.record, b.flexRatio);
 				});
-
-				setFlickrIds("");
-				setFlickrIdsValid(false);
-				setFlickrRecords([]);
 			}
 
 
@@ -237,11 +268,16 @@
 			function inputOnKeyDown(event) {
 				if (event.key == "Enter") {
 					event.preventDefault();
-					createImages();
+					if (flickrIdsValid) {
+						createImages(flickrRecords);
+						setIdsInputValue("");
+						setFlickrIdsValid(false);
+						setFlickrRecords([]);
+					}
 				// If the user hits delete AND the text area is empty AND there are zero slides in the layout,
 				// remove this block.
 				} else if (event.key == "Delete") {
-					if (flickrIds === "") {
+					if (idsInputValue === "") {
 						// Get a list of all the current child blocks.
 						const thisBlock = dataSelect( 'core/block-editor' ).getBlock( props.clientId );
 						if (thisBlock) {
@@ -254,16 +290,16 @@
 			}
 
 
-			function delayedFetch(value) {
-				if (debounceTimer) { clearTimeout(debounceTimer); }
-				newDebounceTimer = (setTimeout(() => resolveImages(value), 300));
-				setDebounceTimer(newDebounceTimer)
+			function onIdsInputChange(value) {
+				if (inputDebounceTimer) { clearTimeout(inputDebounceTimer); }
+				newInputDebounceTimer = (setTimeout(() => resolveImages(value), 300));
+				setInputDebounceTimer(newInputDebounceTimer)
 			}
 
 
             function addFlickrSlide(flickr_record, flexRatio) {
 
-				const newProps = {
+				const newAttributes = {
 						cached_time: 			flickr_record.cached_time,
 						cached_time_epoch:		flickr_record.cached_time_epoch,
 						description: 			flickr_record.description,
@@ -289,15 +325,20 @@
 						width: 					flickr_record.width,
 					};
 
-                const newBlock = createBlock( 'ptws/slides-flickr', newProps );
+                const newBlock = createBlock( 'ptws/slides-flickr', newAttributes );
 				// The editor saves all its data in a store.
 				// https://developer.wordpress.org/block-editor/reference-guides/data/data-core-editor/#getBlocks
 				const b = dataSelect( 'core/block-editor' ).getBlock( props.clientId );
                 dataDispatch( 'core/block-editor' ).insertBlock( newBlock, b.innerBlocks.length, props.clientId );
             };
 
+
             return el( 'div',
-					useBlockProps( { className: "editing" } ),
+					useBlockProps( {
+						className: "editing",
+						'data-ptws-layout': attributes.layout,
+						'data-ptws-initial-ids': attributes.initial_ids
+					} ),
 					el( InnerBlocks,
 						// https://developer.wordpress.org/block-editor/reference-guides/packages/packages-block-editor/#useinnerblocksprops
 						useInnerBlocksProps( {
@@ -316,24 +357,68 @@
 						el( PlainText, {
 							tagName: 'div',
 							placeholder: 'Add Flickr ID(s)',
-							value: flickrIds,
+							value: idsInputValue,
 							onKeyDown: inputOnKeyDown,
 							onChange: function ( value ) {
-								setFlickrIds(value);
-								delayedFetch(value);
+								setIdsInputValue(value);
+								onIdsInputChange(value);
 							}
 						} )
 					)
 			)
 		},
         save: function ( props ) {
+			var attributes = props.attributes;
             return el( 'div',
-						useBlockProps.save( { className: props.className } ),
+						useBlockProps.save( {
+							className: props.className,
+							'data-ptws-layout': attributes.layout,
+							'data-ptws-initial-ids': attributes.initial_ids
+						} ),
 						el( 'div',
 							{ className: 'size-limiter' },
 							el( InnerBlocks.Content )
 						)
 					);
-        }
+        },
+		transforms: {
+			from: [
+				{	type: 'block',
+					blocks: ['core/shortcode'],
+					// Example shortcodes we're looking for here:
+					// [ptwsgallery fixed="50630827036,50630082778"]
+					// [ptwsgallery swipe="50630826096,50630082093,50630081603"]
+					isMatch: (attributes) => {
+						const name = attributes?.text?.match(/\s*\[ptwsgallery\s+/);
+						// Need one or the other of these
+						const fixed = attributes?.text?.match(/\s+fixed="[\d,\s]+"/);
+						const swipe = attributes?.text?.match(/\s+swipe="[\d,\s]+"/);
+						return (name && (fixed || swipe));
+					},
+					transform: (attributes, b, c) => {
+						const fixed = attributes?.text?.match(/\s+fixed="([\d,\s]+)"/);
+						const swipe = attributes?.text?.match(/\s+swipe="([\d,\s]+)"/);
+						const newAttributes = {
+								layout: swipe ? "swipe" : "fixed",
+								initial_ids: swipe ? swipe[1] : fixed[1]
+							};
+						return createBlock( 'ptws/slides', newAttributes );	
+					},
+				},
+				{	type: 'shortcode',
+					tag: 'ptwsgallery',
+					attributes: {
+						layout: {
+							type: 'string',
+							shortcode: (attributes) => attributes?.fixed ? "fixed" : "swipe",
+						},
+						initial_ids: {
+							type: 'string',
+							shortcode: (attributes) => attributes?.fixed || attributes?.swipe,
+						}
+					}
+				}
+			]
+		}
 	} );
 } )();

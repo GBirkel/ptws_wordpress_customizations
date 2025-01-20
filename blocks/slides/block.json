@@ -24,10 +24,21 @@
 	"textdomain": "ptws",
 	"description": "Shows a sequence of one or more images (slides), in a variety of layouts.",
 	"attributes": {
+		"initial_ids": {
+			"type": "string",
+			"default": "",
+			"source": "attribute",
+			"selector": "div.wp-block-ptws-slides",
+			"attribute": "data-ptws-initial-ids"
+		},
 		"layout": {
 			"type": "string",
-			"default": "fixed"
+			"default": "fixed",
+			"source": "attribute",
+			"selector": "div.wp-block-ptws-slides",
+			"attribute": "data-ptws-layout"
 		}
+
 	},
 	"providesContext": {
         "ptws/slides-context-layout": "layout"
