@@ -19,12 +19,14 @@
 		},
 		"flickr_id_is_valid": {
 			"type": "boolean",
+			"default": false,
 			"source": "attribute",
 			"selector": "div.photodata",
 			"attribute": "data-ptws-flickr-id-is-valid"
 		},
 		"cached_time": {
 			"type": "string",
+			"default": "1900-01-01 00:00:00",
 			"source": "attribute",
 			"selector": "div.photodata",
 			"attribute": "data-ptws-cached-time"
@@ -38,6 +40,7 @@
 		},
 		"description": {
 			"type": "string",
+			"default": "",
 			"source": "text",
 			"selector": "div.photodata > div.description"
 		},
@@ -57,6 +60,7 @@
 		},
 		"id": {
 			"type": "string",
+			"default": "0",
 			"source": "attribute",
 			"selector": "div.photodata",
 			"attribute": "data-ptws-id"
@@ -70,6 +74,7 @@
 		},
 		"large_thumbnail_url": {
 			"type": "string",
+			"default": "",
 			"source": "text",
 			"selector": "div.photodata > div.largethumbnailurl"
 		},
@@ -82,6 +87,7 @@
 		},
 		"link_url": {
 			"type": "string",
+			"default": "",
 			"source": "text",
 			"selector": "div.photodata > div.linkurl"
 		},
@@ -94,6 +100,7 @@
 		},
 		"square_thumbnail_url": {
 			"type": "string",
+			"default": "",
 			"source": "text",
 			"selector": "div.photodata > div.squarethumbnailurl"
 		},
@@ -106,6 +113,7 @@
 		},
 		"taken_time": {
 			"type": "string",
+			"default": "1900-01-01 00:00:00",
 			"source": "attribute",
 			"selector": "div.photodata",
 			"attribute": "data-ptws-taken-time"
@@ -119,11 +127,13 @@
 		},
 		"title": {
 			"type": "string",
+			"default": "",
 			"source": "text",
 			"selector": "div.photodata > div.title"
 		},
 		"updated_time": {
 			"type": "string",
+			"default": "1900-01-01 00:00:00",
 			"source": "attribute",
 			"selector": "div.photodata",
 			"attribute": "data-ptws-updated-time"
@@ -137,6 +147,7 @@
 		},
 		"uploaded_time": {
 			"type": "string",
+			"default": "1900-01-01 00:00:00",
 			"source": "attribute",
 			"selector": "div.photodata",
 			"attribute": "data-ptws-uploaded-time"
@@ -159,11 +170,7 @@
 	"example": {
 		"attributes": {
 			"flickr_id": "0000000",
-			"flickr_id_is_valid": false,
-			"taken_time_epoch": "2024-12-12 00:43:44",
-			"uploaded_time_epoch": "2024-12-12 00:43:44",
-			"updated_time_epoch": "2024-12-12 00:43:44",
-			"cached_time_epoch": "2024-12-12 00:43:44"
+			"flickr_id_is_valid": false
 		}
 	},
 	"editorScript": "file:./block.js",
