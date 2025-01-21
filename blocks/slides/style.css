@@ -26,6 +26,11 @@
 /* Editing */
 
 
+div.wp-block-ptws-slides .empty-notification {
+	margin: 0.5rem 1.5rem 0.5rem 1.5rem;
+	color: #666;
+}
+
 div.wp-block-ptws-slides.editing.is-selected div.add-slide-zone {
 	display: flex;
 }

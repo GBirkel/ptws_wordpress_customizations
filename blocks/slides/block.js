@@ -104,23 +104,19 @@
 
 			// useEffect with no arguments to run an initial check of the initial_ids attribute.
 			useEffect(() => {
-				if (!attributes.isPreviewMode) {
-					if (attributes.initial_ids.trim() != "") {
-						console.log(`Found initial_ids: ${attributes.initial_ids}`);
-						processInitialIds(attributes.initial_ids);
-						props.setAttributes( { initial_ids: "" } );
-					}
+				if (attributes.initial_ids.trim() != "") {
+					processInitialIds(attributes.initial_ids);
+					props.setAttributes( { initial_ids: "" } );
 				}
 			}, []);
 
 
 			function updateFlexRatioForChildBlocks() {
 
-				console.log("Decided that inner blocks changed");
-
 				const thisBlock = dataSelect( 'core/block-editor' ).getBlock( props.clientId );
 				const currentInnerBlocks = thisBlock?.innerBlocks || [];
 
+				props.setAttributes( { image_count: currentInnerBlocks.length } );
 				// Empty set?  Get outta heeeeere!
 				if (currentInnerBlocks.length == 0) { return; }
 
@@ -133,9 +129,6 @@
 						width: parseFloat(b.attributes.large_thumbnail_width)
 					}
 				});
-
-				console.log("Working set:");
-				console.log(imageWorkingSet);
 
 				// We're only interested in images with non-zero dimensions.
 				// We will refuse to create slides that have a 0-width or 0-height thumbnail,
@@ -160,8 +153,6 @@
 				siblingValidDimensions.forEach((b) => {
 					const imgScaledWidth = (imageMaxHeight / b.height) * b.width;
 					const flexRatio = (imageWorkingSet.length / imgTotalScaledWidth) * imgScaledWidth;
-
-					console.log(`id: ${b.clientId} flex: ${flexRatio}`);
 					// Write the new value back into the record
 					b.flexRatio = flexRatio;
 				});
@@ -194,15 +185,19 @@
 
 				var potentialIds = idStringTrimmed.split(',');
 				potentialIds = potentialIds.map((id) => { return id.trim() });
+				console.log("PotentialIds:");
+				console.log(potentialIds);
 
                 if ( this.fetching ) { return []; }
                 this.fetching = true;
 				var records = [];
 
+				const postId = dataSelect("core/editor").getCurrentPostId();
+
 				const fetches = potentialIds.map((id) => {
 					return new Promise((resolve, reject) => {
 						apiFetch({
-							path: wpUrl.addQueryArgs( '/ptws/v1/image/flickrid', { id: id } )
+							path: wpUrl.addQueryArgs( '/ptws/v1/image/flickrid', { id: id, last_seen_in_post: postId } )
 						}).then(
 							( flickr_record ) => {
 								resolve(flickr_record);
@@ -230,6 +225,7 @@
 				}
 
 				// If we get this far, the records and Ids are valid.
+				console.log("Results of resolving:");
 				console.log(records);
 				setFlickrRecords(records);
 				setFlickrIdsValid(true);
@@ -246,6 +242,7 @@
 				var imageWorkingSet = records.map((r) => {
 					return {
 						record: r,
+						flexRatio: 1,
 						height: parseFloat(r.large_thumbnail_height || 0),
 						width: parseFloat(r.large_thumbnail_width || 0)
 					}
@@ -257,8 +254,8 @@
 				const siblingValidDimensions = imageWorkingSet.filter((d) => ((d.width > 0) && (d.height > 0)));
 
 				// Now create and add the new blocks all at once.
-				siblingValidDimensions.forEach((b) => {
-					addFlickrSlide(b.record, b.flexRatio);
+				siblingValidDimensions.forEach((r) => {
+					addFlickrSlide(r.record, r.flexRatio);
 				});
 			}
 
@@ -281,7 +278,7 @@
 						// Get a list of all the current child blocks.
 						const thisBlock = dataSelect( 'core/block-editor' ).getBlock( props.clientId );
 						if (thisBlock) {
-							if (thisBlock.innerBlocks.length == 0) {
+							if (thisBlock.innerBlocks?.length == 0) {
                 				dataDispatch( 'core/block-editor' ).removeBlock( props.clientId );
 							}
 						}
@@ -329,16 +326,22 @@
 				// The editor saves all its data in a store.
 				// https://developer.wordpress.org/block-editor/reference-guides/data/data-core-editor/#getBlocks
 				const b = dataSelect( 'core/block-editor' ).getBlock( props.clientId );
-                dataDispatch( 'core/block-editor' ).insertBlock( newBlock, b.innerBlocks.length, props.clientId );
+				if (b) {
+	                dataDispatch( 'core/block-editor' ).insertBlock( newBlock, b.innerBlocks?.length, props.clientId );
+				}
             };
 
 
             return el( 'div',
 					useBlockProps( {
 						className: "editing",
+						'data-ptws-initial-ids': attributes.initial_ids,
 						'data-ptws-layout': attributes.layout,
-						'data-ptws-initial-ids': attributes.initial_ids
+						'data-ptws-image-count': attributes.image_count
 					} ),
+					(parseInt(attributes.image_count, 10) == 0) ? (
+						el( "p", { className: "empty-notification" }, "Empty slide container" )
+					) : undefined,
 					el( InnerBlocks,
 						// https://developer.wordpress.org/block-editor/reference-guides/packages/packages-block-editor/#useinnerblocksprops
 						useInnerBlocksProps( {
@@ -369,11 +372,13 @@
 		},
         save: function ( props ) {
 			var attributes = props.attributes;
+			console.log(InnerBlocks);
             return el( 'div',
 						useBlockProps.save( {
 							className: props.className,
+							'data-ptws-initial-ids': attributes.initial_ids,
 							'data-ptws-layout': attributes.layout,
-							'data-ptws-initial-ids': attributes.initial_ids
+							'data-ptws-image-count': attributes.image_count
 						} ),
 						el( 'div',
 							{ className: 'size-limiter' },
@@ -399,23 +404,22 @@
 						const fixed = attributes?.text?.match(/\s+fixed="([\d,\s]+)"/);
 						const swipe = attributes?.text?.match(/\s+swipe="([\d,\s]+)"/);
 						const newAttributes = {
+								initial_ids: swipe ? swipe[1] : fixed[1],
 								layout: swipe ? "swipe" : "fixed",
-								initial_ids: swipe ? swipe[1] : fixed[1]
+								image_count: "0"
 							};
 						return createBlock( 'ptws/slides', newAttributes );	
-					},
+					}
 				},
 				{	type: 'shortcode',
 					tag: 'ptwsgallery',
-					attributes: {
-						layout: {
-							type: 'string',
-							shortcode: (attributes) => attributes?.fixed ? "fixed" : "swipe",
-						},
-						initial_ids: {
-							type: 'string',
-							shortcode: (attributes) => attributes?.fixed || attributes?.swipe,
-						}
+					transform: (attributes) => {
+						const newAttributes = {
+								initial_ids: attributes?.named?.fixed || attributes?.named?.swipe,
+								layout: attributes?.named?.fixed ? "fixed" : "swipe",
+								image_count: "0"
+							};
+						return createBlock( 'ptws/slides', newAttributes );	
 					}
 				}
 			]

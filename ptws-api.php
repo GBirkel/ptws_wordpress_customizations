@@ -96,6 +96,12 @@ class PTWS_API {
             // enum specifies what values filter can take on.
             //'enum'        => array( 'red', 'green', 'blue' ),
         );
+        $args['last_seen_in_post'] = array(
+            // description should be a human readable description of the argument.
+            'description' => esc_html__( 'The id of the post requesting this image, if applicable.', 'my-text-domain' ),
+            'type'        => 'string',
+            'validate_callback' => array($this, 'ptws_string_arg_validate'),
+        );
         return $args;
     }
 

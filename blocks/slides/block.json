@@ -7,7 +7,11 @@
 	"allowedBlocks": ["ptws/slides-flickr"],
 	"category": "text",
 	"example": {
-		"attributes": { "flex_ratios": "1" },
+		"attributes": {
+			"initial_ids": "",
+			"layout": "fixed",
+			"image_count": "1"
+		},
 		"innerBlocks": [
 			{	"name": "ptws/slides-flickr",
 				"attributes": {
@@ -37,8 +41,14 @@
 			"source": "attribute",
 			"selector": "div.wp-block-ptws-slides",
 			"attribute": "data-ptws-layout"
+		},
+		"image_count": {
+			"type": "string",
+			"default": "0",
+			"source": "attribute",
+			"selector": "div.wp-block-ptws-slides",
+			"attribute": "data-ptws-initial-image-count"
 		}
-
 	},
 	"providesContext": {
         "ptws/slides-context-layout": "layout"
