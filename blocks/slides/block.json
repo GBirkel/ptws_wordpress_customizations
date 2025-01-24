@@ -47,7 +47,7 @@
 			"default": "0",
 			"source": "attribute",
 			"selector": "div.wp-block-ptws-slides",
-			"attribute": "data-ptws-initial-image-count"
+			"attribute": "data-ptws-image-count"
 		}
 	},
 	"providesContext": {
