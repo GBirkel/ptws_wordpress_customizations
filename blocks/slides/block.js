@@ -185,8 +185,6 @@
 
 				var potentialIds = idStringTrimmed.split(',');
 				potentialIds = potentialIds.map((id) => { return id.trim() });
-				console.log("PotentialIds:");
-				console.log(potentialIds);
 
                 if ( this.fetching ) { return []; }
                 this.fetching = true;
@@ -225,8 +223,6 @@
 				}
 
 				// If we get this far, the records and Ids are valid.
-				console.log("Results of resolving:");
-				console.log(records);
 				setFlickrRecords(records);
 				setFlickrIdsValid(true);
 				return records;
@@ -372,7 +368,6 @@
 		},
         save: function ( props ) {
 			var attributes = props.attributes;
-			console.log(InnerBlocks);
             return el( 'div',
 						useBlockProps.save( {
 							className: props.className,
