@@ -111,6 +111,14 @@
 			}, []);
 
 
+			async function changedLayoutType(event) {
+				const layoutValue = event.target.value;
+				props.setAttributes( { layout: layoutValue } );
+
+				//				propagateLayoutValue(records);
+			}
+
+
 			function updateFlexRatioForChildBlocks() {
 
 				const thisBlock = dataSelect( 'core/block-editor' ).getBlock( props.clientId );
@@ -362,7 +370,15 @@
 								setIdsInputValue(value);
 								onIdsInputChange(value);
 							}
-						} )
+						} ),
+						el( "select", {
+								name: "layout",
+								onChange: changedLayoutType,
+								value: attributes.layout
+							},
+							el( "option", { value: 'fixed' }, "Fixed"),
+							el( "option", { value: 'swipe' }, "Swipe"),
+						),
 					)
 			)
 		},
