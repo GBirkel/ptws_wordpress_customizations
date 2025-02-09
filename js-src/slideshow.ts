@@ -11,8 +11,10 @@ export class Slideshow {
 
     static initRoyalslider(item) {
         var sDiv = jQuery(item);
+
         if (sDiv.attr('ptwsinitialized')) { return; }
         sDiv.attr('ptwsinitialized', 1);
+
         if ((<any>sDiv).royalSlider === undefined) {
             console.log("PTWS: Royalslider plugin is not present/activated.");
             return;

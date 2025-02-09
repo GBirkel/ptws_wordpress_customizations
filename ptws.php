@@ -168,10 +168,10 @@ function ptwsroute_shortcode( $atts, $content = null ) {
 		), $atts, 'ptws' );
     if (!isset($atts['routeid'])) { return 'ptwsroute shortcode: missing routeid'; }
     if ($atts['routeid'] == '') { return 'ptwsroute shortcode: routeid is blank'; }
-    $record_exists = ptws_get_route_record($atts['routeid']);
-    if ($record_exists == null) { return 'ptwsroute shortcode: routeid "' . $atts['routeid'] . '" not in database'; }
+    $existing_record = ptws_get_route_record($atts['routeid']);
+    if ($existing_record == null) { return 'ptwsroute shortcode: routeid "' . $atts['routeid'] . '" not in database'; }
     ptws_update_route_record_last_seen($atts['routeid']);
-    $all_out = "<div class='ptws-ride-log' rideid='" . $record_exists['route_id'] . "'><div class='data'>" . $record_exists['route_json'] . "</div></div>";
+    $all_out = "<div class='ptws-ride-log' rideid='" . $existing_record['route_id'] . "'><div class='data'>" . $existing_record['route_json'] . "</div></div>";
     return $all_out;
 }
 
@@ -266,12 +266,12 @@ function ptwsgallery_shortcode($atts, $content = null)
         //$emit .= "\n<p>Post " . get_the_ID() . ", Photo IDs found: \n";
         foreach ($photos as $pid) {
             //$emit .= $pid;
-            $record_exists = ptws_get_flickr_cache_record($pid);
-            if ($record_exists == null) {
+            $existing_record = ptws_get_flickr_cache_record($pid);
+            if ($existing_record == null) {
                 ptws_add_uncached_photo($pid);
                 $photos[$pid] = ptws_get_flickr_cache_record($pid);
             } else {
-                $photos[$pid] = $record_exists;
+                $photos[$pid] = $existing_record;
             }
             //$emit .= ", ";
         }
