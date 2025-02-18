@@ -61,6 +61,9 @@ div.wp-block-ptws-slides.editing div.add-slide-zone textarea {
 	font-weight: bold;
 }
 
+div.wp-block-ptws-slides.editing div.add-slide-zone select {
+	margin: 0 0.5rem 0 0;
+}
 
 
 
