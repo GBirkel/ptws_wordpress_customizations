@@ -29,9 +29,6 @@
 
 :root {
 	font-size: 1em;
-	--ptws-body-font-size: 1rem;
-	--ptws-body-background: #FFFFFF;
-	--ptws-body-color: #000000;
     --ptws-content-font-size: 1rem;
 	--ptws-content-pullquote-p-font-size: 2rem;
 	--ptws-content-pullquote-giant-p-font-size: 3rem;
@@ -39,14 +36,27 @@
 	--ptws-gearFilterButtons-span-font-size: 0.8rem;
 	--ptws-gearFilterButtons-span-padding: 2px 7px 2px 7px;
 	--ptws-gearFilterButtons-span-margin: 5px 5px;
+	/* Used to turn off or on display elements */
+	/* in layout based on screen size          */
 	--ptws-compactdisplaysonly: none;
 	--ptws-fulldisplaysonly: initial;
 }
 .compactdisplaysonly { display: none; }
 .fulldisplaysonly { display: initial; }
 
-@media (min-width: 1024px) {
-	/* Targeting desktop browsers only */
+
+body {
+	background: #FFFFFF;
+	color: #000000;
+	font-family: 'Didact Gothic', sans-serif;
+	line-height: 1.5;	/* Unitless means multiply font size */
+	margin: 0 auto 20px;
+	padding: 0;
+	font-size: 1em;
+}
+
+@media (min-width: 6in) {
+	/* These should only be applied on desktop browsers */
 	div.content div.image-max-640 img {
 		max-width: 640px;
 	}
@@ -54,15 +64,9 @@
 		max-width: 768px;
 	}
 }
-@media screen and (max-device-width: 1024px) {
+@media screen and (max-width: 6in) and (pointer: coarse) {
   	:root {
 		font-size: 2em;
-		/* On mobile devices, the photos are much smaller, and much more */
-		/* affected by glare from surrounding text and background.       */
-	    --ptws-body-background: #EAEAEA;
-	    --ptws-body-color: #111111;
-		/* On mobile devices but not in portrait mode, boost entry text size */
-		--ptws-body-font-size: 1.1rem;
 	    --ptws-content-font-size: 1.3rem;
 		--ptws-content-pullquote-p-font-size: 2.5rem;
 		--ptws-content-pullquote-giant-p-font-size: 3.4rem;
@@ -70,32 +74,35 @@
 		--ptws-gearFilterButtons-span-font-size: 1.1rem;
 		--ptws-gearFilterButtons-span-padding: 8px 12px 8px 12px;
 		--ptws-gearFilterButtons-span-margin: 8px 8px;
-		/* Display only menu items for "compact displays" */
   	}
+
+	/* Display only the menu items meant for for "compact displays" */
 	.compactdisplaysonly { display: initial; }
 	.fulldisplaysonly { display: none; }
+
+	body {
+		/* On mobile devices, the photos are smaller, and more     */
+		/* affected by glare from surrounding text and background. */
+		background: #F0F0F0;
+		color: #101010;
+		/* On mobile devices but not in portrait mode, boost entry text size a bit */
+		font-size: 1.1rem;
+	}
 }
-@media screen and (max-device-width: 1024px) and (orientation:portrait) {
-  :root {
+@media screen and (max-width: 6in) and (orientation: portrait) and (pointer: coarse) {
+    :root {
 		font-size: 1.3em;
-	  	/* Boost font sizes from the body on down in portrait mode */
-	    --ptws-body-font-size: 1.6rem;
 	  	/* Compensate for the boost in the main menu so it's not huge */
 		--ptws-menu-main-container-ul-li-font-size: 1.5em;
-  }
+    }
+
+	body {
+	  	/* Boost font sizes from the body on down in portrait mode */
+		font-size: 1.6rem;
+	}
 }
 
 /******** General customization *******/
-
-body {
-	background: var(--ptws-body-background);
-	color: var(--ptws-body-color);
-	font-family: 'Didact Gothic', sans-serif;
-	line-height: 1.5;	/* Unitless means multiply font size */
-	margin: 0 auto 20px;
-	padding: 0;
-	font-size: var(--ptws-body-font-size);
-}
 
 div.comment-respond {
 	margin-left: 1em;
