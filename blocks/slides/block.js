@@ -485,6 +485,7 @@
 			]
 		},
 
+		// https://developer.wordpress.org/block-editor/reference-guides/block-api/block-deprecation/
 		deprecated: [
 			{
 				// Old version of attributes, lacking "layout"
