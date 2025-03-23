@@ -18,6 +18,7 @@
 					"flickr_id": "",
 					"flickr_id_is_valid": false,
 					"flex_ratio": "1",
+					"layout": "fixed",
 					"large_thumbnail_height": "0",
 					"large_thumbnail_width": "0"
 				}
@@ -50,9 +51,6 @@
 			"attribute": "data-ptws-image-count"
 		}
 	},
-	"providesContext": {
-        "ptws/slides-context-layout": "layout"
-    },
 	"editorScript": "file:./block.js",
 	"style": "file:./style.css"
 }

@@ -3,10 +3,13 @@
 /* Main container, non-editing mode */
 
 .content .entry div.wp-block-ptws-slides:not(.editing) {
-	display: flex;
 	clear: left;
-	justify-content: center;
 	padding: 0;
+}
+
+.content .entry div.wp-block-ptws-slides:not(.editing):not(.swipe) {
+	display: flex;
+	justify-content: center;
 	margin: 0.7em 1em 0.7em 1em;
 }
 

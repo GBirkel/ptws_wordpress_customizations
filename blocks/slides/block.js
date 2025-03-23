@@ -66,6 +66,7 @@
 			const [flickrRecords, setFlickrRecords] = useState([]);
 
 			const [inputDebounceTimer, setInputDebounceTimer] = useState(null);
+			const [updateLayoutTypeDebounceTimer, setUpdateLayoutTypeDebounceTimer] = useState(null);
 			const [updateFlexRatioDebounceTimer, setUpdateFlexRatioDebounceTimer] = useState(null);
 
 			var attributes = props.attributes;
@@ -90,12 +91,14 @@
 				if (updateFlexRatioDebounceTimer) { clearTimeout(updateFlexRatioDebounceTimer); }
 				const newDebounceTimer = (setTimeout(() => {
 						setUpdateFlexRatioDebounceTimer(null);
-						updateFlexRatioForChildBlocks()
+						updateFlexRatioForChildBlocks();
 					}, 200));
 				setUpdateFlexRatioDebounceTimer(newDebounceTimer)
 			}, [watchedInnerBlockFlickrIds]);
 
 
+			// Attempt to resolve the list of initial IDs that's provided with a
+			// pre-populated slides block. (Probably auto-generated during a paste operation.)
 			async function processInitialIds(idString) {
 				const records = await resolveImages(idString);
 				createImages(records);
@@ -115,10 +118,36 @@
 				const layoutValue = event.target.value;
 				props.setAttributes( { layout: layoutValue } );
 
-				//				propagateLayoutValue(records);
+				// Set a timer to propogate the value down to existing child images.
+				if (updateLayoutTypeDebounceTimer) { clearTimeout(updateLayoutTypeDebounceTimer); }
+				const newDebounceTimer = (setTimeout(() => {
+						setUpdateLayoutTypeDebounceTimer(null);
+						updateLayoutTypeForChildBlocks(layoutValue);
+					}, 200));
+				setUpdateLayoutTypeDebounceTimer(newDebounceTimer)
 			}
 
 
+			// Use the block messaging interface to transmit the current layout type to
+			// images in inner blocks.
+			function updateLayoutTypeForChildBlocks(layoutValue) {
+				const thisBlock = dataSelect( 'core/block-editor' ).getBlock( props.clientId );
+				const currentInnerBlocks = thisBlock?.innerBlocks || [];
+
+				// Send attribute updates to all blocks
+				currentInnerBlocks.forEach((b) => {
+					dataDispatch( 'core/block-editor' ).updateBlockAttributes( b.clientId, {
+						layout: layoutValue
+					});
+				});
+			}
+
+
+			// Interrogate the block tree for the blocks inside this one,
+			// parse the dimensions of their images,
+			// then calculate relative flex size values for each, so the images are scaled on the page
+			// with their heights all the same, making an even horizontal row.
+			// Then use the block messaging interface to transmit those flex values down to each block. 
 			function updateFlexRatioForChildBlocks() {
 
 				const thisBlock = dataSelect( 'core/block-editor' ).getBlock( props.clientId );
@@ -128,6 +157,7 @@
 				// Empty set?  Get outta heeeeere!
 				if (currentInnerBlocks.length == 0) { return; }
 
+				// Gather up relevant information from the existing blocks
 				const imageWorkingSet = currentInnerBlocks.map((b) => {
 					return {
 						clientId: b.clientId,
@@ -247,6 +277,7 @@
 					return {
 						record: r,
 						flexRatio: 1,
+						layout: attributes.layout,
 						height: parseFloat(r.large_thumbnail_height || 0),
 						width: parseFloat(r.large_thumbnail_width || 0)
 					}
@@ -254,12 +285,11 @@
 
 				// We're only interested in images with non-zero dimensions.
 				// We will refuse to create slides that have a 0-width or 0-height thumbnail,
-				// and we will refuse to update existing slides that have the same.
 				const siblingValidDimensions = imageWorkingSet.filter((d) => ((d.width > 0) && (d.height > 0)));
 
 				// Now create and add the new blocks all at once.
 				siblingValidDimensions.forEach((r) => {
-					addFlickrSlide(r.record, r.flexRatio);
+					addFlickrSlide(r.record, r.flexRatio, r.layout);
 				});
 			}
 
@@ -298,7 +328,7 @@
 			}
 
 
-            function addFlickrSlide(flickr_record, flexRatio) {
+            function addFlickrSlide(flickr_record, flexRatio, layout) {
 
 				const newAttributes = {
 						cached_time: 			flickr_record.cached_time,
@@ -312,6 +342,7 @@
 						large_thumbnail_height: flickr_record.large_thumbnail_height || 0,
 						large_thumbnail_url: 	flickr_record.large_thumbnail_url,
 						large_thumbnail_width: 	flickr_record.large_thumbnail_width || 0,
+						layout:					layout,
 						link_url: 				flickr_record.link_url,
 						square_thumbnail_height: flickr_record.square_thumbnail_height,
 						square_thumbnail_url: 	flickr_record.square_thumbnail_url,
@@ -384,6 +415,22 @@
 		},
         save: function ( props ) {
 			var attributes = props.attributes;
+
+			var inner;
+			if (attributes.layout == "swipe") {
+				inner =
+					el( 'div',
+						{ className: 'royalSlider heroSlider fullWidth rsMinW' },
+						el( InnerBlocks.Content )
+					)
+			} else {
+				inner =
+					el( 'div',
+						{ className: 'size-limiter' },
+						el( InnerBlocks.Content )
+					)
+			}
+
             return el( 'div',
 						useBlockProps.save( {
 							className: props.className,
@@ -391,10 +438,7 @@
 							'data-ptws-layout': attributes.layout,
 							'data-ptws-image-count': attributes.image_count
 						} ),
-						el( 'div',
-							{ className: 'size-limiter' },
-							el( InnerBlocks.Content )
-						)
+						inner
 					);
         },
 		transforms: {

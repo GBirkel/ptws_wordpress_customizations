@@ -6,7 +6,6 @@
 	"parent": [ "ptws/slides" ],
 	"title": "PTWS: Flickr Slide",
 	"category": "text",
-	"usesContext": ["ptws/slides-context"],
 	"icon": "index-card",
 	"description": "One image with metadata fetched from Flickr.",
 	"textdomain": "ptws",
@@ -64,6 +63,13 @@
 			"source": "attribute",
 			"selector": "div.photodata",
 			"attribute": "data-ptws-id"
+		},
+		"layout": {
+			"type": "string",
+			"default": "fixed",
+			"source": "attribute",
+			"selector": "div.photodata",
+			"attribute": "data-ptws-layout"
 		},
 		"large_thumbnail_height": {
 			"type": "string",

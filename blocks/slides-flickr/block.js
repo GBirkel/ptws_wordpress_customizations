@@ -52,6 +52,7 @@
 				'data-ptws-id': a.id || "",
 				'data-ptws-large-thumbnail-height': a.large_thumbnail_height || "0",
 				'data-ptws-large-thumbnail-width': a.large_thumbnail_width || "0",
+				'data-ptws-layout': a.layout || "fixed",
 				'data-ptws-square-thumbnail-height': a.square_thumbnail_height || "0",
 				'data-ptws-square-thumbnail-width': a.square_thumbnail_width || "0",
 				'data-ptws-taken-time': a.taken_time || "",
@@ -84,7 +85,6 @@
 	window.wp.blocks.registerBlockType( 'ptws/slides-flickr', {
 		title: 'PTWS: Flickr Slide',
 		category: 'text',
-		usesContext: ["ptws/slides-context"],
 		icon: {
 			background: 'rgba(224, 243, 254, 0.52)',
 			src: iconptwsgallery()
@@ -92,8 +92,6 @@
 
 		edit: function ( props ) {
 			var attributes = props.attributes;
-
-			const layout = props.context["ptws/slides-context-layout"];
 
 			return el(
 				'div',
@@ -119,38 +117,73 @@
 
 		save: function ( props ) {
 			var attributes = props.attributes;
-			return el(
-				'div',
-				useBlockProps.save( {
-					className: props.className,
-					style: {
-						flex: `${attributes.flex_ratio}`	// Force a string
-					},
-				} ),
-				renderImageDetails(attributes, false),
-				attributes.flickr_id_is_valid ? (
-					el( 'a', {
-							href: attributes.link_url,
-							title: attributes.title
-						},
-						el( 'img', {
-								src: attributes.large_thumbnail_url,
-								'data-ptws-height': attributes.large_thumbnail_height,
-								'data-ptws-width': attributes.large_thumbnail_width
-							}
+
+			if (attributes.layout == "swipe") {
+				return el(
+					'div',
+					useBlockProps.save( { className: "rsContent" } ),
+					renderImageDetails(attributes, false),
+					attributes.flickr_id_is_valid ? (
+						el( 'a', {
+								href: attributes.link_url,
+								title: attributes.title
+							},
+							el( 'img', {
+									className: 'rsImg',
+									src: attributes.large_thumbnail_url,
+									'data-rsh': attributes.large_thumbnail_height,
+									'data-rsw': attributes.large_thumbnail_width,
+									'data-ptws-height': attributes.large_thumbnail_height,
+									'data-ptws-width': attributes.large_thumbnail_width
+								}
+							)
 						)
-					)
-				) : (
-					// If the flickr info is not valid, render an empty image placeholder
-					el( 'div', { className: 'emptyimage' }, "" )
-				),
-				(attributes.flickr_id_is_valid && attributes.description) ? (
-					el( 'div',
-						{ className: 'imgComment' },
-						el( 'p', {}, attributes.description )
-					)
-				) : undefined
-			);
+					) : (
+						// If the flickr info is not valid, render an empty image placeholder
+						el( 'div', { className: 'emptyimage' }, "" )
+					),
+					(attributes.flickr_id_is_valid && attributes.description) ? (
+						el( 'div',
+							{ className: 'rsCaption' },
+							el( 'p', {}, attributes.description )
+						)
+					) : undefined
+				);
+
+			} else {
+				return el(
+					'div',
+					useBlockProps.save( {
+						className: props.className,
+						style: {
+							flex: `${attributes.flex_ratio}`	// Force a string
+						},
+					} ),
+					renderImageDetails(attributes, false),
+					attributes.flickr_id_is_valid ? (
+						el( 'a', {
+								href: attributes.link_url,
+								title: attributes.title
+							},
+							el( 'img', {
+									src: attributes.large_thumbnail_url,
+									'data-ptws-height': attributes.large_thumbnail_height,
+									'data-ptws-width': attributes.large_thumbnail_width
+								}
+							)
+						)
+					) : (
+						// If the flickr info is not valid, render an empty image placeholder
+						el( 'div', { className: 'emptyimage' }, "" )
+					),
+					(attributes.flickr_id_is_valid && attributes.description) ? (
+						el( 'div',
+							{ className: 'imgComment' },
+							el( 'p', {}, attributes.description )
+						)
+					) : undefined
+				);
+			}
 		},
 	} );
 } )();
