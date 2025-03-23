@@ -419,15 +419,19 @@
 			var inner;
 			if (attributes.layout == "swipe") {
 				inner =
-					el( 'div',
-						{ className: 'royalSlider heroSlider fullWidth rsMinW' },
-						el( InnerBlocks.Content )
+					el( 'div', { className: 'swipe-container' },
+						el( 'div',
+							{ className: 'royalSlider heroSlider fullWidth rsMinW' },
+							el( InnerBlocks.Content )
+						)
 					)
 			} else {
 				inner =
-					el( 'div',
-						{ className: 'size-limiter' },
-						el( InnerBlocks.Content )
+					el( 'div', { className: 'fixed-container' },
+						el( 'div',
+							{ className: 'size-limiter' },
+							el( InnerBlocks.Content )
+						)
 					)
 			}
 
@@ -441,6 +445,7 @@
 						inner
 					);
         },
+
 		transforms: {
 			from: [
 				{	type: 'block',
@@ -478,6 +483,54 @@
 					}
 				}
 			]
-		}
+		},
+
+		deprecated: [
+			{
+				// Old version of attributes, lacking "layout"
+				attributes: {
+					"initial_ids": {
+						"type": "string",
+						"default": "",
+						"source": "attribute",
+						"selector": "div.wp-block-ptws-slides",
+						"attribute": "data-ptws-initial-ids"
+					},
+					"image_count": {
+						"type": "string",
+						"default": "0",
+						"source": "attribute",
+						"selector": "div.wp-block-ptws-slides",
+						"attribute": "data-ptws-image-count"
+					}
+				},
+
+				migrate( old ) {
+					const newAttributes = {
+                    	layout: "fixed",
+						...old
+                	};
+                	return newAttributes;
+            	},
+
+				// Old save operation doesn't render a fixed-container		
+				save: function ( props ) {
+					var attributes = props.attributes;
+					return el( 'div',
+								useBlockProps.save( {
+									className: props.className,
+									'data-ptws-initial-ids': attributes.initial_ids,
+									'data-ptws-layout': "fixed",
+									'data-ptws-image-count': attributes.image_count
+								} ),
+								el( 'div',
+									{ className: 'size-limiter' },
+									el( InnerBlocks.Content )
+								)
+							);
+				}
+			}
+		]
+
 	} );
 } )();

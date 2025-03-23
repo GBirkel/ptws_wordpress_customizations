@@ -2,18 +2,24 @@
 
 /* Main container, non-editing mode */
 
-.content .entry div.wp-block-ptws-slides:not(.editing) {
+.content .entry div.wp-block-ptws-slides {
 	clear: left;
-	padding: 0;
 }
 
-.content .entry div.wp-block-ptws-slides:not(.editing):not(.swipe) {
+.content .entry div.wp-block-ptws-slides:not(.editing) div.fixed-container {
 	display: flex;
 	justify-content: center;
 	margin: 0.7em 1em 0.7em 1em;
+	padding: 0;
 }
 
-.content .entry div.wp-block-ptws-slides:not(.editing) div.size-limiter {
+.content .entry div.wp-block-ptws-slides:not(.editing) div.swipe-container {
+	display: block;
+	margin: 0;
+	padding: 0;
+}
+
+.content .entry div.wp-block-ptws-slides:not(.editing) div.fixed-container div.size-limiter {
 	display: flex;
 	justify-content: center;
 	padding: 0;
