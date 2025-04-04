@@ -4,13 +4,7 @@
 ( function () {
 
 	var el = window.wp.element.createElement;
-	var RichText = window.wp.blockEditor.RichText;
-	var data_select = window.wp.data.select;
-	var data_dispatch = window.wp.data.dispatch;
-	var PlainText = window.wp.blockEditor.PlainText;
 	var useBlockProps = window.wp.blockEditor.useBlockProps;
-	var apiFetch = window.wp.apiFetch;
-	var wpUrl = window.wp.url;
 
 	function iconptwsgallery() {
 		return el(
