@@ -28,9 +28,9 @@
 }
 
 /* All images but the first. Effectively creates a margin for 2 or more images only. */
-.content .entry div.wp-block-ptws-slides a:nth-child(1n+2) img {
+/* .content .entry div.wp-block-ptws-slides a:nth-child(1n+2) img {
 	margin-top: 16px;
-}
+} */
 
 /* Editing */
 
