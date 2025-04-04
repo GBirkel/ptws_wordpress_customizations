@@ -55,10 +55,11 @@
 		"layout": {
 			"default": {
 				"type": "flex",
-				"orientation": "horizontal"
+				"orientation": "horizontal",
+				"verticalAlignment": "top"
 			},
-			"allowSwitching": true,
-			"allowEditing": true
+			"allowSwitching": false,
+			"allowEditing": false
 		}
 	},
 	"editorScript": "file:./block.js",
