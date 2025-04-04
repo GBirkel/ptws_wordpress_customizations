@@ -33,6 +33,7 @@ function register_dynamic_blocks()
     register_block_type(PTWS_PLUGIN_DIRECTORY . '/blocks/disclosure');
     register_block_type(PTWS_PLUGIN_DIRECTORY . '/blocks/slides');
     register_block_type(PTWS_PLUGIN_DIRECTORY . '/blocks/slides-flickr');
+    register_block_type(PTWS_PLUGIN_DIRECTORY . '/blocks/slides-stack');
 
     // Hook server side rendering into render callback
     //register_block_type('ptws/gallery', [

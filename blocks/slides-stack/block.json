@@ -1,0 +1,75 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "ptws/slides-stack",
+	"version": "0.3.6",
+	"title": "PTWS: Slides Vertical Stack",
+	"allowedBlocks": ["ptws/slides-flickr"],
+	"category": "text",
+	"parent": ["ptws/slides"],
+	"example": {
+		"attributes": {
+			"image_count": "1",
+			"large_thumbnail_height": "0",
+			"large_thumbnail_width": "0"
+		},
+		"innerBlocks": [
+			{	"name": "ptws/slides-flickr",
+				"attributes": {
+					"flickr_id": "",
+					"flickr_id_is_valid": false,
+					"flex_ratio": "1",
+					"layout": "fixed",
+					"large_thumbnail_height": "0",
+					"large_thumbnail_width": "0"
+				}
+			}
+		]
+	},
+	"icon": "index-card",
+	"textdomain": "ptws",
+	"description": "Stacks multiple flickr images (slides) vertically.",
+	"attributes": {
+		"image_count": {
+			"type": "string",
+			"default": "0",
+			"source": "attribute",
+			"selector": "div.wp-block-ptws-slides-stack",
+			"attribute": "data-ptws-image-count"
+		},
+		"flex_ratio": {
+			"type": "string",
+			"default": "1",
+			"source": "attribute",
+			"selector": "div.wp-block-ptws-slides-stack",
+			"attribute": "data-ptws-flex-ratio"
+		},
+		"large_thumbnail_height": {
+			"type": "string",
+			"default": "0",
+			"source": "attribute",
+			"selector": "div.wp-block-ptws-slides-stack",
+			"attribute": "data-ptws-large-thumbnail-height"
+		},
+		"large_thumbnail_width": {
+			"type": "string",
+			"default": "0",
+			"source": "attribute",
+			"selector": "div.wp-block-ptws-slides-stack",
+			"attribute": "data-ptws-large-thumbnail-width"
+		}
+	},
+	"supports": {
+		"layout": {
+			"default": {
+				"type": "flex",
+				"orientation": "vertical",
+				"columnCount": 1
+			},
+			"allowSwitching": false,
+			"allowEditing": false
+		}
+	},
+	"editorScript": "file:./block.js",
+	"style": "file:./style.css"
+}

@@ -1,0 +1,20 @@
+/* Slides Stack */
+
+/* Main container, non-editing mode */
+
+.content .entry div.wp-block-ptws-slides div.wp-block-ptws-slides-stack:not(.editing) {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	margin: 0;
+	padding: 0;
+}
+
+/* Editing */
+
+div.wp-block-ptws-slides-stack .empty-notification {
+	margin: 0.5rem 0.3rem 0.5rem 0.3rem;
+	color: #666;
+}
+
+

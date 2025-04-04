@@ -4,7 +4,7 @@
 	"name": "ptws/slides",
 	"version": "0.3.6",
 	"title": "PTWS: Slides",
-	"allowedBlocks": ["ptws/slides-flickr"],
+	"allowedBlocks": ["ptws/slides-flickr", "ptws/slides-stack"],
 	"category": "text",
 	"example": {
 		"attributes": {
@@ -36,12 +36,12 @@
 			"selector": "div.wp-block-ptws-slides",
 			"attribute": "data-ptws-initial-ids"
 		},
-		"layout": {
+		"presentation_type": {
 			"type": "string",
 			"default": "fixed",
 			"source": "attribute",
 			"selector": "div.wp-block-ptws-slides",
-			"attribute": "data-ptws-layout"
+			"attribute": "data-ptws-presentation-type"
 		},
 		"image_count": {
 			"type": "string",
@@ -49,6 +49,16 @@
 			"source": "attribute",
 			"selector": "div.wp-block-ptws-slides",
 			"attribute": "data-ptws-image-count"
+		}
+	},
+	"supports": {
+		"layout": {
+			"default": {
+				"type": "flex",
+				"orientation": "horizontal"
+			},
+			"allowSwitching": true,
+			"allowEditing": true
 		}
 	},
 	"editorScript": "file:./block.js",

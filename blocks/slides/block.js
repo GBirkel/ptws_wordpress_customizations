@@ -1,4 +1,4 @@
-// PTWS Block: Dialogue
+// PTWS Block: Slide Collection
 // Client-side Javascript portion
 
 ( function () {
@@ -116,7 +116,7 @@
 
 			async function changedLayoutType(event) {
 				const layoutValue = event.target.value;
-				props.setAttributes( { layout: layoutValue } );
+				props.setAttributes( { presentation_type: layoutValue } );
 
 				// Set a timer to propogate the value down to existing child images.
 				if (updateLayoutTypeDebounceTimer) { clearTimeout(updateLayoutTypeDebounceTimer); }
@@ -137,7 +137,7 @@
 				// Send attribute updates to all blocks
 				currentInnerBlocks.forEach((b) => {
 					dataDispatch( 'core/block-editor' ).updateBlockAttributes( b.clientId, {
-						layout: layoutValue
+						presentation_type: layoutValue
 					});
 				});
 			}
@@ -277,7 +277,7 @@
 					return {
 						record: r,
 						flexRatio: 1,
-						layout: attributes.layout,
+						presentationType: attributes.presentation_type,
 						height: parseFloat(r.large_thumbnail_height || 0),
 						width: parseFloat(r.large_thumbnail_width || 0)
 					}
@@ -289,7 +289,7 @@
 
 				// Now create and add the new blocks all at once.
 				siblingValidDimensions.forEach((r) => {
-					addFlickrSlide(r.record, r.flexRatio, r.layout);
+					addFlickrSlide(r.record, r.flexRatio, r.presentationType);
 				});
 			}
 
@@ -311,10 +311,8 @@
 					if (idsInputValue === "") {
 						// Get a list of all the current child blocks.
 						const thisBlock = dataSelect( 'core/block-editor' ).getBlock( props.clientId );
-						if (thisBlock) {
-							if (thisBlock.innerBlocks?.length == 0) {
-                				dataDispatch( 'core/block-editor' ).removeBlock( props.clientId );
-							}
+						if (thisBlock && thisBlock.innerBlocks?.length == 0) {
+							dataDispatch( 'core/block-editor' ).removeBlock( props.clientId );
 						}
 					}
 				}
@@ -328,7 +326,7 @@
 			}
 
 
-            function addFlickrSlide(flickr_record, flexRatio, layout) {
+            function addFlickrSlide(flickr_record, flexRatio, presentationType) {
 
 				const newAttributes = {
 						cached_time: 			flickr_record.cached_time,
@@ -342,7 +340,7 @@
 						large_thumbnail_height: flickr_record.large_thumbnail_height || 0,
 						large_thumbnail_url: 	flickr_record.large_thumbnail_url,
 						large_thumbnail_width: 	flickr_record.large_thumbnail_width || 0,
-						layout:					layout,
+						presentation_type:		presentationType,
 						link_url: 				flickr_record.link_url,
 						square_thumbnail_height: flickr_record.square_thumbnail_height,
 						square_thumbnail_url: 	flickr_record.square_thumbnail_url,
@@ -371,7 +369,7 @@
 					useBlockProps( {
 						className: "editing",
 						'data-ptws-initial-ids': attributes.initial_ids,
-						'data-ptws-layout': attributes.layout,
+						'data-ptws-presentation-type': attributes.presentation_type,
 						'data-ptws-image-count': attributes.image_count
 					} ),
 					(parseInt(attributes.image_count, 10) == 0) ? (
@@ -405,7 +403,7 @@
 						el( "select", {
 								name: "layout",
 								onChange: changedLayoutType,
-								value: attributes.layout
+								value: attributes.presentation_type
 							},
 							el( "option", { value: 'fixed' }, "Fixed"),
 							el( "option", { value: 'swipe' }, "Swipe"),
@@ -417,7 +415,7 @@
 			var attributes = props.attributes;
 
 			var inner;
-			if (attributes.layout == "swipe") {
+			if (attributes.presentation_type == "swipe") {
 				inner =
 					el( 'div', { className: 'swipe-container' },
 						el( 'div',
@@ -439,7 +437,7 @@
 						useBlockProps.save( {
 							className: props.className,
 							'data-ptws-initial-ids': attributes.initial_ids,
-							'data-ptws-layout': attributes.layout,
+							'data-ptws-presentation-type': attributes.presentation_type,
 							'data-ptws-image-count': attributes.image_count
 						} ),
 						inner
@@ -465,7 +463,7 @@
 						const swipe = attributes?.text?.match(/\s+swipe="([\d,\s]+)"/);
 						const newAttributes = {
 								initial_ids: swipe ? swipe[1] : fixed[1],
-								layout: swipe ? "swipe" : "fixed",
+								presentation_type: swipe ? "swipe" : "fixed",
 								image_count: "0"
 							};
 						return createBlock( 'ptws/slides', newAttributes );	
@@ -476,7 +474,7 @@
 					transform: (attributes) => {
 						const newAttributes = {
 								initial_ids: attributes?.named?.fixed || attributes?.named?.swipe,
-								layout: attributes?.named?.fixed ? "fixed" : "swipe",
+								presentation_type: attributes?.named?.fixed ? "fixed" : "swipe",
 								image_count: "0"
 							};
 						return createBlock( 'ptws/slides', newAttributes );	
@@ -488,7 +486,75 @@
 		// https://developer.wordpress.org/block-editor/reference-guides/block-api/block-deprecation/
 		deprecated: [
 			{
-				// Old version of attributes, lacking "layout"
+				// Changed "layout" to "presentation_type" to avoid a collision with a built-in attribute
+				attributes: {
+					"initial_ids": {
+						"type": "string",
+						"default": "",
+						"source": "attribute",
+						"selector": "div.wp-block-ptws-slides",
+						"attribute": "data-ptws-initial-ids"
+					},
+					"image_count": {
+						"type": "string",
+						"default": "0",
+						"source": "attribute",
+						"selector": "div.wp-block-ptws-slides",
+						"attribute": "data-ptws-image-count"
+					},
+					"layout": {
+						"type": "string",
+						"default": "0",
+						"source": "attribute",
+						"selector": "div.wp-block-ptws-slides",
+						"attribute": "data-ptws-layout"
+					}
+				},
+
+				migrate( old ) {
+					const newAttributes = {
+                    	presentation_type: old.layout,
+						initial_ids: old.initial_ids,
+						image_count: old.image_count
+                	};
+                	return newAttributes;
+            	},
+
+				save: function ( props ) {
+					var attributes = props.attributes;
+
+					var inner;
+					if (attributes.presentation_type == "swipe") {
+						inner =
+							el( 'div', { className: 'swipe-container' },
+								el( 'div',
+									{ className: 'royalSlider heroSlider fullWidth rsMinW' },
+									el( InnerBlocks.Content )
+								)
+							)
+					} else {
+						inner =
+							el( 'div', { className: 'fixed-container' },
+								el( 'div',
+									{ className: 'size-limiter' },
+									el( InnerBlocks.Content )
+								)
+							)
+					}
+
+					return el( 'div',
+								useBlockProps.save( {
+									className: props.className,
+									'data-ptws-initial-ids': attributes.initial_ids,
+									'data-ptws-layout': attributes.layout,
+									'data-ptws-image-count': attributes.image_count
+								} ),
+								inner
+							);
+				},
+			},
+			{
+				// Old version of attributes, lacking "presentation_type"
 				attributes: {
 					"initial_ids": {
 						"type": "string",
@@ -508,7 +574,7 @@
 
 				migrate( old ) {
 					const newAttributes = {
-                    	layout: "fixed",
+                    	presentation_type: "fixed",
 						...old
                 	};
                 	return newAttributes;
@@ -532,6 +598,5 @@
 				}
 			}
 		]
-
 	} );
 } )();
