@@ -150,7 +150,6 @@
 						'data-ptws-image-count': attributes.image_count,
 						'data-ptws-large-thumbnail-height': attributes.large_thumbnail_height || "0",
 						'data-ptws-large-thumbnail-width': attributes.large_thumbnail_width || "0"
-
 					} ),
 					(parseInt(attributes.image_count, 10) == 0) ? (
 						el( "p", { className: "empty-notification" }, "Empty slide stack" )
@@ -195,14 +194,12 @@
 					// All the blocks must have the "fixed" layout.
 					// Stacking "swipe" layout is not supported.
 					isMatch: (attributesArray) => {
-						console.log(`attributesarray testing length: ${attributesArray.length}`);
 						return attributesArray.every((a) => { return a.layout == "fixed" });
 					},
 					transform: (attributesArray) => {
 						const newBlocks = attributesArray.map((a) => {
 							return createBlock( 'ptws/slides-flickr', a );
 						});
-						console.log(`attributesarray length: ${attributesArray.length}`);
 						// Gather up relevant information from the existing blocks
 						const imageWorkingSet = attributesArray.map((a) => {
 							return {
@@ -210,8 +207,6 @@
 								width: parseFloat(a.large_thumbnail_width)
 							}
 						});
-						console.log("imageWorkingSet:");
-						console.log(imageWorkingSet);
 
 						// We're only interested in images with non-zero dimensions.
 						const siblingValidDimensions = imageWorkingSet.filter((d) => ((d.width > 0) && (d.height > 0)));
@@ -232,9 +227,6 @@
 								large_thumbnail_height: imgTotalScaledHeight,
 								large_thumbnail_width: imageMaxWidth
 							};
-
-						console.log("newAttributes:");
-						console.log(newAttributes);
 
 						return createBlock( 'ptws/slides-stack', newAttributes, newBlocks );
 					}
