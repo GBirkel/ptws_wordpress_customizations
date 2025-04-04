@@ -524,7 +524,7 @@
 					var attributes = props.attributes;
 
 					var inner;
-					if (attributes.presentation_type == "swipe") {
+					if (attributes.layout == "swipe") {
 						inner =
 							el( 'div', { className: 'swipe-container' },
 								el( 'div',
