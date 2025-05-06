@@ -15,8 +15,8 @@
 .wp-block-ptws-disclosure > div.heading::before { 
 	display: block;
 	float: left;
-	padding-top:0.25em;
-	font-size:0.8em;
+	padding-top: 0.25em;
+	font-size: calc(var(--ptws-font-size-multiplier) * 0.6rem);
 	width: 1.2em;
 }
 .wp-block-ptws-disclosure > div.heading:not(.disclosed)::before { 
@@ -37,7 +37,7 @@
 }
 
 .wp-block-ptws-disclosure > div.disclosecontent {
-	font-size: 0.9em;
+	font-size: calc(var(--ptws-font-size-multiplier) * 0.64rem);
 	margin: 0 1.4em 0 0;
 	padding: 0em 1em 0em 1.7em;
 }
