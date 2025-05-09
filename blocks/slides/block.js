@@ -469,11 +469,33 @@
 						return createBlock( 'ptws/slides', newAttributes );	
 					}
 				},
-				{	type: 'shortcode',
+				{	type: 'shortcode',	// WPShortcodeMatch
 					tag: 'ptwsgallery',
-					transform: (attributes) => {
+					transform: (attributes, shortcodeMatch) => {
+						// Structure of "shortcodeMatch":
+						// { index: number,
+						//   content: string (full match including shortcode enclosure)
+						//   shortcode: {
+						//		content: string (full match without shortcode enclosure)
+						//		tag: string (name of shortcode)
+						//		type: string (not sure? set to "closed" in my samples)
+						//		attrs: {
+						//		  named: { } Ostensibly key-value pairs
+						//		  numeric: [] Ostensibly in order enocuntered
+						//		}
+						//   }
+						// }
+						// First look for photo IDs in the attributes
+						var ids = attributes?.named?.fixed || attributes?.named?.swipe;
+						// If none are found in attributes, search the shortcode body
+						if (!ids) {
+							const idsMatch = shortcodeMatch?.content?.match(/\s+id="[\d\s]+"/gi);
+							if (idsMatch) {
+								ids = idsMatch.map((m) => m.match(/[\d]+/)[0]).join(',');
+							}
+						}
 						const newAttributes = {
-								initial_ids: attributes?.named?.fixed || attributes?.named?.swipe,
+								initial_ids: ids,
 								presentation_type: attributes?.named?.fixed ? "fixed" : "swipe",
 								image_count: "0"
 							};
