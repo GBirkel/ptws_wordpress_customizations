@@ -490,7 +490,7 @@
 						var fixedOrSwipe = attributes?.named?.swipe ? "swipe" : "fixed";
 						// If none are found in attributes, search the shortcode body
 						if (!ids) {
-							const idsMatch = shortcodeMatch?.content?.match(/\s+"[\d\s]+"/gi);
+							const idsMatch = shortcodeMatch?.content?.match(/"[\d\s]+"/gi);
 							if (idsMatch) {
 								ids = idsMatch.map((m) => m.match(/[\d]+/)[0]).join(',');
 								fixedOrSwipe = shortcodeMatch?.content?.match(/fixedgallery/gi) ? "fixed" : "swipe";
