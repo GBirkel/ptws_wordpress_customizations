@@ -224,6 +224,13 @@ function ptwsgallery_shortcode($atts, $content = null)
         } catch (Exception $e) {
             return '<p>ptwsgallery shortcode content XML parsing error: ' . $e->getMessage() . '</p>';
         }
+        if ($sxe === false) {
+            $message = "";
+            foreach(libxml_get_errors() as $error) {
+                $message .= $error->message + "\n";
+            }
+            return '<p>ptwsgallery shortcode content XML parsing failure: ' . $message . '</p>';
+        }
         $sxe->rewind();
         $encloser = $sxe->getName();
         if ($encloser != 'ptwsgallery') {
