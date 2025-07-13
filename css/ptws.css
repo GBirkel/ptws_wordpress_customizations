@@ -60,12 +60,13 @@ body {
 		max-width: 768px;
 	}
 }
+/* Portable touch devices less than 6 inches in portrait mode */
 @media screen and (max-device-width: 6in) and (orientation: portrait) and (pointer: coarse) {
   	:root {
-		font-size: 38pt;
+		font-size: 36pt;
 		--ptws-font-size-multiplier: 1.2;
 		--ptws-menu-font-size-multiplier: 0.9;
-		--ptws-gearFilterButtons-span-font-size: 1.1rem;
+		--ptws-gearFilterButtons-span-font-size: 1rem;
 		--ptws-gearFilterButtons-span-padding: 8px 12px 8px 12px;
 		--ptws-gearFilterButtons-span-margin: 8px 8px;
   	}
@@ -89,6 +90,7 @@ body {
 		color: #101010;
 	}
 }
+/* Portable touch devices less than 6 inches in landscape mode */
 @media screen and (max-device-width: 6in) and (orientation: landscape) and (pointer: coarse) {
 
     :root {
@@ -209,7 +211,8 @@ body {
 }
 
 .content h1 {
-	font-size: calc(var(--ptws-font-size-multiplier) * 1rem);
+/*	font-size: calc(var(--ptws-font-size-multiplier) * 1rem); */
+	font-size: calc(1rem * calc(1 + calc(var(--ptws-font-size-multiplier) * 0.3333333)));
 	margin-top: 0.6em;
 	margin-bottom: 0.2em;
 }
@@ -217,7 +220,8 @@ body {
 .content h2 {
 	color: #333333;
 	text-decoration: none;
-	font-size: calc(var(--ptws-font-size-multiplier) * 0.9rem);
+/*	font-size: calc(var(--ptws-font-size-multiplier) * 0.9rem); */
+	font-size: calc(1rem * calc(1 + calc(var(--ptws-font-size-multiplier) * 0.2333333)));
 	margin: 4px 1em 1px 1em;
 	padding: 0 0 5px 0;
 }
@@ -233,7 +237,8 @@ body {
 }
 	
 .content h3 {
-	font-size: calc(var(--ptws-font-size-multiplier) * 0.82rem);
+/*  font-size: calc(var(--ptws-font-size-multiplier) * 0.82rem); */
+	font-size: calc(1rem * calc(1 + calc(var(--ptws-font-size-multiplier) * 0.1533333)));
 	color: #333333;
 	text-decoration: none;
 	margin: 0 1em 10px 1em;
@@ -241,24 +246,28 @@ body {
 }
 	
 .content h4 {
-	font-size: calc(var(--ptws-font-size-multiplier) * 0.78rem);
+/*	font-size: calc(var(--ptws-font-size-multiplier) * 0.78rem); */
+	font-size: calc(1rem * calc(1 + calc(var(--ptws-font-size-multiplier) * 0.1133333)));
 	margin-left: 1.15em;
 	margin-bottom: 0.5em;
 }
 	
 .content h5 {
-	font-size: calc(var(--ptws-font-size-multiplier) * 0.74rem);
+/*	font-size: calc(var(--ptws-font-size-multiplier) * 0.74rem); */
+	font-size: calc(1rem * calc(1 + calc(var(--ptws-font-size-multiplier) * 0.0733333)));
 }
 
 .content h6 {
-	font-size: calc(var(--ptws-font-size-multiplier) * 0.7rem);
+/*	font-size: calc(var(--ptws-font-size-multiplier) * 0.7rem); */
+	font-size: calc(1rem * calc(1 + calc(var(--ptws-font-size-multiplier) * 0.0333333)));
 }
 
 
 /***** Post Info ********************/
 	
 .post-info {
-	font-size: calc(var(--ptws-font-size-multiplier) * 0.52rem);
+/*	font-size: calc(var(--ptws-font-size-multiplier) * 0.52rem); */
+	font-size: calc(1rem * calc(1 - calc(var(--ptws-font-size-multiplier) * 0.1466666)));
 	color: #999999;
 	margin: 0 0 13px 2em;
 	padding: 0;
@@ -278,7 +287,8 @@ body {
 /***** Post Meta ********************/
 	
 .post-meta {
-	font-size: calc(var(--ptws-font-size-multiplier) * 0.57rem);
+/*	font-size: calc(var(--ptws-font-size-multiplier) * 0.57rem); */
+	font-size: calc(1rem * calc(1 - calc(var(--ptws-font-size-multiplier) * 0.0966666)));
 	text-transform: uppercase;
 	margin: 0 0 5px 0;
 	padding: 1px 20px 16px 20px;
@@ -360,7 +370,8 @@ iframe.wikiloc {
 #searchsubmit {
 	background: #666666;
 	color: #FFFFFF;
-	font-size: calc(var(--ptws-font-size-multiplier) * 0.53rem);
+/*	font-size: calc(var(--ptws-font-size-multiplier) * 0.53rem); */
+	font-size: calc(1rem * calc(1 - calc(var(--ptws-font-size-multiplier) * 0.1366666)));
 	font-weight: bold;
 	text-decoration: none;
 	text-transform: uppercase;
@@ -485,7 +496,8 @@ span.ui-icon-triangle-1-e {
 	display: inline-block;
 	text-indent: 0;
 	padding-top: 0.25em;
-	font-size: calc(var(--ptws-font-size-multiplier) * 0.6rem);
+/*	font-size: calc(var(--ptws-font-size-multiplier) * 0.6rem);	*/
+	font-size: calc(1rem * calc(1 - calc(var(--ptws-font-size-multiplier) * 0.0666666)));
 	width: 1.2em;
 	height: 1em;
 }
@@ -497,7 +509,8 @@ span.ui-icon-triangle-1-s {
 	display: inline-block;
 	text-indent: 0;
 	padding-top: 0.25em;
-	font-size: calc(var(--ptws-font-size-multiplier) * 0.6rem);
+/*	font-size: calc(var(--ptws-font-size-multiplier) * 0.6rem);	*/
+	font-size: calc(1rem * calc(1 - calc(var(--ptws-font-size-multiplier) * 0.0666666)));
 	width: 1.2em;
 	height: 1em;
 }
@@ -546,7 +559,8 @@ div.wp-block-image > figure.aligncenter > img, figure.wp-block-image > img {
 .content .entry div.imgComment {
 	text-align: left;
 	text-indent: 10px;
-	font-size: calc(var(--ptws-font-size-multiplier) * 0.63rem);
+/*	font-size: calc(var(--ptws-font-size-multiplier) * 0.63rem);	*/
+	font-size: calc(1rem * calc(1 - calc(var(--ptws-font-size-multiplier) * 0.0366666)));
 	margin: 0 10px 0 10px;
 	padding: 0px 15px 0 15px;
 }
@@ -696,7 +710,8 @@ div.wp-block-image > figure.aligncenter > img, figure.wp-block-image > img {
 .content .entry div.dialogue > div > div:first-child {
 	color: #666;
 	text-align: right;
-	font-size: calc(var(--ptws-font-size-multiplier) * 0.64rem);
+/*	font-size: calc(var(--ptws-font-size-multiplier) * 0.64rem);	*/
+	font-size: calc(1rem * calc(1 - calc(var(--ptws-font-size-multiplier) * 0.0266666)));
 	white-space: nowrap;
 	font-weight: bold;
 	padding-right: 8px;
@@ -706,7 +721,8 @@ div.wp-block-image > figure.aligncenter > img, figure.wp-block-image > img {
 /* Music playlist tables */
 
 table.musicplaylist {
-	font-size: calc(var(--ptws-font-size-multiplier) * 0.6rem);
+/*	font-size: calc(var(--ptws-font-size-multiplier) * 0.6rem);	*/
+	font-size: calc(1rem * calc(1 - calc(var(--ptws-font-size-multiplier) * 0.0666666)));
 	border:none;
 	margin:1em 2em 1em 2em;
 }
@@ -716,21 +732,24 @@ table.musicplaylist tr td {
 	border:none;
 }
 table.musicplaylist tr td:first-child {
-	font-size: calc(var(--ptws-font-size-multiplier) * 0.8rem);
+/*	font-size: calc(var(--ptws-font-size-multiplier) * 0.8rem);	*/
+	font-size: calc(1rem * calc(1 + calc(var(--ptws-font-size-multiplier) * 0.1333333)));
 }
 
 
 /* WP Quote with citation */
 
 .content blockquote.wp-block-quote p {
-	font-size: calc(var(--ptws-font-size-multiplier) * 0.8rem);
+/*	font-size: calc(var(--ptws-font-size-multiplier) * 0.8rem);	*/
+	font-size: calc(1rem * calc(1 + calc(var(--ptws-font-size-multiplier) * 0.1333333)));
 	font-style: normal;
 	color: rgba(0, 62, 11, 1);
 }
 /* WP official styles override this and make it italic, which is infuriating */
 .content blockquote.wp-block-quote.is-style-large p {
 	font-style: normal;
-	font-size: calc(var(--ptws-font-size-multiplier) * 1rem);
+/*	font-size: calc(var(--ptws-font-size-multiplier) * 1rem);	*/
+	font-size: calc(1rem * calc(1 + calc(var(--ptws-font-size-multiplier) * 0.3333333)));
 }
 /* More pointless over-specification because otherwise WP's in-house styles screw us */
 .content blockquote.wp-block-quote.is-style-large {
@@ -740,7 +759,8 @@ table.musicplaylist tr td:first-child {
 
 .content blockquote.wp-block-quote cite {
 	color: rgba(0, 151, 26, 1);
-	font-size: calc(var(--ptws-font-size-multiplier) * 0.63rem);
+/*	font-size: calc(var(--ptws-font-size-multiplier) * 0.63rem);	*/
+	font-size: calc(1rem * calc(1 - calc(var(--ptws-font-size-multiplier) * 0.0366666)));
 }
 .content blockquote.wp-block-quote.is-style-large cite {
 	font-size: 1rem;
@@ -749,7 +769,8 @@ table.musicplaylist tr td:first-child {
 .content blockquote.wp-block-quote.poem p {
 	font-family: "Noto Serif";
 	font-style: italic;
-	font-size: calc(var(--ptws-font-size-multiplier) * 1rem);
+/*	font-size: calc(var(--ptws-font-size-multiplier) * 1rem);	*/
+	font-size: calc(1rem * calc(1 + calc(var(--ptws-font-size-multiplier) * 0.3333333)));
 	color: rgba(0, 94, 17, 1);
 }
 
@@ -762,11 +783,13 @@ table.musicplaylist tr td:first-child {
 }
 
 .content figure.wp-block-pullquote {
-	font-size: calc(var(--ptws-font-size-multiplier) * 1rem);
+/*	font-size: calc(var(--ptws-font-size-multiplier) * 1rem);	*/
+	font-size: calc(1rem * calc(1 + calc(var(--ptws-font-size-multiplier) * 0.3333333)));
 }
 .content figure.wp-block-pullquote.giant {
-	font-size: calc(var(--ptws-font-size-multiplier) * 1.1rem);
 	font-family: 'DIN Web Pro Black';
+/*	font-size: calc(var(--ptws-font-size-multiplier) * 1.1rem);	*/
+	font-size: calc(1rem * calc(1 + calc(var(--ptws-font-size-multiplier) * 0.4333333)));
 }
 
 .content figure.wp-block-pullquote blockquote {
@@ -803,7 +826,8 @@ table.musicplaylist tr td:first-child {
 	padding-bottom: 8px;
 	font-weight: normal;
 	text-shadow: 1px 1px 1px rgba(150,126,126,0.6);
-	font-size: calc(var(--ptws-font-size-multiplier) * 0.65rem);
+/*	font-size: calc(var(--ptws-font-size-multiplier) * 0.65rem);	*/
+	font-size: calc(1rem * calc(1 - calc(var(--ptws-font-size-multiplier) * 0.0166666)));
 }
 
 .content blockquote.a {
@@ -824,7 +848,8 @@ table.musicplaylist tr td:first-child {
 	padding-top: 6px;
 	padding-bottom: 2px;
 	font-weight: normal;
-	font-size: calc(var(--ptws-font-size-multiplier) * 0.65rem);
+/*	font-size: calc(var(--ptws-font-size-multiplier) * 0.65rem);	*/
+	font-size: calc(1rem * calc(1 - calc(var(--ptws-font-size-multiplier) * 0.0166666)));
 }
 
 
@@ -907,7 +932,8 @@ div.slide.slide-video {
 	padding-bottom: 8px;
 	font-weight: normal;
 	text-shadow: 1px 1px 1px rgba(150,126,126,0.6);
-	font-size: calc(var(--ptws-font-size-multiplier) * 0.68rem);
+/*	font-size: calc(var(--ptws-font-size-multiplier) * 0.68rem);	*/
+	font-size: calc(1rem * calc(1 + calc(var(--ptws-font-size-multiplier) * 0.0133333)));
 }
 
 .content blockquote.picdesc {
@@ -921,7 +947,8 @@ div.slide.slide-video {
 	padding-top: 6px;
 	padding-bottom: 2px;
 	font-weight: normal;
-	font-size: calc(var(--ptws-font-size-multiplier) * 0.63rem);
+/*	font-size: calc(var(--ptws-font-size-multiplier) * 0.63rem);	*/
+	font-size: calc(1rem * calc(1 - calc(var(--ptws-font-size-multiplier) * 0.0366666)));
 }
 
 /* Overriding dumb Wordpress default. Items internal to columns MANAGE THEIR OWN bottom margin. */
@@ -995,7 +1022,8 @@ div.slide.slide-video {
 
 .content div.gear span.gearname {
 	padding: 0px 15px 0px 5px;
-	font-size: calc(var(--ptws-font-size-multiplier) * 0.7rem);
+/*	font-size: calc(var(--ptws-font-size-multiplier) * 0.7rem);	*/
+	font-size: calc(1rem * calc(1 + calc(var(--ptws-font-size-multiplier) * 0.0333333)));
 }
 
 .content div.gear span.gearpurchase {
