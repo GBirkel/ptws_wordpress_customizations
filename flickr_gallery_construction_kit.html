@@ -31,6 +31,7 @@ var setCollection = {};
 //					selected: boolean
 //					setID: string(setId)
 //					yearMonthDay: string ("2022-01-23")
+//			        dayIndex: int  // Index of the day section this photo belongs to, used for even/odd coloring
 //				}
 //			]
 //			loadedAll: boolean
@@ -302,7 +303,9 @@ function addPage() {
 			data.photoset.photo.every(function(item, index, array) {
 
 				// Create images and append to div id flickr and wrap link around the image.
-				var newDiv = document.createElement("div");	
+				var newDiv = document.createElement("div");
+				// Neccessary to properly position "::before" pseudo-elements displaying status.
+				var closeWrapperDiv = document.createElement("div");
 
 				// Create images and append to div id flickr and wrap link around the image.
 				var newImg = document.createElement("img");
@@ -316,9 +319,11 @@ function addPage() {
 				var dateParts = dateTaken.split(/[\- ]/);
 				item.yearMonthDay = dateParts[0] + '-' + dateParts[1] + '-' + dateParts[2];
 
-				$(newImg).appendTo($(newDiv));
+				$(newImg).appendTo($(closeWrapperDiv));
+				$(closeWrapperDiv).appendTo($(newDiv));
 
 				item.ourGalleryElement = newImg;
+				item.dayIndex = 0;	// Will be set in first draw
 				item.ourGalleryElementFrame = newDiv;
 				item.fetchedInfo = false;
 				item.markedUsed = false;
@@ -402,14 +407,9 @@ function redrawGallery() {
 		// Change the background coloring with each day transition
 		setCollection[setID]['splitByDays'].every(function(day, dayIndex, dayArray) {
 			day.photos.every(function(item, index, array) {
+				item.dayIndex = dayIndex;
 				// if (item.setID != setID) { return; }
 				$(item.ourGalleryElementFrame).appendTo($(thumbs));
-				// If this day isn't the same as the last, flip the coloring
-				if (dayIndex % 2) {
-					item.ourGalleryElementFrame.className = '';
-				} else {
-					item.ourGalleryElementFrame.className = 'oddday';
-				}	
 				redrawOneGalleryItem(item);
 				return true;
 			});
@@ -436,6 +436,7 @@ function redrawGallery() {
 			}
 			$(section).appendTo("#flickrThumbnailContainer")
 			day.photos.every(function(item, index, array) {
+				item.dayIndex = 0;	// Not using the individual day indexing when we're not sectioning by day
 				// if (item.setID != setID) { return; }
 				$(item.ourGalleryElementFrame).appendTo($(day.thumbnailsElement));
 				redrawOneGalleryItem(item);
@@ -448,22 +449,22 @@ function redrawGallery() {
 
 
 function redrawOneGalleryItem(item) {
-	var style = [];
-	if (item.selected) {
-		style.push('selected');
-	}
-	if (item.markedUsed) {
-		style.push('markedUsed');
-	}
-	if (item.hasDescription) {
-		style.push('hasDescription');
-	}
+	var frameStyle = [];
+
+	if (item.selected) { frameStyle.push('selected'); }
+	if (item.markedUsed) { frameStyle.push('markedUsed');}
+	if (item.hasDescription) { frameStyle.push('hasDescription'); }
+	if (item.media == 'video') { frameStyle.push('video'); }
+
+	// If this day isn't the same as the last, flip the coloring
+	if (item.dayIndex % 2) { frameStyle.push('oddday'); }
+
 	if (showingOnlyVideos) {
 		if (item.media != "video") {
-			style.push('hidden');
+			frameStyle.push('hidden');
 		}
 	}
-	item.ourGalleryElement.className = style.join(' ') || '';
+	item.ourGalleryElementFrame.className = frameStyle.join(' ') || '';
 }
 
 
@@ -511,11 +512,23 @@ function addToSelection(unfilteredItems) {
 	});
 
 	if (selectedItems.length < 1) {
-		selectedItems.push(items);
+		// When creating a default layout, we separate videos from images
+		items.forEach( function(item) {
+			if (item.media == 'video') {
+				selectedItems.push([item]);
+			} else {
+				if (selectedItems.length > 0 && (selectedItems[selectedItems.length-1][0].media != 'video')) {
+					selectedItems[selectedItems.length-1].push(item);
+				} else {
+					selectedItems.push([item]);
+				}
+			}
+		});
 		rebuildModePanel();
 	} else {
 	// Shortcode-mode only keys
 		if (codeMode == "s") {
+			// If there was a lastSelection, we splice the new items into the current segment at that point
 			const lastSelection = getItemByIndex(selectedSegment, selectedIndex);
 			if (lastSelection) {
 				deselectCurrentShortcodeItem();
@@ -580,6 +593,8 @@ function rebuildShortcodeModePanel() {
 			item.currentSelectionPosition = [segmentIndex, itemIndex];
 			if (!ourShortcodeOrganizerElement) {
 				var ourShortcodeOrganizerElement = document.createElement("div");
+				ourShortcodeOrganizerElement.className = getShortcodeOrganizerElementClassName(item);
+
 				var e = $(ourShortcodeOrganizerElement).attr("draggable", "true");
 		        var newImg = $("<img/>").attr("src", item.url_t).appendTo(e);
 				$(e).click(function () {
@@ -646,10 +661,20 @@ function getItemByIndex(givenSegment, givenIndex) {
 	return selectedItems[givenSegment][givenIndex];
 }
 
+
 function deselectCurrentShortcodeItem() {
 	const lastSelection = getItemByIndex(selectedSegment, selectedIndex);
 	if (lastSelection) {
-		lastSelection.ourShortcodeOrganizerElement.className = 'item';
+		lastSelection.ourShortcodeOrganizerElement.className = getShortcodeOrganizerElementClassName(lastSelection);
+	}
+}
+
+
+function getShortcodeOrganizerElementClassName(item) {
+	if (item.media == 'video') {
+		return 'item video';
+	} else {
+		return 'item';
 	}
 }
 
@@ -659,7 +684,7 @@ function selectNewShortcodeItem(givenSegmnet, givenIndex) {
 	if (thisSelection) {
 		selectedSegment = givenSegmnet;
 		selectedIndex = givenIndex;
-		thisSelection.ourShortcodeOrganizerElement.className = 'item selected';
+		thisSelection.ourShortcodeOrganizerElement.className = getShortcodeOrganizerElementClassName(thisSelection) + ' selected';
 	}
 }
 
@@ -1059,37 +1084,48 @@ div.thumbnailSet {
 	padding: 0;
 }
 
-div.thumbnailSet div {
+div.thumbnailSet > div {
     margin: 2px 0px;
 	border-radius: 5px;
 	display: flex;
 	align-items: center;
     padding: 0px;
+	position: relative; /* For video icon overlay */
 }
 div.thumbnailSet div.oddday {
 	background-color: rgba(255, 190, 0, 0.37);
 }
 
-div.thumbnailSet div img {
+div.thumbnailSet > div img {
     margin: 3px;
     padding: 1px;
 }
 
-div.thumbnailSet img.selected {
+div.thumbnailSet div.video div::before, div.shortcode_image_segment > div > div.video::before {
+  content: url("data:image/svg+xml,%3Csvg width='22' height='22' viewBox='1 1 22 22' xmlns='http://www.w3.org/2000/svg' aria-hidden='true' focusable='false'%3E%3Cpath d='M18.7 3H5.3C4 3 3 4 3 5.3v13.4C3 20 4 21 5.3 21h13.4c1.3 0 2.3-1 2.3-2.3V5.3C21 4 20 3 18.7 3zm.8 15.7c0 .4-.4.8-.8.8H5.3c-.4 0-.8-.4-.8-.8V5.3c0-.4.4-.8.8-.8h13.4c.4 0 .8.4.8.8v13.4zM10 15l5-3-5-3v6z'%3E%3C/path%3E%3C/svg%3E");
+  position: absolute;
+  border-width: 0;
+  border-radius: 3px;
+  margin-top: 1px;
+  margin-left: 1px;
+  background-color:rgba(255,255,255,0.7)
+}
+
+div.thumbnailSet div.selected {
 	opacity: 0.3;
 }
 
-div.thumbnailSet img.hasDescription {
+div.thumbnailSet div.hasDescription img {
 	border-style: solid;
 	border-width: 2px;
 	border-color: green;
 }
 
-div.thumbnailSet img.markedUsed {
+div.thumbnailSet div.markedUsed img {
 	opacity:0.3;
 }
 
-div.thumbnailSet img.hidden {
+div.thumbnailSet div.hidden img {
 	display: none;
 	visibility: hidden;
 }
