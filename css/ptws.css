@@ -71,7 +71,10 @@ div.wp-block-image > figure.aligncenter > img, figure.wp-block-image > img {
 	/******** Modifying built in image figure embeds to give them a sensible max width *******/
 	div.wp-block-image > figure.aligncenter > img, figure.wp-block-image > img {
 		max-width: min(7.5in, 100% - 2.4em);
-		margin-left: max(1.2em, calc((100% - 7.5in - 2.4em) / 2));
+	}
+	/* Centering rule should only apply to centered figures */
+	div.wp-block-image > figure.aligncenter > img {
+		margin-left: max(1.2em, calc((100% - 7.5in) / 2));
 	}
 }
 
