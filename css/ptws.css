@@ -59,6 +59,9 @@ body {
 	div.content div.image-max-768 img {
 		max-width: 768px;
 	}
+	div.content div.image-max-5in img {
+		max-width: 5in;
+	}
 }
 /* Portable touch devices less than 6 inches in portrait mode */
 @media screen and (max-device-width: 6in) and (orientation: portrait) and (pointer: coarse) {
