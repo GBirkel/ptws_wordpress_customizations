@@ -51,6 +51,14 @@ body {
 	padding: 0;
 }
 
+/******** Modifying built in image figure embeds to give them a margin *******/
+
+/* Two versions: One with "align center" position applied, one with "none" position */ 
+div.wp-block-image > figure.aligncenter > img, figure.wp-block-image > img {
+	margin-left: 1.2em;
+	margin-right: 1.2em;
+}
+
 @media (min-device-width: 6in) {
 	/* These should only be applied on desktop browsers */
 	div.content div.image-max-640 img {
@@ -59,10 +67,28 @@ body {
 	div.content div.image-max-768 img {
 		max-width: 768px;
 	}
-	div.content div.image-max-5in img {
-		max-width: 5in;
+
+	/******** Modifying built in image figure embeds to give them a sensible max width *******/
+	div.wp-block-image > figure.aligncenter > img, figure.wp-block-image > img {
+		max-width: 7.5in;
 	}
 }
+
+/* Portable touch devices less than 6 inches */
+@media screen and (max-device-width: 6in) {
+	body {
+		/* On mobile devices, the photos are smaller, and more     */
+		/* affected by glare from surrounding text and background. */
+		background: #F0F0F0;
+		color: #101010;
+	}
+
+	/******** Modifying built in image figure embeds to give them a sensible max width *******/
+	div.wp-block-image > figure.aligncenter > img, figure.wp-block-image > img {
+		max-width: calc(100% - 2.4em);
+	}
+}
+
 /* Portable touch devices less than 6 inches in portrait mode */
 @media screen and (max-device-width: 6in) and (orientation: portrait) and (pointer: coarse) {
   	:root {
@@ -85,13 +111,6 @@ body {
 	/* Display only the menu items meant for for "compact displays" */
 	.compactdisplaysonly { display: initial; }
 	.fulldisplaysonly { display: none; }
-
-	body {
-		/* On mobile devices, the photos are smaller, and more     */
-		/* affected by glare from surrounding text and background. */
-		background: #F0F0F0;
-		color: #101010;
-	}
 }
 /* Portable touch devices less than 6 inches in landscape mode */
 @media screen and (max-device-width: 6in) and (orientation: landscape) and (pointer: coarse) {
@@ -519,15 +538,6 @@ span.ui-icon-triangle-1-s {
 }
 span.ui-icon-triangle-1-s::before {
 	content: "▼";
-}
-
-/******** Modifying built in image figure embeds to give them a margin *******/
-
-/* Two versions: One with "align center" position applied, one with "none" position */ 
-div.wp-block-image > figure.aligncenter > img, figure.wp-block-image > img {
-	margin-left: 1.2em;
-	margin-right: 1.2em;
-	max-width: calc(100% - 2.4em);
 }
 
 
