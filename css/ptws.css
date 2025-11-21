@@ -70,7 +70,7 @@ div.wp-block-image > figure.aligncenter > img, figure.wp-block-image > img {
 
 	/******** Modifying built in image figure embeds to give them a sensible max width *******/
 	div.wp-block-image > figure.aligncenter > img, figure.wp-block-image > img {
-		max-width: 7.5in;
+		max-width: min(7.5in, 100% - 2.4em);
 	}
 }
 
