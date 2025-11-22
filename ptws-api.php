@@ -159,7 +159,7 @@ class PTWS_API {
                             array('status' => 400));
             }
 
-            $r = ptws_costruct_flickr_cache_record_fields($flickr_user_id, $flickr_id, $f_info_obj, $f_sizes_obj, $last_seen_in_post);
+            $r = ptws_construct_flickr_cache_record_fields($flickr_user_id, $flickr_id, $f_info_obj, $f_sizes_obj, $last_seen_in_post);
 
             if (!$r) {
                 return new \WP_Error('rest_invalid',

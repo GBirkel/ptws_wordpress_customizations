@@ -424,7 +424,7 @@ function ptws_admin_cache_resolve()
                 continue;
             }
 
-            $r = ptws_costruct_flickr_cache_record_fields($rid, $fid, $f_info_obj, $f_sizes_obj, $uncached_rec['last_seen_in_post']);
+            $r = ptws_construct_flickr_cache_record_fields($rid, $fid, $f_info_obj, $f_sizes_obj, $uncached_rec['last_seen_in_post']);
 
             if (!$r) {
                 echo ptws_html_log_error('Error constructing Flickr cache record.');

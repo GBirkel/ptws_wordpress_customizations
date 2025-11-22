@@ -13,9 +13,10 @@ function ptws_create_photo_tables()
     // last_seen_in_post references a field in the Wordpress posts table
     // https://codex.wordpress.org/Database_Description#Table:_wp_posts
     $sql = "CREATE TABLE " . $flickr_table_name . " (
-        id mediumint(9) NOT NULL AUTO_INCREMENT,
-        flickr_id varchar(32) NOT NULL,
+        id mediumint(9) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+        flickr_id varchar(32) NOT NULL UNIQUE,
         title text,
+        media varchar(16) DEFAULT 'photo' NOT NULL,
         width int UNSIGNED,
         height int UNSIGNED,
         link_url text,
@@ -25,21 +26,26 @@ function ptws_create_photo_tables()
         square_thumbnail_width int UNSIGNED,
         square_thumbnail_height int UNSIGNED,
         square_thumbnail_url text,
+        video_width int UNSIGNED,
+        video_height int UNSIGNED,
+        video_url text,
         comments int UNSIGNED DEFAULT 0 NOT NULL,
         description text,
         taken_time datetime DEFAULT 0 NOT NULL,
         uploaded_time datetime DEFAULT 0 NOT NULL,
         updated_time datetime DEFAULT 0 NOT NULL,
         cached_time datetime DEFAULT CURRENT_TIMESTAMP NOT NULL,
+        latitude double,
+        longitude double,
+        embed_secret varchar(32),
         auto_placed tinyint(1) DEFAULT 0,
-        last_seen_in_post bigint(20) UNSIGNED,
-        CONSTRAINT unique_flickr_id UNIQUE (flickr_id),
-        PRIMARY KEY  (id)
+        last_seen_in_post bigint(20) UNSIGNED
     ) $charset_collate;";
 
     if (!function_exists('dbDelta')) {
         require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
     }
+    echo "\nGot to dbDelta line\n";
     dbDelta($sql);
 }
 
@@ -52,17 +58,15 @@ function ptws_create_route_tables()
     $charset_collate = $wpdb->get_charset_collate();
 
     $route_sql = "CREATE TABLE " . $route_table_name . " (
-        id mediumint(9) NOT NULL AUTO_INCREMENT,
-        route_id varchar(32) NOT NULL,
+        id mediumint(9) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+        route_id varchar(32) NOT NULL UNIQUE,
         route_json LONGTEXT,
-        route_description text DEFAULT '',
+        route_description text NOT NULL,
         route_start_time datetime DEFAULT 0 NOT NULL,
         route_end_time datetime DEFAULT 0 NOT NULL,
         cached_time datetime DEFAULT CURRENT_TIMESTAMP NOT NULL,
         auto_placed tinyint(1) DEFAULT 0,
-        last_seen_in_post bigint(20) UNSIGNED,
-        CONSTRAINT unique_route_id UNIQUE (route_id),
-        PRIMARY KEY  (id)
+        last_seen_in_post bigint(20) UNSIGNED
     ) $charset_collate;";
 
     if (!function_exists('dbDelta')) {
@@ -80,14 +84,12 @@ function ptws_create_comment_tables()
     $charset_collate = $wpdb->get_charset_collate();
 
     $sql = "CREATE TABLE " . $table_name . " (
-        id mediumint(9) NOT NULL AUTO_INCREMENT,
+        id mediumint(9) NOT NULL AUTO_INCREMENT PRIMARY KEY,
         content text,
-        composition_time datetime DEFAULT 0 NOT NULL,
+        composition_time datetime DEFAULT 0 NOT NULL UNIQUE,
         submit_time datetime DEFAULT CURRENT_TIMESTAMP NOT NULL,
         time_of_embedded_photo datetime,
-        flickr_id_of_embedded_photo varchar(32),
-        CONSTRAINT unique_composition_time UNIQUE (composition_time),
-        PRIMARY KEY (id)
+        flickr_id_of_embedded_photo varchar(32)
     ) $charset_collate;";
 
     if (!function_exists('dbDelta')) {
@@ -251,7 +253,7 @@ function ptws_get_flickr_cache_record($pid)
 // and combines it into a local Flickr cache record.  Returns null if one of the
 // provided values is null.
 //
-function ptws_costruct_flickr_cache_record_fields( $flickr_user_id, $flickr_id, $flickr_info_obj, $flickr_sizes_obj, $last_seen_in_post ) {
+function ptws_construct_flickr_cache_record_fields( $flickr_user_id, $flickr_id, $flickr_info_obj, $flickr_sizes_obj, $last_seen_in_post ) {
 
     if (!$flickr_user_id || !$flickr_id || !$flickr_info_obj || !$flickr_sizes_obj) {
         return null;
@@ -262,24 +264,59 @@ function ptws_costruct_flickr_cache_record_fields( $flickr_user_id, $flickr_id, 
         $f_sizes[$b['label']] = $b;
     }
 
+    $large_w = 0;
+    $large_h = 0;
+    $large_src = '';
+    // Favor the newer 1600 size if available
+    $sizes_to_try = ['Large 1600', 'Large', 'Medium 800', 'Original'];
+    foreach ($sizes_to_try as $size_label) {
+        if (isset($f_sizes[$size_label])) {
+            $large_w = intval($f_sizes[$size_label]['width']);
+            $large_h = intval($f_sizes[$size_label]['height']);
+            $large_src = $f_sizes[$size_label]['source'];
+            if ($large_w > 0 && $large_h > 0) {
+                break;
+            }
+        }
+    }
+
+    $video_w = 0;
+    $video_h = 0;
+    $video_src = '';
+    // Favor the newer 1600 size if available
+    $sizes_to_try = ['720p', '1080p', '360p'];
+    foreach ($sizes_to_try as $size_label) {
+        if (isset($f_sizes[$size_label])) {
+            $video_w = intval($f_sizes[$size_label]['width']);
+            $video_h = intval($f_sizes[$size_label]['height']);
+            $video_src = $f_sizes[$size_label]['source'];
+            if ($video_w > 0 && $video_h > 0) {
+                break;
+            }
+        }
+    }
+
+    // Extract latitude and longitude if available
+    $latitude = null;
+    $longitude = null;
+    if (isset($flickr_info_obj['photo']['location'])) {
+        $loc = $flickr_info_obj['photo']['location'];
+        if (isset($loc['latitude']) && isset($loc['longitude'])) {
+            $latitude = floatval($loc['latitude']);
+            $longitude = floatval($loc['longitude']);
+        }
+    }
+
     $p = $flickr_info_obj['photo'];
     $url = 'https://www.flickr.com/photos/' . $flickr_user_id . '/' . $flickr_id . '/';
 
     $upl_time = ptws_epoch_to_str($p['dateuploaded']);
     $upd_time = ptws_epoch_to_str($p['dates']['lastupdate']);
 
-    $large_w = intval($f_sizes['Large']['width']);
-    $large_h = intval($f_sizes['Large']['height']);
-    $large_src = $f_sizes['Large']['source'];
-    if ($large_w == 0 || $large_h == 0) {
-        $large_w = intval($f_sizes['Original']['width']);
-        $large_h = intval($f_sizes['Original']['height']);
-        $large_src = $f_sizes['Original']['source'];
-    }
-
     $f = array();
     $f['flickr_id'] = $flickr_id;
     $f['title'] = $p['title']['_content'];
+    $f['media'] = $p['media'];
     $f['width'] = intval($f_sizes['Original']['width']);
     $f['height'] = intval($f_sizes['Original']['height']);
     $f['link_url'] = $url;
@@ -289,12 +326,18 @@ function ptws_costruct_flickr_cache_record_fields( $flickr_user_id, $flickr_id, 
     $f['square_thumbnail_width'] = intval($f_sizes['Square']['width']);
     $f['square_thumbnail_height'] = intval($f_sizes['Square']['height']);
     $f['square_thumbnail_url'] = $f_sizes['Square']['source'];
+    $f['video_width'] = $video_w;
+    $f['video_height'] = $video_h;
+    $f['video_url'] = $video_src;
     $f['comments'] = intval($p['comments']['_content']);
     $f['description'] = $p['description']['_content'];
     $f['taken_time'] = $p['dates']['taken'];
     $f['uploaded_time'] = $upl_time;
     $f['updated_time'] = $upd_time;
     $f['cached_time'] = ptws_epoch_to_str(time());
+    $f['latitude'] = $latitude;
+    $f['longitude'] = $longitude;
+    $f['embed_secret'] = $p['secret'];
     $f['last_seen_in_post'] = $last_seen_in_post;
 
     return $f;
@@ -312,6 +355,7 @@ function ptws_create_flickr_cache_record($f)
         array(
             'flickr_id'             => $f['flickr_id'],
             'title'                 => $f['title'],
+            'media'                 => $f['media'],
             'width'                 => $f['width'],
             'height'                => $f['height'],
             'link_url'              => $f['link_url'],
@@ -321,19 +365,23 @@ function ptws_create_flickr_cache_record($f)
             'square_thumbnail_width'    => $f['square_thumbnail_width'],
             'square_thumbnail_height'   => $f['square_thumbnail_height'],
             'square_thumbnail_url'      => $f['square_thumbnail_url'],
+            'video_width'           => $f['video_width'],
+            'video_height'          => $f['video_height'],
+            'video_url'             => $f['video_url'],
             'comments'              => $f['comments'],
             'description'           => $f['description'],
             'taken_time'            => $f['taken_time'],
             'uploaded_time'         => $f['uploaded_time'],
             'updated_time'          => $f['updated_time'],
             'cached_time'           => $f['cached_time'],
+            'latitude'              => $f['latitude'],
+            'longitude'             => $f['longitude'],
+            'embed_secret'          => $f['embed_secret'],
             'last_seen_in_post'     => $f['last_seen_in_post']
         ),
         array(
             '%s',
             '%s',
-            '%d',
-            '%d',
             '%s',
             '%d',
             '%d',
@@ -342,10 +390,19 @@ function ptws_create_flickr_cache_record($f)
             '%d',
             '%s',
             '%d',
+            '%d',
+            '%s',
+            '%d',
+            '%d',
+            '%s',
+            '%d',
             '%s',
             '%s',
             '%s',
             '%s',
+            '%s',
+            '%d',
+            '%d',
             '%s',
             '%d'
         )
