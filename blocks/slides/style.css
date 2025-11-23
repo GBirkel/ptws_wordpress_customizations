@@ -27,6 +27,10 @@
 	max-width: 130vh;
 }
 
+.content .entry div.wp-block-ptws-slides:not(.editing) div.fixed-container div.size-limiter.one-image {
+	max-width: min(7.5in, 130vh);
+}
+
 /* All images but the first. Effectively creates a margin for 2 or more images only. */
 /* .content .entry div.wp-block-ptws-slides a:nth-child(1n+2) img {
 	margin-top: 16px;

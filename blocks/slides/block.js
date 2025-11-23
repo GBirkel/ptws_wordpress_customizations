@@ -415,7 +415,7 @@
 				inner =
 					el( 'div', { className: 'fixed-container' },
 						el( 'div',
-							{ className: 'size-limiter' },
+							{ className: attributes.image_count == 1 ? 'size-limiter one-image' : 'size-limiter' },
 							el( InnerBlocks.Content )
 						)
 					)

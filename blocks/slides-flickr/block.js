@@ -160,7 +160,7 @@
 									title: attributes.title,
 									autoplay: false,
 									loop: false,
-									preload: 'none'
+									preload: 'metadata'
 								}
 							)
 						) : (
