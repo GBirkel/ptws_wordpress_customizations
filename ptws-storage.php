@@ -282,13 +282,22 @@ function ptws_construct_flickr_cache_record_fields( $flickr_user_id, $flickr_id,
     $video_w = 0;
     $video_h = 0;
     $video_src = '';
-    // Favor the newer 1600 size if available
-    $sizes_to_try = ['720p', '1080p', '360p'];
+    // Favor the newer sizes if available
+    $sizes_to_try = ['720p', '1080p', '360p', 'appletv', 'iphone_wifi', 'Original'];
+    foreach ($sizes_to_try as $size_label) {
+        if (isset($f_sizes[$size_label])) {
+            $video_src = $f_sizes[$size_label]['source'];
+            if ($video_src != null && $video_src != '') {
+                break;
+            }
+        }
+    }
+    // Some video sources don't give valid dimentions.
+    // Eventually we'll fall back to the original media size if we can't find any.
     foreach ($sizes_to_try as $size_label) {
         if (isset($f_sizes[$size_label])) {
             $video_w = intval($f_sizes[$size_label]['width']);
             $video_h = intval($f_sizes[$size_label]['height']);
-            $video_src = $f_sizes[$size_label]['source'];
             if ($video_w > 0 && $video_h > 0) {
                 break;
             }
