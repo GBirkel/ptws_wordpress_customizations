@@ -45,7 +45,6 @@ function ptws_create_photo_tables()
     if (!function_exists('dbDelta')) {
         require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
     }
-    echo "\nGot to dbDelta line\n";
     dbDelta($sql);
 }
 

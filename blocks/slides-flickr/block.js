@@ -78,18 +78,21 @@
 
 		edit: function ( props ) {
 			var attributes = props.attributes;
+			var containerClass = attributes.media == 'video' ? 'editing video' : 'editing';
 
 			return el(
 				'div',
 				useBlockProps( {
-					className: "editing"
+					className: containerClass
 					} ),
 				renderImageDetails(attributes, true),
 				attributes.flickr_id_is_valid ? (
-						el( 'img', {
-								src: attributes.large_thumbnail_url,
-								title: attributes.title
-							}
+						el( 'div', { className: 'image-container' },
+							el( 'img', {
+									src: attributes.large_thumbnail_url,
+									title: attributes.title
+								}
+							)
 						)
 				) : (
 					el( 'div', { className: 'emptyimage' }, "" )
@@ -147,15 +150,30 @@
 					} ),
 					renderImageDetails(attributes, false),
 					attributes.flickr_id_is_valid ? (
-						el( 'a', {
-								href: attributes.link_url,
-								title: attributes.title
-							},
-							el( 'img', {
-									src: attributes.large_thumbnail_url,
-									'data-ptws-height': attributes.large_thumbnail_height,
-									'data-ptws-width': attributes.large_thumbnail_width
+						attributes.media == 'video' ? (
+							el( 'video', {
+									src: attributes.video_url,
+									poster: attributes.large_thumbnail_url,
+									'data-ptws-height': attributes.video_height,
+									'data-ptws-width': attributes.video_width,
+									controls: true,
+									title: attributes.title,
+									autoplay: false,
+									loop: false,
+									preload: 'none'
 								}
+							)
+						) : (
+							el( 'a', {
+									href: attributes.link_url,
+									title: attributes.title
+								},
+								el( 'img', {
+										src: attributes.large_thumbnail_url,
+										'data-ptws-height': attributes.large_thumbnail_height,
+										'data-ptws-width': attributes.large_thumbnail_width
+									}
+								)
 							)
 						)
 					) : (
