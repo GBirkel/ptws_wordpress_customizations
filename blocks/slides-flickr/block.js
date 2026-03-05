@@ -31,9 +31,9 @@
 				'data-ptws-large-thumbnail-height': a.large_thumbnail_height || "0",
 				'data-ptws-large-thumbnail-width': a.large_thumbnail_width || "0",
 				'data-ptws-latitude': a.latitude || "",
-				'data-ptws-layout': a.layout || "fixed",
 				'data-ptws-longitude': a.longitude || "",
 				'data-ptws-media': a.media || "photo",
+				'data-ptws-presentation-type': a.presentation_type || "fixed",
 				'data-ptws-square-thumbnail-height': a.square_thumbnail_height || "0",
 				'data-ptws-square-thumbnail-width': a.square_thumbnail_width || "0",
 				'data-ptws-taken-time': a.taken_time || "",
@@ -107,7 +107,7 @@
 		save: function ( props ) {
 			var attributes = props.attributes;
 
-			if (attributes.layout == "swipe") {
+			if (attributes.presentation_type == "swipe") {
 				return el(
 					'div',
 					useBlockProps.save( { className: "rsContent" } ),
@@ -191,6 +191,366 @@
 		},
 
 		deprecated: [
+			{
+				// Old version of attributes, before 'layout' is changed to 'presentation_type'.
+				attributes: {
+					"flickr_id": {
+						"type": "string",
+						"source": "attribute",
+						"selector": "div.photodata",
+						"attribute": "data-ptws-flickr-id"
+					},
+					"flickr_id_is_valid": {
+						"type": "boolean",
+						"default": false,
+						"source": "attribute",
+						"selector": "div.photodata",
+						"attribute": "data-ptws-flickr-id-is-valid"
+					},
+					"cached_time": {
+						"type": "string",
+						"default": "1900-01-01 00:00:00",
+						"source": "attribute",
+						"selector": "div.photodata",
+						"attribute": "data-ptws-cached-time"
+					},
+					"cached_time_epoch": {
+						"type": "string",
+						"default": "0",
+						"source": "attribute",
+						"selector": "div.photodata",
+						"attribute": "data-ptws-cached-time-epoch"
+					},
+					"description": {
+						"type": "string",
+						"default": "",
+						"source": "text",
+						"selector": "div.photodata > div.description"
+					},
+					"embed_secret": {
+						"type": "string",
+						"default": "",
+						"source": "attribute",
+						"selector": "div.photodata",
+						"attribute": "data-ptws-embed-secret"
+					},
+					"flex_ratio": {
+						"type": "string",
+						"default": "1",
+						"source": "attribute",
+						"selector": "div.photodata",
+						"attribute": "data-ptws-flex-ratio"
+					},
+					"height": {
+						"type": "string",
+						"default": "0",
+						"source": "attribute",
+						"selector": "div.photodata",
+						"attribute": "data-ptws-height"
+					},
+					"id": {
+						"type": "string",
+						"default": "0",
+						"source": "attribute",
+						"selector": "div.photodata",
+						"attribute": "data-ptws-id"
+					},
+					"latitude": {
+						"type": "string",
+						"default": "",
+						"source": "attribute",
+						"selector": "div.photodata",
+						"attribute": "data-ptws-latitude"
+					},
+					"layout": {
+						"type": "string",
+						"default": "fixed",
+						"source": "attribute",
+						"selector": "div.photodata",
+						"attribute": "data-ptws-layout"
+					},
+					"longitude": {
+						"type": "string",
+						"default": "",
+						"source": "attribute",
+						"selector": "div.photodata",
+						"attribute": "data-ptws-longitude"
+					},
+					"large_thumbnail_height": {
+						"type": "string",
+						"default": "0",
+						"source": "attribute",
+						"selector": "div.photodata",
+						"attribute": "data-ptws-large-thumbnail-height"
+					},
+					"large_thumbnail_url": {
+						"type": "string",
+						"default": "",
+						"source": "text",
+						"selector": "div.photodata > div.largethumbnailurl"
+					},
+					"large_thumbnail_width": {
+						"type": "string",
+						"default": "0",
+						"source": "attribute",
+						"selector": "div.photodata",
+						"attribute": "data-ptws-large-thumbnail-width"
+					},
+					"link_url": {
+						"type": "string",
+						"default": "",
+						"source": "text",
+						"selector": "div.photodata > div.linkurl"
+					},
+					"media": {
+						"type": "string",
+						"default": "photo",
+						"source": "attribute",
+						"selector": "div.photodata",
+						"attribute": "data-ptws-media"
+					},
+					"square_thumbnail_height": {
+						"type": "string",
+						"default": "0",
+						"source": "attribute",
+						"selector": "div.photodata",
+						"attribute": "data-ptws-square-thumbnail-height"
+					},
+					"square_thumbnail_url": {
+						"type": "string",
+						"default": "",
+						"source": "text",
+						"selector": "div.photodata > div.squarethumbnailurl"
+					},
+					"square_thumbnail_width": {
+						"type": "string",
+						"default": "0",
+						"source": "attribute",
+						"selector": "div.photodata",
+						"attribute": "data-ptws-square-thumbnail-width"
+					},
+					"taken_time": {
+						"type": "string",
+						"default": "1900-01-01 00:00:00",
+						"source": "attribute",
+						"selector": "div.photodata",
+						"attribute": "data-ptws-taken-time"
+					},
+					"taken_time_epoch": {
+						"type": "string",
+						"default": "0",
+						"source": "attribute",
+						"selector": "div.photodata",
+						"attribute": "data-ptws-taken-time-epoch"
+					},
+					"title": {
+						"type": "string",
+						"default": "",
+						"source": "text",
+						"selector": "div.photodata > div.title"
+					},
+					"updated_time": {
+						"type": "string",
+						"default": "1900-01-01 00:00:00",
+						"source": "attribute",
+						"selector": "div.photodata",
+						"attribute": "data-ptws-updated-time"
+					},
+					"updated_time_epoch": {
+						"type": "string",
+						"default": "0",
+						"source": "attribute",
+						"selector": "div.photodata",
+						"attribute": "data-ptws-updated-time-epoch"
+					},
+					"uploaded_time": {
+						"type": "string",
+						"default": "1900-01-01 00:00:00",
+						"source": "attribute",
+						"selector": "div.photodata",
+						"attribute": "data-ptws-uploaded-time"
+					},
+					"uploaded_time_epoch": {
+						"type": "string",
+						"default": "0",
+						"source": "attribute",
+						"selector": "div.photodata",
+						"attribute": "data-ptws-uploaded-time-epoch"
+					},
+					"video_height": {
+						"type": "string",
+						"default": "0",
+						"source": "attribute",
+						"selector": "div.photodata",
+						"attribute": "data-ptws-video-height"
+					},
+					"video_url": {
+						"type": "string",
+						"default": "",
+						"source": "text",
+						"selector": "div.photodata > div.videourl"
+					},
+					"video_width": {
+						"type": "string",
+						"default": "0",
+						"source": "attribute",
+						"selector": "div.photodata",
+						"attribute": "data-ptws-video-width"
+					},
+					"width": {
+						"type": "string",
+						"default": "0",
+						"source": "attribute",
+						"selector": "div.photodata",
+						"attribute": "data-ptws-width"
+					}
+				},
+
+				migrate( old ) {
+					const newAttributes = {
+						presentation_type: old.layout || "fixed",
+						...old
+                	};
+                	return newAttributes;
+            	},
+
+				save: function ( props ) {
+					var attributes = props.attributes;
+
+					function oldRenderImageDetails(a, editing) {
+						return el('div',
+							{	className: editing ? 'photodata editing' : 'photodata',
+								'data-ptws-flickr-id': a.flickr_id,
+								'data-ptws-flickr-id-is-valid': a.flickr_id_is_valid,
+								'data-ptws-cached-time': a.cached_time || "",
+								'data-ptws-cached-time-epoch': a.cached_time_epoch || "0",
+								'data-ptws-embed-secret': a.embed_secret || "",
+								'data-ptws-flex-ratio': a.flex_ratio || "1",
+								'data-ptws-height': a.height || "0",
+								'data-ptws-id': a.id || "",
+								'data-ptws-large-thumbnail-height': a.large_thumbnail_height || "0",
+								'data-ptws-large-thumbnail-width': a.large_thumbnail_width || "0",
+								'data-ptws-latitude': a.latitude || "",
+								'data-ptws-layout': a.layout || "fixed",
+								'data-ptws-longitude': a.longitude || "",
+								'data-ptws-media': a.media || "photo",
+								'data-ptws-square-thumbnail-height': a.square_thumbnail_height || "0",
+								'data-ptws-square-thumbnail-width': a.square_thumbnail_width || "0",
+								'data-ptws-taken-time': a.taken_time || "",
+								'data-ptws-taken-time-epoch': a.taken_time_epoch || "0",
+								'data-ptws-updated-time': a.updated_time || "",
+								'data-ptws-updated-time-epoch': a.updated_time_epoch || "0",
+								'data-ptws-uploaded-time': a.uploaded_time || "",
+								'data-ptws-uploaded-time-epoch': a.uploaded_time_epoch || "0",
+								'data-ptws-video-height': a.video_height || "0",
+								'data-ptws-video-width': a.video_width || "0",
+								'data-ptws-width': a.width || "0",
+							},
+
+							el( 'div', { className: 'description' },
+								a.description || "",
+							),
+							el( 'div', { className: 'largethumbnailurl' },
+								a.large_thumbnail_url || "",
+							),
+							el( 'div', { className: 'linkurl' },
+								a.link_url || "",
+							),
+							el( 'div', { className: 'squarethumbnailurl' },
+								a.square_thumbnail_url || "",
+							),
+							el( 'div', { className: 'title' },
+								a.title || "",
+							),
+							el( 'div', { className: 'videourl' },
+								a.video_url || "",
+							)
+						);
+					}
+
+					if (attributes.layout == "swipe") {
+						return el(
+							'div',
+							useBlockProps.save( { className: "rsContent" } ),
+							oldRenderImageDetails(attributes, false),
+							attributes.flickr_id_is_valid ? (
+								el( 'a', {
+										href: attributes.link_url,
+										title: attributes.title
+									},
+									el( 'img', {
+											className: 'rsImg',
+											src: attributes.large_thumbnail_url,
+											'data-rsh': attributes.large_thumbnail_height,
+											'data-rsw': attributes.large_thumbnail_width,
+											'data-ptws-height': attributes.large_thumbnail_height,
+											'data-ptws-width': attributes.large_thumbnail_width
+										}
+									)
+								)
+							) : (
+								// If the flickr info is not valid, render an empty image placeholder
+								el( 'div', { className: 'emptyimage' }, "" )
+							),
+							(attributes.flickr_id_is_valid && attributes.description) ? (
+								el( 'div',
+									{ className: 'rsCaption' },
+									el( 'p', {}, attributes.description )
+								)
+							) : undefined
+						);
+
+					} else {
+						return el(
+							'div',
+							useBlockProps.save( {
+								className: props.className,
+								style: {
+									flex: `${attributes.flex_ratio}`	// Force a string
+								},
+							} ),
+							oldRenderImageDetails(attributes, false),
+							attributes.flickr_id_is_valid ? (
+								attributes.media == 'video' ? (
+									el( 'video', {
+											src: attributes.video_url,
+											poster: attributes.large_thumbnail_url,
+											'data-ptws-height': attributes.video_height,
+											'data-ptws-width': attributes.video_width,
+											controls: true,
+											title: attributes.title,
+											autoplay: false,
+											loop: false,
+											preload: 'metadata'
+										}
+									)
+								) : (
+									el( 'a', {
+											href: attributes.link_url,
+											title: attributes.title
+										},
+										el( 'img', {
+												src: attributes.large_thumbnail_url,
+												'data-ptws-height': attributes.large_thumbnail_height,
+												'data-ptws-width': attributes.large_thumbnail_width
+											}
+										)
+									)
+								)
+							) : (
+								// If the flickr info is not valid, render an empty image placeholder
+								el( 'div', { className: 'emptyimage' }, "" )
+							),
+							(attributes.flickr_id_is_valid && attributes.description) ? (
+								el( 'div',
+									{ className: 'imgComment' },
+									el( 'p', {}, attributes.description )
+								)
+							) : undefined
+						);
+					}
+				}
+			},
 			{
 				// Old version of attributes, lacking "embed_secret", "latitude", "longitude", "media", "video_width", "video_height", "video_url"
 				attributes: {

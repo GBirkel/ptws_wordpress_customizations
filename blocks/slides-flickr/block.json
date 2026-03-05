@@ -78,13 +78,6 @@
 			"selector": "div.photodata",
 			"attribute": "data-ptws-latitude"
 		},
-		"layout": {
-			"type": "string",
-			"default": "fixed",
-			"source": "attribute",
-			"selector": "div.photodata",
-			"attribute": "data-ptws-layout"
-		},
 		"longitude": {
 			"type": "string",
 			"default": "",
@@ -124,6 +117,13 @@
 			"source": "attribute",
 			"selector": "div.photodata",
 			"attribute": "data-ptws-media"
+		},
+		"presentation_type": {
+			"type": "string",
+			"default": "fixed",
+			"source": "attribute",
+			"selector": "div.photodata",
+			"attribute": "data-ptws-presentation-type"
 		},
 		"square_thumbnail_height": {
 			"type": "string",
