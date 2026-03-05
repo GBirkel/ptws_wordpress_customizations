@@ -214,11 +214,11 @@ img.rsImg {
 }
 
 .grab-cursor {
-	cursor:url(grab.png) 8 8, move; 
+	cursor:url(../royalslider/grab.png) 8 8, move; 
 }
 
 .grabbing-cursor{ 
-	cursor:url(grabbing.png) 8 8, move;
+	cursor:url(../royalslider/grabbing.png) 8 8, move;
 }
 
 .rsNoDrag {
@@ -233,7 +233,7 @@ img.rsImg {
 	height:100%;
 	display:block;	
 	z-index: 20;
-	background: url(blank.gif);
+	background: url(../royalslider/blank.gif);
 }
 
 
@@ -267,7 +267,7 @@ img.rsImg {
 	height: 29px;
 	position: absolute;
 	cursor: pointer;	
-	background: url('../images/rs-minimal-white.png') transparent;
+	background: url('../royalslider/rs-minimal-white.png') transparent;
 }
 .rsMinW .rsArrowIcn:hover {
 
@@ -389,7 +389,7 @@ img.rsImg {
 	margin-left: -8px;
 	position: absolute;	
 	cursor: pointer;	
-	background: url('../images/rs-minimal-white.png');
+	background: url('../royalslider/rs-minimal-white.png');
 }
 
 .rsMinW.rsWithThumbsHor .rsThumbsArrowLeft .rsThumbsArrowIcn { background-position: -128px -32px; }
@@ -491,7 +491,7 @@ img.rsImg {
 	width: 32px;
 	height: 32px;
 
-	background: url('../images/rs-minimal-white.png') 0 0 transparent;
+	background: url('../royalslider/rs-minimal-white.png') 0 0 transparent;
 }
 .rsMinW .rsFullscreenIcn:hover {
 	opacity: 0.8;
@@ -520,7 +520,7 @@ img.rsImg {
 	-moz-transition: .3s;
 	transition: .3s;
 
-	background:url('../images/rs-minimal-white.png') no-repeat 0 -32px;
+	background:url('../royalslider/rs-minimal-white.png') no-repeat 0 -32px;
 	background-color: #000;
 	background-color: rgba(0,0,0,0.75);
 	*background-color: #000;
@@ -556,7 +556,7 @@ img.rsImg {
 	margin: 6px;
 	width: 32px;
 	height: 32px;
-	background: url('../images/rs-minimal-white.png') -64px 0;
+	background: url('../royalslider/rs-minimal-white.png') -64px 0;
 	background-color: #000;
 	background-color: rgba(0,0,0,0.75);
 	*background-color: #000;
@@ -569,7 +569,7 @@ img.rsImg {
 .rsMinW .rsPreloader {
 	width:20px;
 	height:20px;
-	background-image:url(/wp-content/plugins/new-royalslider/lib/royalslider/skins/preloaders/preloader-white.gif);
+	background-image:url(../royalslider/preloader-white.gif);
 
 	left:50%;
 	top:50%;
