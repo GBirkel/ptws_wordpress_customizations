@@ -43,11 +43,53 @@ function ptws_admin_menu()
     $cp = 'publish_pages';
     add_menu_page('PTWS Custom', 'PTWS Custom', $cp, 'ptws_plugin_page', __NAMESPACE__ . '\ptws_admin_html_page', PTWS_PLUGIN_URL . "/images/ptws_logo.png", 898);
     add_submenu_page( 'ptws_plugin_page', 'Log Comment', 'Log Comment', $cp, 'ptws_log_comment', __NAMESPACE__ . '\ptws_admin_html_log_comment_page', 899 );
+    add_submenu_page( 'ptws_plugin_page', 'Manage Routes', 'Manage Routes', $cp, 'ptws_manage_routes', __NAMESPACE__ . '\ptws_admin_html_manage_routes_page', 900 );
 
     // adds "Settings" link to the plugin action page
     /* add_filter( 'plugin_action_links', __NAMESPACE__ . '\ptws_add_settings_links', 10, 2);*/
 
     /* ptws_setup_options();*/
+}
+
+
+function ptws_admin_html_manage_routes_page()
+{
+    if ($_POST) {
+
+        if (isset($_POST['submit']) && $_POST['submit'] == 'Submit Comment') {
+
+            $f = array();
+            $f['content'] = $_POST['ptws_log_comment_text'];
+            $f['composition_time'] = $_POST['ptws_log_comment_timestamp'];
+            ptws_create_comment_log_record($f);
+
+            echo "<div class='updated'><p><strong>
+                Comment submitted.
+                </strong></p></div>";
+        }
+        ptws_create_afgFlickr_obj();
+    }
+    $url = $_SERVER['REQUEST_URI'];
+    $route_count = ptws_get_route_count();
+
+    ?>
+        <form method='post' action='<?php echo $url ?>'>
+            <div id='afg-wrap'>
+                <h2>PTWS Manage Routes</h2>
+                <div id="afg-main-box">
+                    <?php
+                        echo "<p>Route database contains {$route_count} entries.</p>";
+                    ?>
+                    <table>
+                        <tr>
+                            <td>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </form>
+    <?php
 }
 
 
@@ -77,7 +119,7 @@ function ptws_admin_html_log_comment_page()
     ?>
         <form method='post' action='<?php echo $url ?>'>
             <div id='afg-wrap'>
-                <h2>PTWS Log Comment Page</h2>
+                <h2>PTWS Log Comment</h2>
                 <div id="afg-main-box">
                     <h4>Timestamp</h4>
                     <table>
