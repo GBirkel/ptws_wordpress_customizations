@@ -89,7 +89,7 @@ class PTWS_API {
         // Here we are registering the schema for the image id argument.
         $args['id'] = array(
             // description should be a human readable description of the argument.
-            'description' => esc_html__( 'The id parameter is the unique identifier string for the image', 'my-text-domain' ),
+            'description' => 'The id parameter is the unique identifier string for the image',
             // type specifies the type of data that the argument should be.
             'type'        => 'string',
             'validate_callback' => array($this, 'ptws_string_arg_validate'),
@@ -98,7 +98,7 @@ class PTWS_API {
         );
         $args['last_seen_in_post'] = array(
             // description should be a human readable description of the argument.
-            'description' => esc_html__( 'The id of the post requesting this image, if applicable.', 'my-text-domain' ),
+            'description' => 'The id of the post requesting this image, if applicable.',
             'type'        => 'string',
             'validate_callback' => array($this, 'ptws_string_arg_validate'),
         );
@@ -112,7 +112,7 @@ class PTWS_API {
         // Here we are registering the schema for the route id argument.
         $args['id'] = array(
             // description should be a human readable description of the argument.
-            'description' => esc_html__( 'The id parameter is the unique identifier string for the route', 'my-text-domain' ),
+            'description' => 'The id parameter is the unique identifier string for the route',
             // type specifies the type of data that the argument should be.
             'type'        => 'string',
             'validate_callback' => array($this, 'ptws_string_arg_validate'),
@@ -125,7 +125,7 @@ class PTWS_API {
 	public function image_get_by_flickr_id($request) {
         if (!isset( $request['id'] ) ) {
             return new \WP_Error( 'rest_invalid',
-                        esc_html__( 'The id parameter is required.', 'my-text-domain' ),
+                        'The id parameter is required.',
                         array( 'status' => 400 ) );
         }
 
@@ -189,7 +189,7 @@ class PTWS_API {
     // Implementing the route API 'get by id' method.
 	public function route_get_by_id($request) {
         if (!isset( $request['id'] ) ) {
-            return new \WP_Error( 'rest_invalid', esc_html__( 'The id parameter is required.', 'my-text-domain' ), array( 'status' => 400 ) );
+            return new \WP_Error( 'rest_invalid', 'The id parameter is required.', array( 'status' => 400 ) );
         }
         $response = ptws_get_route_record($request['id']);
         if ($response == null) {
@@ -215,7 +215,7 @@ class PTWS_API {
     public function standard_api_key_only_arguments() {
         $args = array();
         $args['key'] = array(
-            'description' => esc_html__( 'The secret API key (set in the plugin admin section)', 'my-text-domain' ),
+            'description' => 'The secret API key (set in the plugin admin section)',
             'type'        => 'string',
             'validate_callback' => array( $this, 'ptws_string_arg_validate'),
         );
@@ -227,12 +227,12 @@ class PTWS_API {
     public function route_create_arguments() {
         $args = array();
         $args['id'] = array(
-            'description' => esc_html__( 'The id parameter is the unique identifier string for the route', 'my-text-domain' ),
+            'description' => 'The id parameter is the unique identifier string for the route',
             'type'        => 'string',
             'validate_callback' => array( $this, 'ptws_string_arg_validate'),
         );
         $args['route'] = array(
-            'description' => esc_html__( 'The contents of the route as JSON', 'my-text-domain' ),
+            'description' => 'The contents of the route as JSON',
             'type'        => 'string',
             'validate_callback' => array( $this, 'ptws_string_arg_validate'),
         );
@@ -241,7 +241,7 @@ class PTWS_API {
             'type'        => 'string',
         );
         $args['key'] = array(
-            'description' => esc_html__( 'The secret API key (set in the plugin admin section)', 'my-text-domain' ),
+            'description' => 'The secret API key (set in the plugin admin section)',
             'type'        => 'string',
             'validate_callback' => array( $this, 'ptws_string_arg_validate'),
         );
@@ -276,17 +276,17 @@ class PTWS_API {
     // php_value post_max_size 64M
     public function route_create($request) {
         if (!isset( $request['id'] ) ) {
-            return new \WP_Error( 'rest_invalid', esc_html__( 'The id parameter is required.', 'my-text-domain' ), array( 'status' => 400 ) );
+            return new \WP_Error( 'rest_invalid', 'The id parameter is required.', array( 'status' => 400 ) );
         }
 
         if (!isset( $request['key'] ) ) {
-            return new \WP_Error( 'rest_invalid', esc_html__( 'The key parameter is required.', 'my-text-domain' ), array( 'status' => 400 ) );
+            return new \WP_Error( 'rest_invalid', 'The key parameter is required.', array( 'status' => 400 ) );
         }
         if (!get_option('ptws_route_api_secret')) {
-            return new \WP_Error( 'rest_invalid', esc_html__( 'Route API secret is not set.', 'my-text-domain' ), array( 'status' => 400 ) );
+            return new \WP_Error( 'rest_invalid', 'Route API secret is not set.', array( 'status' => 400 ) );
         }
         if ($request['key'] != get_option('ptws_route_api_secret')) {
-            return new \WP_Error( 'rest_invalid', esc_html__( 'The key parameter is incorrect.', 'my-text-domain' ), array( 'status' => 400 ) );
+            return new \WP_Error( 'rest_invalid', 'The key parameter is incorrect.', array( 'status' => 400 ) );
         }
 
         if ( !function_exists( 'wp_handle_upload' ) ) {
@@ -299,7 +299,7 @@ class PTWS_API {
         $movefile = wp_handle_upload( $uploadedfile, $upload_overrides );
 
         if (!$movefile) {
-            return new \WP_Error( 'rest_invalid', esc_html__( 'Could not create temporary file', 'my-text-domain' ), array( 'status' => 400 ) );
+            return new \WP_Error( 'rest_invalid', 'Could not create temporary file', array( 'status' => 400 ) );
         }
         
         if (isset($movefile['error'])) {
@@ -367,13 +367,13 @@ class PTWS_API {
     public function comment_get_recent_unresolved($request)
     {
         if (!isset( $request['key'] ) ) {
-            return new \WP_Error( 'rest_invalid', esc_html__( 'The key parameter is required.', 'my-text-domain' ), array( 'status' => 400 ) );
+            return new \WP_Error( 'rest_invalid', 'The key parameter is required.', array( 'status' => 400 ) );
         }
         if (!get_option('ptws_route_api_secret')) {
-            return new \WP_Error( 'rest_invalid', esc_html__( 'Route API secret is not set.', 'my-text-domain' ), array( 'status' => 400 ) );
+            return new \WP_Error( 'rest_invalid', 'Route API secret is not set.', array( 'status' => 400 ) );
         }
         if ($request['key'] != get_option('ptws_route_api_secret')) {
-            return new \WP_Error( 'rest_invalid', esc_html__( 'The key parameter is incorrect.', 'my-text-domain' ), array( 'status' => 400 ) );
+            return new \WP_Error( 'rest_invalid', 'The key parameter is incorrect.', array( 'status' => 400 ) );
         }
 
         $recent_comments = ptws_get_unresolved_comments(50);
