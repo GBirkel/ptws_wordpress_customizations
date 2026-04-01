@@ -18,6 +18,8 @@ export function findAndInitGPSLogDisplays() {
 	};
 
 
+	const mapbox_token = 'HURRHURR';
+
 	jQuery('div.ptws-ride-log').each(function (index, item) {
 		var jqRideLogDiv = jQuery(item);
 		var rideLogId = jqRideLogDiv.attr('rideid');
@@ -26,12 +28,24 @@ export function findAndInitGPSLogDisplays() {
 
 		var rawDataStr = jQuery(jqRideLogDiv).children().first().text()
 		rawDataStr = rawDataStr.replace(/\r?\n|\r/g, " ");
-		var rawdata = JSON.parse(rawDataStr);
+		var rawdata;
+		try {
+			rawdata = JSON.parse(rawDataStr);
+		} catch (e) {
+			console.log("PTWS: Failed to parse ride log JSON for ride " + rideLogId + ":");
+			console.log(e);
+			console.log(item);
+			return;
+		}
 		// Check and see if we got JSON with every needed attribute,
 		// making a full set of data for graphing.
-		var classesToCheck = ['lat', 'lon', 'el', 't', 'spd'];
-		var hasAll = classesToCheck.filter(function (a) { return rawdata[a]; });
-		if (hasAll.length != classesToCheck.length) {
+		var legs = [rawdata];
+		if (rawdata.hasOwnProperty('legs')) {
+			legs = rawdata['legs'];
+		}
+		const classesToCheck = ['lat', 'lon', 'el', 't', 'spd'];
+		const hasAll = legs.every(leg => classesToCheck.every(cls => leg.hasOwnProperty(cls)));
+		if (!hasAll) {
  			// Can't use incomplete data sets
  			console.log("PTWS: Cannot init ride log with incomplete data sets:");
  			console.log(item);
@@ -40,90 +54,44 @@ export function findAndInitGPSLogDisplays() {
 
 		// Convert the arrays into a series of point objects, like a minimal version of GPX.
 
-		var points = [];
-		var i = 0;
-		while (i < rawdata['t'].length) {
-			var point = {
-				't': rawdata['t'][i],
-				// Date parsed as a real JS Date object, for use in further processing.
-				// If we start working with questionable data, this may throw errors.
-				// The strings we are parsing will look like "2011-10-21T05:44:53+00:00",
-				// which is known as SOAP format.
-				't_d': new Date(rawdata['t'][i]),
-				'lat': rawdata['lat'][i],
-				'lon': rawdata['lon'][i],
-				'el': rawdata['el'][i],
-				'spd': rawdata['spd'][i]
-			};
-			points.push(point);
-			i++;
-		}
-
-		// Smooth points using their predecessors within a 7 second range.
-		// (Helps to prevent GPS hairballs from poor signal.)
-
-		var smoothedPoints:SmoothedPoint[] = [];
-		// A pool of all previously seen points that are within 6.01 seconds
-		// of the current point (including the current point).
-		var pointPool = [];
-		var nextPointIndex = 0;
-		// We will be handling all these attributes the same way
-		var typesToSmooth = ['lat', 'lon', 'el', 'spd'];
-		while (nextPointIndex < points.length) {
-			var currentPoint = points[nextPointIndex];
-			var thisT = currentPoint['t_d'];
-			pointPool.push(currentPoint);
-			// Drop any point older than 6.01 seconds.
-			// This way, large gaps in the recorded data halt the smoothing effect.
-			pointPool = pointPool.filter(function (pt) { return (thisT - pt['t_d']) < 6010 });
-			// Start with a template point that has all the
-			// attributes we wish to smooth zeroed out.
-			var smoothedPoint = {
-				't': currentPoint['t'],
-				't_d': thisT,
-				'lat': 0.0,
-				'lon': 0.0,
-				'el': 0.0,
-				'spd': 0.0,
-			};
-			var totalMultiplier = 0;
-			// Add each point's attributes to the template point, multiplying them
-			// first by a 'force multiplier' based on the distance in time from the current point.
-			// The more distant the time (up to 6.01 seconds) the lower the force multiplier.
-			pointPool.forEach(function (pt) {
-				var thisMultiplier = 7000 - (thisT - pt['t_d']);
-				totalMultiplier += thisMultiplier
-				typesToSmooth.forEach(function (tts) {
-					smoothedPoint[tts] += pt[tts] * thisMultiplier;
-				});
-			});
-			// Divide the template attributes by the total force multiplier applied,
-			// to get values that make sense.  Basically, the new current point is like the
-			// old current point except it has ~6 seconds of "drag" applied to it.
-			typesToSmooth.forEach(function (tts) {
-				smoothedPoint[tts] = smoothedPoint[tts] / totalMultiplier;
-			});
-			smoothedPoints.push(smoothedPoint);
-			nextPointIndex++;
-		}
-
-		// Reduce the set to a maximum of 640 for the elevation/speed graphs
-
-		var sparsifiedPoints = [];
-		if (smoothedPoints.length < 645) {
-			sparsifiedPoints = smoothedPoints;
-		} else {
-			sparsifiedPoints.push(smoothedPoints[0]);
-			var nextWholeNumber = 1;
-			var step = 640.0 / smoothedPoints.length;
-			var unsparseIndex = 1;
-			while (unsparseIndex < smoothedPoints.length) {
-				if ((unsparseIndex * step) > sparsifiedPoints.length) {
-					sparsifiedPoints.push(smoothedPoints[unsparseIndex]);
-				}
-				unsparseIndex++;
+		var legsAsPoints = legs.map(leg => {
+			var points = [];
+			var i = 0;
+			while (i < leg['t'].length) {
+				var point = {
+					't': leg['t'][i],
+					// Date parsed as a real JS Date object, for use in further processing.
+					// If we start working with questionable data, this may throw errors.
+					// The strings we are parsing will look like "2011-10-21T05:44:53+00:00",
+					// which is known as SOAP format.
+					't_d': new Date(leg['t'][i]),
+					'lat': leg['lat'][i],
+					'lon': leg['lon'][i],
+					'el': leg['el'][i],
+					'spd': leg['spd'][i]
+				};
+				points.push(point);
+				i++;
 			}
-		}
+			return points;
+		});
+
+		// Reduce the set to a maximum of 1024 for the elevation/speed graphs
+
+		var sparsifiedLegs = legsAsPoints.map(leg => {
+			if (leg.length < 1025) {
+				return leg;
+			}
+			const step = 1024.0 / leg.length;
+			var sparsifiedPoints = [];
+			sparsifiedPoints.push(leg[0]);
+			var unsparseIndex = 1;
+			while (unsparseIndex < leg.length) {
+				sparsifiedPoints.push(leg[Math.floor(unsparseIndex)]);
+				unsparseIndex += step;
+			}
+			return sparsifiedPoints;
+		});
 
 		// Build and embed the map
 
@@ -133,7 +101,7 @@ export function findAndInitGPSLogDisplays() {
 
 		var map = L.map(mapContainer.get(0));
 
-		(<any>L).tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoibWlsZTQyIiwiYSI6ImNqbGgyY2l0NDFkcm8zcWxxMWJrd2RvaXEifQ.uMQoOnrPBsLbLV2v4COFjA', {
+		(<any>L).tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=' + mapbox_token, {
 			maxZoom: 18,
 			attribution: '&copy; <a href="https://www.mapbox.com/about/maps/">Mapbox</a> ' +
 						 '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> ' +
@@ -143,7 +111,14 @@ export function findAndInitGPSLogDisplays() {
 			id: 'mapbox/outdoors-v11'
 		}).addTo(map);
 
-		var routeLeafletPoints = smoothedPoints.map(function (pt) { return <L.LatLngExpression>[pt['lat'], pt['lon']]; });
+		var firstPoint = null;
+		var lastPoint = null;
+
+		var latMin = null;
+		var latMax = null;
+		var lonMin = null;
+		var lonMax = null;
+
 		var routeInnerStyle = {
 			weight: 4,
 			opacity: 1,
@@ -158,8 +133,40 @@ export function findAndInitGPSLogDisplays() {
 			fill: false,
 			color: '#78a120'
 		};
-		var polylineOuter = L.polyline(routeLeafletPoints, routeOuterStyle).addTo(map);
-		var polylineInner = L.polyline(routeLeafletPoints, routeInnerStyle).addTo(map);
+		var legLinkStyle = {
+			weight: 2,
+			opacity: 1,
+			stroke: true,
+			fill: false,
+			dashArray: '4',
+			color: '#78a120'
+		};
+
+		legsAsPoints.forEach(leg => {
+
+			var routeLeafletPoints = leg.map(function (pt) { return <L.LatLngExpression>[pt['lat'], pt['lon']]; });
+
+			if (routeLeafletPoints.length > 0) {
+				if (lastPoint != null) {
+					L.polyline([lastPoint, routeLeafletPoints[0]], legLinkStyle).addTo(map);
+				}
+				if (firstPoint == null) {
+					firstPoint = routeLeafletPoints[0];
+				}
+				lastPoint = routeLeafletPoints[routeLeafletPoints.length - 1];
+			}
+
+			L.polyline(routeLeafletPoints, routeOuterStyle).addTo(map);
+			L.polyline(routeLeafletPoints, routeInnerStyle).addTo(map);
+
+			// Calculate the center point and the outer bounds for the route.
+			leg.forEach(function (pt) {
+				if (latMin === null || pt['lat'] < latMin) { latMin = pt['lat']; }
+				if (latMax === null || pt['lat'] > latMax) { latMax = pt['lat']; }
+				if (lonMin === null || pt['lon'] < lonMin) { lonMin = pt['lon']; }
+				if (lonMax === null || pt['lon'] > lonMax) { lonMax = pt['lon']; }
+			});
+		});
 
 		var startFlag = L.icon({
 			iconSize: [15, 18],
@@ -173,14 +180,9 @@ export function findAndInitGPSLogDisplays() {
 			iconUrl: 'https://mile42.net/wp-content/plugins/ptws/images/checkered_flag.png'
 		});
 
-		L.marker(routeLeafletPoints[0], { icon: startFlag }).addTo(map);
-		L.marker(routeLeafletPoints[routeLeafletPoints.length-1], { icon: finishFlag }).addTo(map);
+		L.marker(firstPoint, { icon: startFlag }).addTo(map);
+		L.marker(lastPoint, { icon: finishFlag }).addTo(map);
 
-		// Calculate the center point and the outer bounds for the route.
-		var latMin = Math.min.apply(0, rawdata['lat']);
-		var latMax = Math.max.apply(0, rawdata['lat']);
-		var lonMin = Math.min.apply(0, rawdata['lon']);
-		var lonMax = Math.max.apply(0, rawdata['lon']);
 		map.fitBounds([[latMin, lonMin], [latMax, lonMax]]);
 
 		// Build and embed the chart
@@ -190,8 +192,8 @@ export function findAndInitGPSLogDisplays() {
 		var chartContainer = jQuery("<canvas/>").attr("width", "640").attr("height", "140").appendTo(chartFrame);
 
 		// Format the elevation and speed data for Chart.js .
-		var elevData = sparsifiedPoints.map(function (pt) { return { x: pt['t'], y: pt['el'] }; });
-		var spdData = sparsifiedPoints.map(function (pt) { return { x: pt['t'], y: pt['spd'] }; });
+		var elevData = sparsifiedLegs.flatMap(leg => leg.map(pt => { return { x: pt['t'], y: pt['el'] }; }));
+		var spdData = sparsifiedLegs.flatMap(leg => leg.map(pt => { return { x: pt['t'], y: pt['spd'] }; }));
 
 		var chartContainerEl = chartContainer.get(0);
 		var ctx = (<any>chartContainerEl).getContext('2d');
