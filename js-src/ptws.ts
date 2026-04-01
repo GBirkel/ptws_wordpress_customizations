@@ -8,7 +8,7 @@ import { Slideshow } from "./slideshow";
 // Seek out and init GPS log data chunks on the page, marking them as inited as we go.
 export function findAndInitGPSLogDisplays() {
 
-	interface SmoothedPoint {
+	interface AssembledPoint {
 		't': any;
 		't_d': any;
 		'lat': number;
@@ -17,6 +17,8 @@ export function findAndInitGPSLogDisplays() {
 		'spd': number;
 	};
 
+
+	const mapbox_token = 'pk.eyJ1IjoibWlsZTQyIiwiYSI6ImNqbGgyY2l0NDFkcm8zcWxxMWJrd2RvaXEifQ.uMQoOnrPBsLbLV2v4COFjA';
 
 	jQuery('div.ptws-ride-log').each(function (index, item) {
 		var jqRideLogDiv = jQuery(item);
@@ -53,10 +55,10 @@ export function findAndInitGPSLogDisplays() {
 		// Convert the arrays into a series of point objects, like a minimal version of GPX.
 
 		var legsAsPoints = legs.map(leg => {
-			var points = [];
+			var points: AssembledPoint[] = [];
 			var i = 0;
 			while (i < leg['t'].length) {
-				var point = {
+				var point: AssembledPoint = {
 					't': leg['t'][i],
 					// Date parsed as a real JS Date object, for use in further processing.
 					// If we start working with questionable data, this may throw errors.
@@ -81,7 +83,7 @@ export function findAndInitGPSLogDisplays() {
 				return leg;
 			}
 			const step = 1024.0 / leg.length;
-			var sparsifiedPoints = [];
+			var sparsifiedPoints: AssembledPoint[] = [];
 			sparsifiedPoints.push(leg[0]);
 			var unsparseIndex = 1;
 			while (unsparseIndex < leg.length) {
@@ -99,7 +101,7 @@ export function findAndInitGPSLogDisplays() {
 
 		var map = L.map(mapContainer.get(0));
 
-		(<any>L).tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoibWlsZTQyIiwiYSI6ImNqbGgyY2l0NDFkcm8zcWxxMWJrd2RvaXEifQ.uMQoOnrPBsLbLV2v4COFjA', {
+		(<any>L).tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=' + mapbox_token, {
 			maxZoom: 18,
 			attribution: '&copy; <a href="https://www.mapbox.com/about/maps/">Mapbox</a> ' +
 						 '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> ' +
