@@ -18,8 +18,6 @@ export function findAndInitGPSLogDisplays() {
 	};
 
 
-	const mapbox_token = 'HURRHURR';
-
 	jQuery('div.ptws-ride-log').each(function (index, item) {
 		var jqRideLogDiv = jQuery(item);
 		var rideLogId = jqRideLogDiv.attr('rideid');
@@ -101,7 +99,7 @@ export function findAndInitGPSLogDisplays() {
 
 		var map = L.map(mapContainer.get(0));
 
-		(<any>L).tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=' + mapbox_token, {
+		(<any>L).tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoibWlsZTQyIiwiYSI6ImNqbGgyY2l0NDFkcm8zcWxxMWJrd2RvaXEifQ.uMQoOnrPBsLbLV2v4COFjA', {
 			maxZoom: 18,
 			attribution: '&copy; <a href="https://www.mapbox.com/about/maps/">Mapbox</a> ' +
 						 '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> ' +
