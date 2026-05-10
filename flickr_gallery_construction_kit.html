@@ -693,10 +693,7 @@ function generateShortCodesFromSelection() {
 	if (!selectedItems.length) { return ""; }
 	// Each segment gets its own shortcode
 	var allSegments = selectedItems.map( function(segment) {
-		// Filter out any videos - shortcodes can't handle them
-		var ids = segment.filter(function(item) {
-			return item.media != 'video'
-		}).map(function(item) { return item.id });
+		var ids = segment.map(function(item) { return item.id });
 
 		if (!ids.length) { return ""; }
 		var sgt = '[ptwsgallery ';
