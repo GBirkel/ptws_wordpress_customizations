@@ -700,7 +700,7 @@ function generateShortCodesFromSelection() {
 
 		if (!ids.length) { return ""; }
 		var sgt = '[ptwsgallery ';
-		if (ids.length < 5) { sgt += 'fixed="' + ids.join(',') + '"'; }
+		if (ids.length < 4) { sgt += 'fixed="' + ids.join(',') + '"'; }
 		else { sgt += 'swipe="' + ids.join(',') + '"'; }
 		sgt += ']';
 		return sgt
