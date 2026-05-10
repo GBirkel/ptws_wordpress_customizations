@@ -194,7 +194,7 @@
 					// All the blocks must have the "fixed" layout.
 					// Stacking "swipe" layout is not supported.
 					isMatch: (attributesArray) => {
-						return attributesArray.every((a) => { return a.layout == "fixed" });
+						return attributesArray.every((a) => { return a.presentation_type == "fixed" });
 					},
 					transform: (attributesArray) => {
 						const newBlocks = attributesArray.map((a) => {
