@@ -95,7 +95,7 @@ export function findAndInitGPSLogDisplays() {
 
 		// Build and embed the map
 
-		// Container and div for the embedded Google map with the route.
+		// Container and div for the embedded Leaflet map with the route.
 		var mapFrame = jQuery("<div/>").attr("class", "ptws-routemap").appendTo(jqRideLogDiv);
 		var mapContainer = jQuery("<div/>").appendTo(mapFrame);
 
