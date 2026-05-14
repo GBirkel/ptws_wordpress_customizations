@@ -251,11 +251,6 @@ div.wp-block-image > figure.aligncenter > img, figure.wp-block-image > img {
 	margin: 4px 1em 1px 1em;
 	padding: 0 0 5px 0;
 }
-	
-.content h2 a, .content h2 a:visited {
-	color: #333333;
-	text-decoration: none;
-}
 
 .content h2 a:hover {
 	color: #008DCF;
