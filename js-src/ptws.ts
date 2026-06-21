@@ -18,8 +18,6 @@ export function findAndInitGPSLogDisplays() {
 	};
 
 
-	const mapbox_token = 'pk.eyJ1IjoibWlsZTQyIiwiYSI6ImNqbGgyY2l0NDFkcm8zcWxxMWJrd2RvaXEifQ.uMQoOnrPBsLbLV2v4COFjA';
-
 	jQuery('div.ptws-ride-log').each(function (index, item) {
 		var jqRideLogDiv = jQuery(item);
 		var rideLogId = jqRideLogDiv.attr('rideid');
@@ -101,14 +99,12 @@ export function findAndInitGPSLogDisplays() {
 
 		var map = L.map(mapContainer.get(0));
 
-		(<any>L).tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=' + mapbox_token, {
-			maxZoom: 18,
-			attribution: '&copy; <a href="https://www.mapbox.com/about/maps/">Mapbox</a> ' +
-						 '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> ' +
-						 '<strong><a href="https://www.mapbox.com/map-feedback/" target="_blank">Improve this map</a></strong>',
+		(<any>L).tileLayer('https://{s}.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png', {
+			maxZoom: 19,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, ' +
+						 '&copy; <a href="https://opencyclemap.org">OpenCycleMap</a> contributors',
 			tileSize: 512,
-			zoomOffset: -1,
-			id: 'mapbox/outdoors-v11'
+			zoomOffset: -1
 		}).addTo(map);
 
 		var firstPoint = null;
