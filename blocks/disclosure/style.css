@@ -37,14 +37,14 @@
 }
 
 .wp-block-ptws-disclosure > div.disclosecontent {
-	font-size: calc(var(--ptws-font-size-multiplier) * 0.64rem);
-	margin: 0 1.4em 0 0;
-	padding: 0em 1em 0em 1.7em;
+	font-size: calc(var(--ptws-font-size-multiplier) * 0.70rem);
+	margin: 0 0 0 0;
+	padding: 0 0 0 1.7em;
 }
 
 .wp-block-ptws-disclosure > div.disclosecontent p {
 	margin: 0 1.4em 0.5em 0;
-	padding: 0 1em 0 0.1em;
+	padding: 0 0.5em 0 0.1em;
 	text-indent: 0.3em;
 }
 
