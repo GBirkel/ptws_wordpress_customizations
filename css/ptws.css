@@ -920,6 +920,21 @@ div.slide.slide-video {
 }
 
 
+/* Embedded audio players */
+
+div.content figure.wp-block-audio {
+	margin-left: 25px;
+	margin-right: 1em;
+	max-width: 20cm;
+}
+
+div.content figure.wp-block-audio figcaption.wp-element-caption {
+	padding-left: 0.5em;
+	padding-right: 0.5em;
+	font-size: 0.9rem;
+}
+
+
 /* General CSS */
 
 .content table.pictable {
