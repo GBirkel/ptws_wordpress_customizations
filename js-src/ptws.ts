@@ -17,14 +17,8 @@ export function findAndInitGPSLogDisplays() {
 		'spd': number;
 	};
 
+	function initGPSLogDisplay(destContainer: JQuery<HTMLElement>, rideLogId: string, rawDataStr: any) {
 
-	jQuery('div.ptws-ride-log').each(function (index, item) {
-		var jqRideLogDiv = jQuery(item);
-		var rideLogId = jqRideLogDiv.attr('rideid');
-		if (jqRideLogDiv.attr('ptwsinitialized')) { return; }
-		jqRideLogDiv.attr('ptwsinitialized', 1);
-
-		var rawDataStr = jQuery(jqRideLogDiv).children().first().text()
 		rawDataStr = rawDataStr.replace(/\r?\n|\r/g, " ");
 		var rawdata;
 		try {
@@ -32,7 +26,7 @@ export function findAndInitGPSLogDisplays() {
 		} catch (e) {
 			console.log("PTWS: Failed to parse ride log JSON for ride " + rideLogId + ":");
 			console.log(e);
-			console.log(item);
+			console.log(destContainer);
 			return;
 		}
 		// Check and see if we got JSON with every needed attribute,
@@ -46,7 +40,7 @@ export function findAndInitGPSLogDisplays() {
 		if (!hasAll) {
  			// Can't use incomplete data sets
  			console.log("PTWS: Cannot init ride log with incomplete data sets:");
- 			console.log(item);
+ 			console.log(destContainer);
 			return;
 		}
 
@@ -94,7 +88,7 @@ export function findAndInitGPSLogDisplays() {
 		// Build and embed the map
 
 		// Container and div for the embedded Leaflet map with the route.
-		var mapFrame = jQuery("<div/>").attr("class", "ptws-routemap").appendTo(jqRideLogDiv);
+		var mapFrame = jQuery("<div/>").attr("class", "ptws-routemap").appendTo(destContainer);
 		var mapContainer = jQuery("<div/>").appendTo(mapFrame);
 
 		var map = L.map(mapContainer.get(0));
@@ -184,7 +178,7 @@ export function findAndInitGPSLogDisplays() {
 		// Build and embed the chart
 
 		// Container and canvas for the Chart.js speed/elevation graph.
-		var chartFrame = jQuery("<div/>").attr("class", "ptws-elevation-chart").appendTo(jqRideLogDiv);
+		var chartFrame = jQuery("<div/>").attr("class", "ptws-elevation-chart").appendTo(destContainer);
 		var chartContainer = jQuery("<canvas/>").attr("width", "640").attr("height", "140").appendTo(chartFrame);
 
 		// Format the elevation and speed data for Chart.js .
@@ -291,6 +285,28 @@ export function findAndInitGPSLogDisplays() {
 				}
 			}
 		});
+
+	}
+
+	jQuery('div.ptws-ride-log').each(function (index, item) {
+		var jqRideLogDiv = jQuery(item);
+		if (jqRideLogDiv.attr('ptwsinitialized')) { return; }
+		jqRideLogDiv.attr('ptwsinitialized', 1);
+
+		var rideLogId = jqRideLogDiv.attr('rideid');
+		var rawDataStr = jQuery(jqRideLogDiv).children().first().text()
+		initGPSLogDisplay(jqRideLogDiv, rideLogId, rawDataStr);
+	});
+
+	jQuery('div.wp-block-ptws-route').each(function (index, item) {
+		var jqRideLogDiv = jQuery(item);
+		if (jqRideLogDiv.attr('ptwsinitialized')) { return; }
+		jqRideLogDiv.attr('ptwsinitialized', 1);
+
+		var rideLogId = jqRideLogDiv.attr('data-ptws-route-id');
+		var rawDataStr = jqRideLogDiv.children(".route-json").first().text();
+		var mapContainer = jqRideLogDiv.children('.route-ui-container').first();
+		initGPSLogDisplay(mapContainer, rideLogId, rawDataStr);
 	});
 }
 
