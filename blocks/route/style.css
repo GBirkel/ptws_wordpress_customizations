@@ -1,0 +1,91 @@
+/* Slides */
+
+/* Main container, non-editing mode */
+
+.content .entry div.wp-block-ptws-route {
+	clear: left;
+}
+
+div.wp-block-ptws-route:not(.editing) .description {
+	display: none;
+}
+
+div.wp-block-ptws-route code.route-json {
+	display: none;
+}
+
+div.wp-block-ptws-route:not(.editing) .editor-information {
+	display: none;
+}
+
+.content .entry div.wp-block-ptws-route:not(.editing) div.route-ui-container {
+	margin: 1.5em;
+	width: 100%;
+	display: flex;
+	flex-direction: column;
+	flex-wrap: nowrap;
+	align-items: center;
+}
+
+.route-ui-container .ptws-routemap {
+	min-width: 640px;
+	width: 100%;
+	box-shadow: 1px 1px 9px -1px rgba(81, 81, 81, 0.51);
+	max-width: min(7.5in, 130vh);
+}
+
+.route-ui-container .ptws-routemap > div {
+    height: 400px;
+}
+
+.route-ui-container .ptws-elevation-chart {
+    padding: 17px 0 0 0;
+	width: 100%;
+	max-width: min(7.5in, 130vh);
+}
+
+.route-ui-container .ptws-elevation-chart > canvas {
+    height: 140px;
+}
+
+/* Editing */
+
+
+div.wp-block-ptws-route.editing .editor-information {
+	display: block;
+	margin: 0.2rem 0.2rem;
+	padding: 0.5rem 1.5rem 0.5rem 1.5rem;
+	border: 2px solid gray;
+	border-radius: 4px;
+	color: #666;
+}
+
+div.wp-block-ptws-route.editing.is-selected div.route-id-zone {
+	display: flex;
+}
+	
+div.wp-block-ptws-route.editing:not(.is-selected) div.route-id-zone {
+	display: none;
+}
+
+div.wp-block-ptws-route.editing div.route-id-zone {
+	padding: 0 0 0.5rem 0;
+	margin: 0;
+}
+
+div.wp-block-ptws-route.editing div.route-id-zone div.parse-status {
+	display: flex;
+	padding: 0;
+	margin: 0 0.5rem 0 0.5rem;
+}
+
+div.wp-block-ptws-route.editing div.route-id-zone textarea {
+	border: 1px solid black;
+	margin: 0 0.5rem 0 0;
+	color: #666;
+	white-space: nowrap;
+	font-weight: bold;
+}
+
+
+

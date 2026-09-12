@@ -117,6 +117,12 @@ class PTWS_API {
             'type'        => 'string',
             'validate_callback' => array($this, 'ptws_string_arg_validate'),
         );
+        $args['last_seen_in_post'] = array(
+            // description should be a human readable description of the argument.
+            'description' => 'The id of the post requesting this route, if applicable.',
+            'type'        => 'string',
+            'validate_callback' => array($this, 'ptws_string_arg_validate'),
+        );
         return $args;
     }
 
@@ -195,6 +201,16 @@ class PTWS_API {
         if ($response == null) {
             return new \WP_Error('rest_invalid', esc_html__('No route exists with ID ' . $request['id'], 'my-text-domain'), array('status' => 400));
         }
+
+        if (current_user_can( 'edit_posts' )) {
+            ptws_session_check();
+
+            if (isset( $request['last_seen_in_post'] ) ) {
+                ptws_update_route_record_last_seen($request['id'], $request['last_seen_in_post']);
+                $response['last_seen_in_post'] = $request['last_seen_in_post'];
+            }
+        }
+
         // rest_ensure_response() wraps the data we want to return into a WP_REST_Response, and ensures it will be properly returned.
         return rest_ensure_response( $response );
     }

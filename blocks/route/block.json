@@ -1,0 +1,116 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "ptws/route",
+	"version": "0.4.4",
+	"title": "PTWS: Route",
+	"category": "text",
+	"example": {
+		"attributes": {
+			"initial_id": "",
+			"route_id": "",
+			"is_valid": false,
+			"description": "",
+			"route_json": "",
+			"route_start_time": "",
+			"route_start_time_epoch": "0",
+			"route_end_time": "",
+			"route_end_time_epoch": "0",
+			"route_duration_seconds": "0",
+			"route_distance_meters": "0"
+		}
+	},
+	"icon": "index-card",
+	"textdomain": "ptws",
+	"description": "Shows a recorded GPS route on an interactive map.",
+	"attributes": {
+		"initial_id": {
+			"type": "string",
+			"default": "",
+			"source": "attribute",
+			"selector": "div.wp-block-ptws-route",
+			"attribute": "data-ptws-initial-id"
+		},
+		"route_id": {
+			"type": "string",
+			"default": "",
+			"source": "attribute",
+			"selector": "div.wp-block-ptws-route",
+			"attribute": "data-ptws-route-id"
+		},
+		"is_valid": {
+			"type": "boolean",
+			"default": false,
+			"source": "attribute",
+			"selector": "div.wp-block-ptws-route",
+			"attribute": "data-ptws-is-valid"
+		},
+		"description": {
+			"type": "string",
+			"default": "",
+			"source": "text",
+			"selector": "div.wp-block-ptws-route > div.description"
+		},
+		"route_json": {
+			"type": "string",
+			"default": "",
+			"source": "text",
+			"selector": "div.wp-block-ptws-route > code.route-json"
+		},
+		"route_start_time": {
+			"type": "string",
+			"default": "",
+			"source": "attribute",
+			"selector": "div.wp-block-ptws-route",
+			"attribute": "data-ptws-route-start-time"
+		},
+		"route_start_time_epoch": {
+			"type": "string",
+			"default": "0",
+			"source": "attribute",
+			"selector": "div.wp-block-ptws-route",
+			"attribute": "data-ptws-route-start-time-epoch"
+		},
+		"route_end_time": {
+			"type": "string",
+			"default": "",
+			"source": "attribute",
+			"selector": "div.wp-block-ptws-route",
+			"attribute": "data-ptws-route-end-time"
+		},
+		"route_end_time_epoch": {
+			"type": "string",
+			"default": "0",
+			"source": "attribute",
+			"selector": "div.wp-block-ptws-route",
+			"attribute": "data-ptws-route-end-time-epoch"
+		},
+		"route_duration_seconds": {
+			"type": "string",
+			"default": "0",
+			"source": "attribute",
+			"selector": "div.wp-block-ptws-route",
+			"attribute": "data-ptws-route-duration-seconds"
+		},
+		"route_distance_meters": {
+			"type": "string",
+			"default": "0",
+			"source": "attribute",
+			"selector": "div.wp-block-ptws-route",
+			"attribute": "data-ptws-route-distance-meters"
+		}
+	},
+	"supports": {
+		"layout": {
+			"default": {
+				"type": "flex",
+				"orientation": "horizontal",
+				"verticalAlignment": "top"
+			},
+			"allowSwitching": false,
+			"allowEditing": false
+		}
+	},
+	"editorScript": "file:./block.js",
+	"style": "file:./style.css"
+}

@@ -65,7 +65,9 @@ function ptws_create_route_tables()
         route_end_time datetime DEFAULT 0 NOT NULL,
         cached_time datetime DEFAULT CURRENT_TIMESTAMP NOT NULL,
         auto_placed tinyint(1) DEFAULT 0,
-        last_seen_in_post bigint(20) UNSIGNED
+        last_seen_in_post bigint(20) UNSIGNED,
+        route_distance_meters double DEFAULT 0,
+        route_duration_seconds double DEFAULT 0
     ) $charset_collate;";
 
     if (!function_exists('dbDelta')) {
@@ -292,7 +294,7 @@ function ptws_construct_flickr_cache_record_fields( $flickr_user_id, $flickr_id,
             }
         }
     }
-    // Some video sources don't give valid dimentions.
+    // Some video sources don't give valid dimensions.
     // Eventually we'll fall back to the original media size if we can't find any.
     foreach ($sizes_to_try as $size_label) {
         if (isset($f_sizes[$size_label])) {
@@ -586,13 +588,13 @@ function ptws_update_route_record($f)
 
 // Given the ID of a GPS route in the database, set the 'last seen' value for it
 // to the currently viewed post.
-function ptws_update_route_record_last_seen($pid)
+function ptws_update_route_record_last_seen($pid, $post_id = null)
 {
     global $wpdb;
     $table_name = $wpdb->prefix . 'ptwsroutes';
     $wpdb->update(
         $table_name,
-        array('last_seen_in_post' => get_the_ID() ),
+        array('last_seen_in_post' => $post_id ?? get_the_ID() ),
         array('route_id'   => $pid),
         array('%d'),
         array('%s')
