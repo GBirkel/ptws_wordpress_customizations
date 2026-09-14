@@ -19,7 +19,7 @@ div.wp-block-ptws-route:not(.editing) .editor-information {
 }
 
 .content .entry div.wp-block-ptws-route:not(.editing) div.route-ui-container {
-	margin: 1.5em;
+	margin: 0.5em 0 0.5em 0;
 	width: 100%;
 	display: flex;
 	flex-direction: column;
@@ -29,19 +29,19 @@ div.wp-block-ptws-route:not(.editing) .editor-information {
 
 .route-ui-container .ptws-routemap {
 	min-width: 640px;
-	width: 100%;
+	width: 90%;
 	box-shadow: 1px 1px 9px -1px rgba(81, 81, 81, 0.51);
-	max-width: min(7.5in, 130vh);
+	max-width: 9in;
 }
 
 .route-ui-container .ptws-routemap > div {
-    height: 400px;
+    height: min(80vh, 75vw);
 }
 
 .route-ui-container .ptws-elevation-chart {
     padding: 17px 0 0 0;
-	width: 100%;
-	max-width: min(7.5in, 130vh);
+	width: 90%;
+	max-width: 9in;
 }
 
 .route-ui-container .ptws-elevation-chart > canvas {
