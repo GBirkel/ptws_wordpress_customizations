@@ -314,12 +314,14 @@ class PTWS_API {
         }
 
         $uploadedfile = $_FILES['route'];
-        $upload_overrides = array(
+
+        $upload_overrides = [
             'test_form' => false,
             'mimes'     => array(
                 'txt' => 'text/plain', // explicitly map the extension to the mime type
-            )
-        );
+            ),
+           'test_type' => false
+        ];
 
         $movefile = wp_handle_upload( $uploadedfile, $upload_overrides );
 
