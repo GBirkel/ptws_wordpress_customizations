@@ -338,15 +338,22 @@ class PTWS_API {
             return $response;
 
         }
+
+        if (array_key_exists('legs', $decoded_route)) {
+            $legs = $decoded_route['legs'];
+        } else {
+            $legs = array($decoded_route);
+        }
+
         // Get ahold of the first value in the timestamp series
-        if (!array_key_exists('t', $decoded_route)) {
+        if (!array_key_exists('t', $legs[0])) {
             $response = rest_ensure_response( 'JSON submitted for record ' . $request['id'] . ' does not contain a timestamp array.' );
             $response->header( 'Access-Control-Allow-Origin', '*');
             return $response;
         }
-        $start_time = $decoded_route['t'][0];
-        $last_value = array_slice($decoded_route['t'], -1);
-        $end_time = array_pop($last_value);
+        $start_time = $legs[0]['t'][0];
+        $last_leg = array_pop($legs);
+        $end_time = array_pop($last_leg['t']);
 
         $f = array();
         $f['route_id'] = $request['id'];
