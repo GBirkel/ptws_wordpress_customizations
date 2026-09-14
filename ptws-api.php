@@ -256,6 +256,10 @@ class PTWS_API {
             'description' => esc_html__('An optional name to give to the route', 'my-text-domain'),
             'type'        => 'string',
         );
+        $args['replace'] = array(
+            'description' => esc_html__('Whether to try and replace an existing route with the same ID', 'my-text-domain'),
+            'type'        => 'boolean',
+        );
         $args['key'] = array(
             'description' => 'The secret API key (set in the plugin admin section)',
             'type'        => 'string',
@@ -359,8 +363,12 @@ class PTWS_API {
             ptws_create_route_record($f);
             $response = rest_ensure_response( 'Record ' . $f['route_id'] . ' inserted.' );
         } else {
-            ptws_update_route_record($f);
-            $response = rest_ensure_response( 'Record ' . $f['route_id'] . ' updated.' );
+            if (isset( $request['replace'] ) && $request['replace']) {
+                ptws_update_route_record($f);
+                $response = rest_ensure_response( 'Record ' . $f['route_id'] . ' updated.' );
+            } else {
+                return new \WP_Error( 'rest_invalid', 'Record exists, must set replace!', array( 'status' => 400 ) );
+            }
         }
         $response->header( 'Access-Control-Allow-Origin', '*');
         return $response;

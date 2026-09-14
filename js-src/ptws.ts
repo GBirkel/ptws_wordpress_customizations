@@ -96,9 +96,7 @@ export function findAndInitGPSLogDisplays() {
 		(<any>L).tileLayer('https://{s}.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png', {
 			maxZoom: 19,
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, ' +
-						 '&copy; <a href="https://opencyclemap.org">OpenCycleMap</a> contributors',
-			tileSize: 512,
-			zoomOffset: -1
+						 '&copy; <a href="https://opencyclemap.org">OpenCycleMap</a> contributors'
 		}).addTo(map);
 
 		var firstPoint = null;
