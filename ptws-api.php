@@ -256,6 +256,10 @@ class PTWS_API {
             'description' => esc_html__('An optional name to give to the route', 'my-text-domain'),
             'type'        => 'string',
         );
+        $args['distance_meters'] = array(
+            'description' => esc_html__('The distance of the route in meters', 'my-text-domain'),
+            'type'        => 'number',
+        );
         $args['replace'] = array(
             'description' => esc_html__('Whether to try and replace an existing route with the same ID', 'my-text-domain'),
             'type'        => 'boolean',
@@ -370,6 +374,9 @@ class PTWS_API {
         $f['route_end_time'] = $end_time;
 
         //return new \WP_Error( 'rest_invalid', esc_html__( 'Assembled route: ' . print_r($f, true), 'my-text-domain' ), array( 'status' => 400 ) );
+        if (isset($request['distance_meters'])) {
+            $f['route_distance_meters'] = $request['distance_meters'];
+        }
 
         $one_row = ptws_get_route_record($f['route_id']);
 
