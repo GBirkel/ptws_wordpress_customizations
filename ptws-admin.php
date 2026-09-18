@@ -261,6 +261,16 @@ function ptws_admin_html_page()
                     <?php
 
                     if ($_POST) {
+                        if (isset($_POST['submit']) && $_POST['submit'] == 'Delete Route By ID') {
+
+                            if (!$_POST['ptws_route_id_to_delete']) {
+                                echo '<p>No route ID to delete entered.</p>';
+                            } else {
+                                ptws_delete_one_route($_POST['ptws_route_id_to_delete']);
+                                echo '<p>Route deleted from table.</p>';
+                            }
+                        }
+
                         if (isset($_POST['submit']) && $_POST['submit'] == 'Clear Photo By Flickr ID') {
 
                             if (!$_POST['ptws_photo_flickr_id_to_clear']) {
@@ -350,6 +360,19 @@ function ptws_admin_html_page()
                         $route_count = ptws_get_route_count();
                         echo "<p>Route database contains {$route_count} entries.</p>";
                     ?>
+                    <p>Delete a single route from the database.</p>
+
+                    <table class='ptws-admin-settings'>
+                        <tr>
+                            <td>PTWS Database ID</td>
+                            <td>
+                                <input class='afg-input' type='text' name='ptws_route_id_to_delete' id='ptws_route_id_to_delete' value="" />
+                            </td>
+                            <td>
+                                <input type="submit" name="submit" id="ptws_delete_single_route_by_id" class="button-primary" value="Delete Route By ID" />
+                            </td>
+                        </tr>
+                    </table>
                     <table class='ptws-admin-settings'>
                         <tr>
                             <td>Route upload API Secret</td>

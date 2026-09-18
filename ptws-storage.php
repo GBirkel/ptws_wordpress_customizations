@@ -682,4 +682,17 @@ function ptws_delete_one_comment($pid)
     $wpdb->hide_errors();
 }
 
+
+// Removes the route with the given ID
+function ptws_delete_one_route($pid)
+{
+    global $wpdb;
+    $route_table_name = $wpdb->prefix . 'ptwsroutes';
+    $wpdb->show_errors();
+    $wpdb->query(
+        $wpdb->prepare("DELETE FROM $route_table_name WHERE id = %s", $pid)
+    );
+    $wpdb->hide_errors();
+}
+
 ?>
