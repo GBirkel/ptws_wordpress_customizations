@@ -232,11 +232,11 @@
 					isMatch: (attributes) => {
 						const name = attributes?.text?.match(/\s*\[ptwsroute\s+/);
 						// Need one or the other of these
-						const routeid = attributes?.text?.match(/\s+routeid="[\d\-\:\+T]+"/);
+						const routeid = attributes?.text?.match(/\s+routeid="[A-Za-z\d\-\:\+T]+"/);
 						return (name && routeid);
 					},
 					transform: (attributes, b, c) => {
-						const routeid = attributes?.text?.match(/\s+routeid="([\d\-\:\+T]+)"/);
+						const routeid = attributes?.text?.match(/\s+routeid="([A-Za-z\d\-\:\+T]+)"/);
 						const newAttributes = {
 								initial_id: routeid ? routeid[1] : "",
 								route_id: "",

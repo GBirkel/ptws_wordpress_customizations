@@ -39,30 +39,24 @@ class PTWS_API {
 		// Route for fetching an individual route by ID
         register_rest_route( $this->api_namespace, '/route/id', array(
             array(
-                // By using this constant we ensure that when the WP_REST_Server changes, our readable endpoints will work as intended.
                 'methods'  => \WP_REST_Server::READABLE,
                 'args' => $this->route_get_by_id_arguments(),
-                // Here we register our callback. The callback is fired when this endpoint is matched by the WP_REST_Server class.
                 'callback' => array( $this, 'route_get_by_id'),
             ),
         ) );
 		// Route for fetching a list of the most recent 50 routes
-        register_rest_route($this->api_namespace, '/route/recent', array(
+        register_rest_route($this->api_namespace, '/route/list', array(
             array(
-                // By using this constant we ensure that when the WP_REST_Server changes, our readable endpoints will work as intended.
                 'methods'  => \WP_REST_Server::READABLE,
-                'args' => array(),
-                // Here we register our callback. The callback is fired when this endpoint is matched by the WP_REST_Server class.
-                'callback' => array($this, 'route_get_recent'),
+                'args' => $this->route_get_list_arguments(),
+                'callback' => array($this, 'route_get_list'),
             ),
         ));
 		// Route for adding a new route
         register_rest_route($this->api_namespace, '/route/create', array(
             array(
-                // By using this constant we ensure that when the WP_REST_Server changes, our create endpoints will work as intended.
                 'methods'  => \WP_REST_Server::CREATABLE,
                 'args' => $this->route_create_arguments(),
-                // Here we register our callback. The callback is fired when this endpoint is matched by the WP_REST_Server class.
                 'callback' => array($this, 'route_create'),
                 // Here we register our permissions callback.
                 // The callback is fired before the main callback to check if the current user can access the endpoint.
@@ -75,7 +69,6 @@ class PTWS_API {
                 // By using this constant we ensure that when the WP_REST_Server changes, our readable endpoints will work as intended.
                 'methods'  => \WP_REST_Server::CREATABLE,
                 'args' => $this->standard_api_key_only_arguments(),
-                // Here we register our callback. The callback is fired when this endpoint is matched by the WP_REST_Server class.
                 'callback' => array($this, 'comment_get_recent_unresolved'),
                 'permission_callback' => array($this, 'standard_permissions_check'),
             ),
@@ -93,8 +86,6 @@ class PTWS_API {
             // type specifies the type of data that the argument should be.
             'type'        => 'string',
             'validate_callback' => array($this, 'ptws_string_arg_validate'),
-            // enum specifies what values filter can take on.
-            //'enum'        => array( 'red', 'green', 'blue' ),
         );
         $args['last_seen_in_post'] = array(
             // description should be a human readable description of the argument.
@@ -123,6 +114,26 @@ class PTWS_API {
             'type'        => 'string',
             'validate_callback' => array($this, 'ptws_string_arg_validate'),
         );
+        return $args;
+    }
+
+
+    // Defining the arguments for the route API 'get' method.
+    public function route_get_list_arguments() {
+        $args = array();
+        // Here we are registering the schema for the route id argument.
+        $args['limit'] = array(
+            // description should be a human readable description of the argument.
+            'description' => 'The maximum number of routes to return',
+            // type specifies the type of data that the argument should be.
+            'type'        => 'integer'
+        );
+        $args['offset'] = array(
+            // description should be a human readable description of the argument.
+            'description' => 'The number of routes to skip before starting to collect the result set',
+            'type'        => 'integer'
+        );
+        $args = $this->add_standard_api_key_only_arguments($args);
         return $args;
     }
 
@@ -217,11 +228,15 @@ class PTWS_API {
 
 
     // Implementing the route API 'get latest 50' method.
-    public function route_get_recent($request)
+    public function route_get_list($request)
     {
-        $response = ptws_get_recent_routes(50);
+        $api_key_validation = $this->validate_api_key($request);
+        if (!($api_key_validation === null)) {
+            return $api_key_validation;
+        }
+        $response = ptws_get_route_list($request['limit'] ?? 50, $request['offset'] ?? 0);
         if ($response == null) {
-            return new \WP_Error('rest_invalid', esc_html__('Problem getting latest routes', 'my-text-domain'), array('status' => 400));
+            return new \WP_Error('rest_invalid', esc_html__('Problem getting routes', 'my-text-domain'), array('status' => 400));
         }
         return rest_ensure_response( $response );
     }
@@ -230,6 +245,13 @@ class PTWS_API {
     // Standard arguments requirement:  Just the API key.
     public function standard_api_key_only_arguments() {
         $args = array();
+        $args = $this->add_standard_api_key_only_arguments($args);
+        return $args;
+    }
+
+
+    // Standard arguments requirement:  Just the API key.
+    public function add_standard_api_key_only_arguments($args) {
         $args['key'] = array(
             'description' => 'The secret API key (set in the plugin admin section)',
             'type'        => 'string',
@@ -264,11 +286,7 @@ class PTWS_API {
             'description' => esc_html__('Whether to try and replace an existing route with the same ID', 'my-text-domain'),
             'type'        => 'boolean',
         );
-        $args['key'] = array(
-            'description' => 'The secret API key (set in the plugin admin section)',
-            'type'        => 'string',
-            'validate_callback' => array( $this, 'ptws_string_arg_validate'),
-        );
+        $args = $this->add_standard_api_key_only_arguments($args);
         return $args;
     }
 
@@ -278,6 +296,20 @@ class PTWS_API {
         if (!is_string($value)) {
             return new \WP_Error( 'rest_invalid_param', esc_html__( 'The ' . $param . ' argument must be a string.', 'my-text-domain' ), array( 'status' => 400 ) );
         }
+    }
+
+
+    function validate_api_key($request) {
+        if (!isset( $request['key'] ) ) {
+            return new \WP_Error( 'rest_invalid', 'The key parameter is required.', array( 'status' => 400 ) );
+        }
+        if (!get_option('ptws_route_api_secret')) {
+            return new \WP_Error( 'rest_invalid', 'Route API secret is not set.', array( 'status' => 400 ) );
+        }
+        if ($request['key'] != get_option('ptws_route_api_secret')) {
+            return new \WP_Error( 'rest_invalid', 'The key parameter is incorrect.', array( 'status' => 400 ) );
+        }
+        return null;
     }
 
 
@@ -303,14 +335,9 @@ class PTWS_API {
             return new \WP_Error( 'rest_invalid', 'The id parameter is required.', array( 'status' => 400 ) );
         }
 
-        if (!isset( $request['key'] ) ) {
-            return new \WP_Error( 'rest_invalid', 'The key parameter is required.', array( 'status' => 400 ) );
-        }
-        if (!get_option('ptws_route_api_secret')) {
-            return new \WP_Error( 'rest_invalid', 'Route API secret is not set.', array( 'status' => 400 ) );
-        }
-        if ($request['key'] != get_option('ptws_route_api_secret')) {
-            return new \WP_Error( 'rest_invalid', 'The key parameter is incorrect.', array( 'status' => 400 ) );
+        $api_key_validation = $this->validate_api_key($request);
+        if (!($api_key_validation === null)) {
+            return $api_key_validation;
         }
 
         if ( !function_exists( 'wp_handle_upload' ) ) {
@@ -326,6 +353,8 @@ class PTWS_API {
             ),
            'test_type' => false
         ];
+
+        #error_log( 'Handling upload for route ID: ' . print_r( $request['id'], true ) );
 
         $movefile = wp_handle_upload( $uploadedfile, $upload_overrides );
 
@@ -372,8 +401,6 @@ class PTWS_API {
         $f['route_json'] = $json_concatenated;
         $f['route_start_time'] = $start_time;
         $f['route_end_time'] = $end_time;
-
-        //return new \WP_Error( 'rest_invalid', esc_html__( 'Assembled route: ' . print_r($f, true), 'my-text-domain' ), array( 'status' => 400 ) );
         if (isset($request['distance_meters'])) {
             $f['route_distance_meters'] = $request['distance_meters'];
         }
@@ -411,14 +438,9 @@ class PTWS_API {
     // Implementing the comment API 'get latest 50' method.
     public function comment_get_recent_unresolved($request)
     {
-        if (!isset( $request['key'] ) ) {
-            return new \WP_Error( 'rest_invalid', 'The key parameter is required.', array( 'status' => 400 ) );
-        }
-        if (!get_option('ptws_route_api_secret')) {
-            return new \WP_Error( 'rest_invalid', 'Route API secret is not set.', array( 'status' => 400 ) );
-        }
-        if ($request['key'] != get_option('ptws_route_api_secret')) {
-            return new \WP_Error( 'rest_invalid', 'The key parameter is incorrect.', array( 'status' => 400 ) );
+        $api_key_validation = $this->validate_api_key($request);
+        if (!($api_key_validation === null)) {
+            return $api_key_validation;
         }
 
         $recent_comments = ptws_get_unresolved_comments(50);

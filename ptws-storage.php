@@ -468,7 +468,7 @@ function ptws_get_route_record($pid)
 
 // Get the latest 50 uploaded routes.
 // If no record exists, return null instead.
-function ptws_get_recent_routes($n)
+function ptws_get_route_list($limit = 50, $offset = 0)
 {
     global $wpdb;
     $routes_table_name = $wpdb->prefix . 'ptwsroutes';
@@ -477,9 +477,9 @@ function ptws_get_recent_routes($n)
             "
                 SELECT id, route_id, route_description, auto_placed, last_seen_in_post, route_start_time, route_end_time, cached_time
                 FROM $routes_table_name 
-                ORDER BY route_start_time DESC LIMIT %d
+                ORDER BY route_start_time DESC LIMIT %d OFFSET %d
             ",
-            array($n)
+            array($limit, $offset)
         ),
         'ARRAY_A'
     );
